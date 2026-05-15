@@ -1,0 +1,172 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  color: white;
+}
+
+.topBar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.backBtn {
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 40px;
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 150px;
+}
+
+.progressFill {
+  height: 100%;
+  background: #ffd966;
+  transition: width 0.3s;
+}
+
+.counter {
+  font-weight: bold;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 12px;
+  border-radius: 40px;
+}
+
+.cardWrapper {
+  width: 100%;
+  max-width: 550px;
+  cursor: pointer;
+  perspective: 1000px;
+  margin: 1rem 0;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  border-radius: 32px;
+}
+
+.flipped {
+  transform: rotateY(180deg);
+}
+
+.front, .back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.2);
+  text-align: center;
+}
+
+.front {
+  transform: rotateY(0deg);
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+.word {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.hint {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-top: 1rem;
+}
+
+.hintBtn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  color: white;
+}
+
+.meaning {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.pronounce {
+  font-size: 1rem;
+  font-family: monospace;
+  margin-bottom: 1rem;
+}
+
+.example {
+  font-size: 0.9rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.rating {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.rating button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 40px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+  min-width: 100px;
+}
+
+.again { background: #dc3545; color: white; }
+.hard { background: #fd7e14; color: white; }
+.good { background: #28a745; color: white; }
+.easy { background: #17a2b8; color: white; }
+
+.rating button:hover {
+  transform: scale(1.05);
+}
+
+.loading, .empty {
+  text-align: center;
+  font-size: 1.5rem;
+  color: white;
+  margin-top: 20vh;
+}

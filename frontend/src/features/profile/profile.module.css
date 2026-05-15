@@ -1,0 +1,14 @@
+.container { display: flex; justify-content: center; align-items: center; min-height: 100vh; backdrop-filter: blur(2px); padding: 1rem; }
+.card { background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); border-radius: 32px; padding: 2rem; width: 100%; max-width: 600px; box-shadow: 0 25px 45px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; color: white; }
+.header h2 { font-size: 1.8rem; }
+.logoutBtn { background: rgba(255,80,80,0.8); border: none; padding: 8px 16px; border-radius: 50px; color: white; cursor: pointer; }
+.tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 0.5rem; }
+.tab, .activeTab { background: transparent; border: none; padding: 8px 16px; color: white; cursor: pointer; }
+.activeTab { background: rgba(255,255,255,0.3); border-radius: 50px; }
+.form { display: flex; flex-direction: column; gap: 1rem; }
+.field label { color: white; }
+.input, .disabledInput { padding: 12px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.2); color: white; }
+.button { background: linear-gradient(90deg, #ff9a9e, #fad0c4); border: none; padding: 12px; border-radius: 50px; font-weight: bold; cursor: pointer; }
+.success { background: rgba(76,175,80,0.9); color: white; padding: 10px; border-radius: 50px; text-align: center; margin-bottom: 1rem; }
+.error { background: rgba(255,80,80,0.9); color: white; padding: 10px; border-radius: 50px; text-align: center; margin-bottom: 1rem; }
