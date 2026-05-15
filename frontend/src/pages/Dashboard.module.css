@@ -1,0 +1,164 @@
+.container {
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-attachment: fixed;
+  color: white;
+}
+
+.welcome {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.welcome h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 32px;
+  padding: 1.5rem;
+  text-align: center;
+  min-width: 180px;
+  box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.2);
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+}
+
+.statIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.statCard h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.statCard p {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.eyeBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  color: white;
+  transition: 0.2s;
+}
+
+.eyeBtn:hover {
+  transform: scale(1.1);
+}
+
+.secret {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.3);
+  border-radius: 20px;
+  padding: 4px 8px;
+}
+
+.sectionTitle {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.serviceCard {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 32px;
+  padding: 1.5rem;
+  transition: transform 0.2s;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.serviceCard:hover {
+  transform: translateY(-5px);
+}
+
+.serviceIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.serviceCard h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.serviceCard p {
+  opacity: 0.9;
+  margin-bottom: 1rem;
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn, .btnOutline {
+  padding: 8px 16px;
+  border-radius: 40px;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  transition: 0.2s;
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.btn {
+  background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+  color: #2c3e66;
+}
+
+.btnOutline {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+}
+
+.btn:hover, .btnOutline:hover {
+  transform: scale(1.02);
+  background: rgba(255,255,255,0.2);
+}
+
+.loading {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.5rem;
+  color: white;
+}
