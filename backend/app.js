@@ -1,18 +1,30 @@
+// File: backend/app.js
 const express = require('express');
 const cors = require('cors');
-const v1Routes = require('./src/routes/v1');
+const errorMiddleware = require('./src/middlewares/error.middleware');
+const AppError = require('./src/utils/appError');
 
 const app = express();
-app.use(cors());
+
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(express.json());
 
-// Routes
-app.use('/api/v1', v1Routes);
+// ==========================================
+// 1. ĐÓN KHÁCH (PHẢI NẰM Ở ĐÂY)
+// ==========================================
+const routesV1 = require('./src/routes/v1/index');
+app.use('/api/v1', routesV1);
 
-// Error handling middleware (tạm thời)
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ status: 'error', message: 'Internal server error' });
+// ==========================================
+// 2. BẪY LỖI 404 (Nếu khách gọi sai đường dẫn thì mới lọt xuống đây)
+// ==========================================
+app.use((req, res, next) => {
+  next(new AppError(404, `Không tìm thấy API: ${req.originalUrl}`, "ROUTE_NOT_FOUND"));
 });
+
+// ==========================================
+// 3. TRẠM THU GOM RÁC CỦA HỆ THỐNG
+// ==========================================
+app.use(errorMiddleware);
 
 module.exports = app;
