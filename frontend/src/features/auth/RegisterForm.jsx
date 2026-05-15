@@ -1,43 +1,33 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import styles from './auth.module.css';
 
-const ResetPasswordForm = () => {
-  const [newPassword, setNewPassword] = useState('');
+const RegisterForm = () => {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState('');
-  const resetPassword = useAuthStore((state) => state.resetPassword);
+  const register = useAuthStore((state) => state.register);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const t = params.get('token');
-    if (!t) {
-      setError('Token không hợp lệ hoặc đã hết hạn.');
-    } else {
-      setToken(t);
-    }
-  }, [location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    if (newPassword !== confirmPassword) {
+    if (password !== confirmPassword) {
       setError('Mật khẩu xác nhận không khớp');
       return;
     }
 
     setLoading(true);
-    const result = await resetPassword(token, newPassword);
+    const result = await register(email, password, fullName);
     if (result.success) {
       setSuccess(result.message);
       setTimeout(() => navigate('/login'), 3000);
@@ -47,20 +37,38 @@ const ResetPasswordForm = () => {
     setLoading(false);
   };
 
-  if (!token && !error) return <div className={styles.container}><div className={styles.form}>Loading...</div></div>;
-
   return (
     <div className={styles.container}>
       <form onSubmit={handleSubmit} className={styles.form}>
-        <h2>Đặt lại mật khẩu</h2>
+        <h2>Đăng ký</h2>
         {error && <div className={styles.error}>{error}</div>}
         {success && <div className={styles.success}>{success}</div>}
+        <div className={styles.inputGroup}>
+          <input
+            type="text"
+            placeholder="Họ và tên"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            className={styles.input}
+          />
+        </div>
+        <div className={styles.inputGroup}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className={styles.input}
+          />
+        </div>
         <div className={styles.inputGroup} style={{ position: 'relative' }}>
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder="Mật khẩu mới"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Mật khẩu (tối thiểu 6 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
             className={styles.input}
           />
@@ -85,7 +93,7 @@ const ResetPasswordForm = () => {
         <div className={styles.inputGroup} style={{ position: 'relative' }}>
           <input
             type={showConfirmPassword ? 'text' : 'password'}
-            placeholder="Xác nhận mật khẩu mới"
+            placeholder="Xác nhận mật khẩu"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -109,15 +117,15 @@ const ResetPasswordForm = () => {
             {showConfirmPassword ? '🙈' : '👁️'}
           </button>
         </div>
-        <button type="submit" disabled={loading || !token} className={styles.button}>
-          {loading ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
+        <button type="submit" disabled={loading} className={styles.button}>
+          {loading ? 'Đang xử lý...' : 'Đăng ký'}
         </button>
         <div className={styles.links}>
-          <Link to="/login" className={styles.link}>Quay lại đăng nhập</Link>
+          <Link to="/login" className={styles.link}>Đã có tài khoản? Đăng nhập</Link>
         </div>
       </form>
     </div>
   );
 };
 
-export default ResetPasswordForm;
+export default RegisterForm;
