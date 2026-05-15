@@ -15,4 +15,7 @@ build/
 
 # OS files
 .DS_Store
-Thumbs.db
+Thumbs.dbmysql/
+backend/.env
+frontend/.env
+node_modules/
