@@ -1,33 +1,24 @@
-const mysql = require("mysql2/promise");
-require("dotenv").config();
+const mysql = require('mysql2');
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "vocab_learning",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-});
+}).promise(); // BẮT BUỘC phải có .promise() ở đây
 
-// Hàm kiểm tra kết nối
-async function testConnection() {
+const checkConnection = async () => {
   try {
     const connection = await pool.getConnection();
-    console.log("✅ Đã kết nối thành công đến MySQL database!");
-    console.log(`   Database: ${process.env.DB_NAME || "vocab_learning"}`);
-    console.log(`   Host: ${process.env.DB_HOST || "localhost"}`);
+    console.log(`✅ MySQL Connected to: ${process.env.DB_NAME}`);
     connection.release();
-    return true;
   } catch (error) {
-    console.error("❌ Kết nối MySQL thất bại!");
-    console.error(`   Lỗi: ${error.message}`);
-    return false;
+    console.error('❌ Kết nối MySQL thất bại:', error.message);
+    throw error;
   }
-}
+};
 
-// Tự động test kết nối khi file được require
-testConnection();
-
-module.exports = pool;
+// Export cả pool và hàm check
+module.exports = { pool, checkConnection };

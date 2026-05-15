@@ -1,4 +1,4 @@
-const db = require("../config/database");
+const { pool: db } = require("../config/database");
 
 // =========================
 // ROLE ID THEO DATABASE
@@ -395,6 +395,22 @@ async function deleteUser(userId) {
   return result.affectedRows > 0;
 }
 
+// =========================
+// KIỂM TRA QUYỀN (PERMISSION) CỦA ROLE
+// =========================
+async function checkRolePermission(roleId, permissionName) {
+  const [rows] = await db.execute(
+    `SELECT p.name
+     FROM permissions p
+     JOIN role_permissions rp ON p.id = rp.permission_id
+     WHERE rp.role_id = ? AND p.name = ?`,
+    [roleId, permissionName]
+  );
+  return rows.length > 0;
+}
+
+// Nhớ kéo xuống dưới cùng thêm `checkRolePermission` vào module.exports nhé!
+
 module.exports = {
   ROLE_IDS,
 
@@ -425,4 +441,6 @@ module.exports = {
   updateReminderSetting,
 
   deleteUser,
+
+  checkRolePermission,
 };
