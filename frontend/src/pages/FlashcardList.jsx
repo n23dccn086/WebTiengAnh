@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 import { getFlashcardsByServiceApi, addFlashcardToUserApi } from '../services/flashcardApi';
 import styles from './FlashcardList.module.css';
 
 const FlashcardList = () => {
   const { serviceId } = useParams();
+  const { logout } = useAuthStore();
   const [flashcards, setFlashcards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState({});
-  const [showMeaningId, setShowMeaningId] = useState(null); // 👁️ hiện nghĩa tạm thời
+  const [showMeaningId, setShowMeaningId] = useState(null);
 
   useEffect(() => {
     loadFlashcards();
@@ -35,10 +37,15 @@ const FlashcardList = () => {
 
   return (
     <div className={styles.container}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button onClick={logout} className={styles.logoutBtn}>🚪 Đăng xuất</button>
+      </div>
+
       <div className={styles.header}>
         <Link to="/dashboard" className={styles.backBtn}>← Quay lại</Link>
         <h2>📖 Từ vựng</h2>
       </div>
+
       <div className={styles.grid}>
         {flashcards.map(fc => (
           <div key={fc.id} className={styles.card}>
@@ -67,6 +74,7 @@ const FlashcardList = () => {
           </div>
         ))}
       </div>
+
       <Link to={`/flashcards/study/${serviceId}`} className={styles.studyBtn}>
         🚀 Bắt đầu học ngay
       </Link>

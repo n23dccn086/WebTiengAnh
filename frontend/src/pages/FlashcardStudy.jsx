@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 import { getFlashcardsByServiceApi, submitReviewApi } from '../services/flashcardApi';
 import styles from './FlashcardStudy.module.css';
 
 const FlashcardStudy = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -43,6 +45,10 @@ const FlashcardStudy = () => {
 
   return (
     <div className={styles.container}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button onClick={logout} className={styles.logoutBtn}>🚪 Đăng xuất</button>
+      </div>
+
       <div className={styles.topBar}>
         <Link to={`/flashcards/service/${serviceId}`} className={styles.backBtn}>← Thoát</Link>
         <div className={styles.progressBar}>

@@ -162,3 +162,18 @@
   font-size: 1.5rem;
   color: white;
 }
+
+.logoutBtn {
+  background: rgba(255,80,80,0.8);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 50px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.logoutBtn:hover {
+  background: rgba(255,50,50,1);
+}

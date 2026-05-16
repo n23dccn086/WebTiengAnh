@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './pages/Home';
 import LoginForm from './features/auth/LoginForm';
 import RegisterForm from './features/auth/RegisterForm';
 import ForgotPasswordForm from './features/auth/ForgotPasswordForm';
@@ -14,6 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/forgot-password" element={<ForgotPasswordForm />} />
@@ -23,7 +25,6 @@ function App() {
         <Route path="/flashcards/service/:serviceId" element={<ProtectedRoute><FlashcardList /></ProtectedRoute>} />
         <Route path="/flashcards/study/:serviceId" element={<ProtectedRoute><FlashcardStudy /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
