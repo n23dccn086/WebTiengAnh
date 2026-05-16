@@ -1,38 +1,85 @@
 const mysql = require("mysql2");
 require("dotenv").config();
 
-const pool = mysql
-  .createPool({
-    host: process.env.DB_HOST || "localhost",
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "edtech_db",
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-  })
-  .promise();
+const rawPool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT) || 3306,
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "edtech_db",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
 
-const checkConnection = async () => {
+// Wrapper query dùng Promise, KHÔNG dùng rawPool.promise()
+function query(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    rawPool.query(sql, params, (error, results, fields) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve([results, fields]);
+    });
+  });
+}
+
+// Wrapper execute dùng Promise, KHÔNG dùng rawPool.promise()
+function execute(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    rawPool.execute(sql, params, (error, results, fields) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve([results, fields]);
+    });
+  });
+}
+
+// Nếu chỗ nào cần getConnection thì vẫn hỗ trợ
+function getConnection() {
+  return new Promise((resolve, reject) => {
+    rawPool.getConnection((error, connection) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(connection);
+    });
+  });
+}
+
+async function checkConnection() {
   try {
-    const connection = await pool.getConnection();
+    await query("SELECT 1");
 
     console.log("✅ MySQL Connected successfully!");
     console.log(`   Host: ${process.env.DB_HOST || "localhost"}`);
     console.log(`   Port: ${process.env.DB_PORT || 3306}`);
     console.log(`   Database: ${process.env.DB_NAME || "edtech_db"}`);
-
-    connection.release();
   } catch (error) {
     console.error("❌ Kết nối MySQL thất bại:", error.message);
     throw error;
   }
+}
+
+const db = {
+  query,
+  execute,
+  getConnection,
+  rawPool,
+  checkConnection,
 };
 
-// Cách export này hỗ trợ cả 2 kiểu import:
-// 1. const db = require("../config/database");
-// 2. const { pool, checkConnection } = require("../config/database");
-module.exports = pool;
-module.exports.pool = pool;
+// Hỗ trợ cả 2 kiểu import:
+// const db = require("../config/database");
+// const { pool, checkConnection } = require("../config/database");
+module.exports = db;
+module.exports.pool = db;
+module.exports.rawPool = rawPool;
 module.exports.checkConnection = checkConnection;
