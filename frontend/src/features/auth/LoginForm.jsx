@@ -17,23 +17,26 @@ const LoginForm = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    localStorage.removeItem("auth-storage");
-
-    try {
-      const result = await login(email, password);
-      if (!result.success) {
-        setError(result.message || "Email hoặc mật khẩu không chính xác.");
-        return;
-      }
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.message || "Email hoặc mật khẩu không chính xác.");
+    } else {
       navigate("/dashboard");
-    } catch (err) {
-      setError("Đăng nhập thất bại. Vui lòng thử lại.");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
+  };
+
+  const handleGuestLogin = async () => {
+    setError("");
+    setLoading(true);
+    // Tài khoản guest cố định (phải tồn tại trong database)
+    const result = await login("guest@example.com", "guest123");
+    if (!result.success) {
+      setError(result.message || "Không thể đăng nhập với tài khoản khách.");
+    } else {
+      navigate("/dashboard");
+    }
+    setLoading(false);
   };
 
   return (
@@ -80,6 +83,14 @@ const LoginForm = () => {
         </div>
         <button type="submit" disabled={loading} className={styles.button}>
           {loading ? "Đang xử lý..." : "Đăng nhập"}
+        </button>
+        <button
+          type="button"
+          onClick={handleGuestLogin}
+          disabled={loading}
+          className={styles.guestButton}
+        >
+          🎭 Đăng nhập với tài khoản khách (demo)
         </button>
         <div className={styles.links}>
           <Link to="/forgot-password" className={styles.link}>

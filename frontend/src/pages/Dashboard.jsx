@@ -5,10 +5,10 @@ import { getServicesApi } from '../services/serviceApi';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
-  const { user, fetchProfile } = useAuthStore();
+  const { user, fetchProfile, logout } = useAuthStore();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showSecret, setShowSecret] = useState(false); // ví dụ icon mắt cho một thông tin thú vị
+  const [showSecret, setShowSecret] = useState(false);
 
   useEffect(() => {
     if (!user?.id) fetchProfile();
@@ -30,6 +30,10 @@ const Dashboard = () => {
 
   return (
     <div className={styles.container}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button onClick={logout} className={styles.logoutBtn}>🚪 Đăng xuất</button>
+      </div>
+
       <div className={styles.welcome}>
         <h1>👋 Chào mừng, {user?.full_name || 'bạn'}!</h1>
         <p>Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.</p>
