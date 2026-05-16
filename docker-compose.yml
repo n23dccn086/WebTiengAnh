@@ -4,7 +4,7 @@ services:
     container_name: webtienganh_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_ROOT_PASSWORD: "Hao113205,"
       MYSQL_DATABASE: "edtech_db"
     ports:
       - "3307:3306"
@@ -29,7 +29,7 @@ services:
       DB_HOST: "mysql"
       DB_PORT: "3306"
       DB_USER: "root"
-      DB_PASSWORD: "123456"
+      DB_PASSWORD: "Hao113205,"
       DB_NAME: "edtech_db"
       JWT_SECRET: "Lap_trinh_web_do_an_cuoi_mon_2026"
       FRONTEND_URL: "http://localhost:5173"
