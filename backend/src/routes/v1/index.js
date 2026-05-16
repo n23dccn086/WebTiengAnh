@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 
 const authRoutes = require('./auth.route');
-const userRoutes = require('./user.route'); 
-// const quizRoutes = require('./quiz.route'); // Sẽ làm sau
+const userRoutes = require('./user.route');
+const flashcardRoutes = require('./flashcard.route');
+const serviceRoutes = require('./service.route');
 
-// Gom tất cả các route lại dưới tiền tố /v1
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
-// router.use('/quizzes', quizRoutes);
+router.use('/flashcards', flashcardRoutes);
+router.use('/services', serviceRoutes);
 
 module.exports = router;
