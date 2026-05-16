@@ -1,36 +1,41 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1", // nếu sau này có biến môi trường thì thay bằng import.meta.env.VITE_API_URL
-  headers: { "Content-Type": "application/json" },
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// Interceptor: gắn token vào request
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Gắn token vào request nếu có
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
 
-// Interceptor: xử lý lỗi 401
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
+// Không redirect/reload trong interceptor.
+// Để component tự xử lý lỗi và hiển thị thông báo.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+
+    if (status === 401 || status === 403) {
       localStorage.removeItem("accessToken");
-      // Không redirect ngay ở đây vì có thể dùng React Router sau
-      window.location.href = "/login";
+      localStorage.removeItem("user");
+      localStorage.removeItem("auth-storage");
     }
+
     return Promise.reject(error);
   },
 );
-
-// Hàm login gắn luôn vào apiClient để tiện dùng
-export const loginApi = async (email, password) => {
-  const response = await apiClient.post("/auth/login", { email, password });
-  return response.data;
-};
 
 export default apiClient;
