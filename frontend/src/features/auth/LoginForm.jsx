@@ -15,7 +15,6 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
     setLoading(true);
 
@@ -25,12 +24,10 @@ const LoginForm = () => {
 
     try {
       const result = await login(email, password);
-
       if (!result.success) {
         setError(result.message || "Email hoặc mật khẩu không chính xác.");
         return;
       }
-
       navigate("/dashboard");
     } catch (err) {
       setError("Đăng nhập thất bại. Vui lòng thử lại.");
@@ -38,13 +35,12 @@ const LoginForm = () => {
       setLoading(false);
     }
   };
+
   return (
     <div className={styles.container}>
       <form onSubmit={handleSubmit} className={styles.form}>
         <h2>Chào mừng</h2>
-
         {error && <div className={styles.error}>{error}</div>}
-
         <div className={styles.inputGroup}>
           <input
             type="email"
@@ -55,7 +51,6 @@ const LoginForm = () => {
             className={styles.input}
           />
         </div>
-
         <div className={styles.inputGroup} style={{ position: "relative" }}>
           <input
             type={showPassword ? "text" : "password"}
@@ -65,7 +60,6 @@ const LoginForm = () => {
             required
             className={styles.input}
           />
-
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
@@ -84,16 +78,13 @@ const LoginForm = () => {
             {showPassword ? "🙈" : "👁️"}
           </button>
         </div>
-
         <button type="submit" disabled={loading} className={styles.button}>
           {loading ? "Đang xử lý..." : "Đăng nhập"}
         </button>
-
         <div className={styles.links}>
           <Link to="/forgot-password" className={styles.link}>
             Quên mật khẩu?
           </Link>
-
           <Link to="/register" className={styles.link}>
             Chưa có tài khoản? Đăng ký
           </Link>

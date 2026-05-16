@@ -116,8 +116,7 @@ const useAuthStore = create(
       },
 
       forgotPassword: async (email) => {
-        try {
-          const result = await forgotPasswordApi(email);
+        try {const result = await forgotPasswordApi(email);
 
           if (result.status === "success") {
             return { success: true, message: result.message };

@@ -82,8 +82,5 @@ const db = {
 module.exports = db;
 module.exports.pool = db;
 module.exports.rawPool = rawPool;
-<<<<<<< HEAD
 module.exports.checkConnection = checkConnection;
-=======
 module.exports.checkConnection = checkConnection;
->>>>>>> 44045e1 (sửa database.js và sửa lỗi không hiện thông báo login sai)
