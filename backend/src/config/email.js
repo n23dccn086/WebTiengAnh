@@ -6,7 +6,7 @@ const nodemailer = require("nodemailer");
 // =========================
 if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   console.warn(
-    "⚠️ Thiếu EMAIL_USER hoặc EMAIL_PASS trong file .env. Chức năng gửi email có thể lỗi.",
+    "⚠️ Thiếu EMAIL_USER hoặc EMAIL_PASS trong Railway Variables. Chức năng gửi email có thể lỗi.",
   );
 }
 
@@ -19,11 +19,16 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 // CẤU HÌNH GỬI EMAIL
 // =========================
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
 // =========================
