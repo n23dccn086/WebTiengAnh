@@ -1,35 +1,51 @@
 // config/email.js
-const nodemailer = require("nodemailer");
 
-// =========================
-// KIỂM TRA ENV
-// =========================
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-  console.warn(
-    "⚠️ Thiếu EMAIL_USER hoặc EMAIL_PASS trong Railway Variables. Chức năng gửi email có thể lỗi.",
-  );
+if (!process.env.BREVO_API_KEY) {
+  console.warn("⚠️ Thiếu BREVO_API_KEY trong biến môi trường.");
 }
 
-// =========================
-// LINK FRONTEND
-// =========================
+if (!process.env.EMAIL_FROM) {
+  console.warn("⚠️ Thiếu EMAIL_FROM trong biến môi trường.");
+}
+
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-// =========================
-// CẤU HÌNH GỬI EMAIL
-// =========================
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-});
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+
+async function sendBrevoEmail({ to, subject, textContent, htmlContent }) {
+  const response = await fetch(BREVO_API_URL, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      "api-key": process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({
+      sender: {
+        name: process.env.EMAIL_FROM_NAME || "English Vocabulary",
+        email: process.env.EMAIL_FROM,
+      },
+      to: [
+        {
+          email: to,
+        },
+      ],
+      subject,
+      textContent,
+      htmlContent,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      `Brevo API error ${response.status}: ${JSON.stringify(data)}`,
+    );
+  }
+
+  return data;
+}
 
 // =========================
 // GỬI EMAIL XÁC THỰC TÀI KHOẢN
@@ -40,11 +56,10 @@ async function sendVerificationEmail(email, token) {
       token,
     )}`;
 
-    await transporter.sendMail({
-      from: `"English Vocabulary" <${process.env.EMAIL_USER}>`,
+    await sendBrevoEmail({
       to: email,
       subject: "Xác nhận đăng ký tài khoản",
-      text: `
+      textContent: `
 Xác nhận tài khoản English Vocabulary
 
 Cảm ơn bạn đã đăng ký tài khoản.
@@ -54,7 +69,7 @@ ${verifyLink}
 
 Link này sẽ hết hạn sau 15 phút.
       `,
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
           <h2>Xác nhận tài khoản</h2>
 
@@ -108,11 +123,10 @@ async function sendResetPasswordEmail(email, token) {
       token,
     )}`;
 
-    await transporter.sendMail({
-      from: `"English Vocabulary" <${process.env.EMAIL_USER}>`,
+    await sendBrevoEmail({
       to: email,
       subject: "Đặt lại mật khẩu",
-      text: `
+      textContent: `
 Đặt lại mật khẩu English Vocabulary
 
 Bạn đã yêu cầu đặt lại mật khẩu.
@@ -124,7 +138,7 @@ Link này sẽ hết hạn sau 15 phút.
 
 Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
       `,
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
           <h2>Đặt lại mật khẩu</h2>
 
