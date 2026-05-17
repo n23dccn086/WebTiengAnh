@@ -1,29 +1,47 @@
 // config/email.js
 
-if (!process.env.BREVO_API_KEY) {
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || "English Vocabulary";
+const EMAIL_FROM = process.env.EMAIL_FROM;
+
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+
+// =========================
+// KIỂM TRA ENV
+// =========================
+if (!BREVO_API_KEY) {
   console.warn("⚠️ Thiếu BREVO_API_KEY trong biến môi trường.");
 }
 
-if (!process.env.EMAIL_FROM) {
+if (!EMAIL_FROM) {
   console.warn("⚠️ Thiếu EMAIL_FROM trong biến môi trường.");
 }
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-
-const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
-
+// =========================
+// HÀM GỬI EMAIL BẰNG BREVO API
+// =========================
 async function sendBrevoEmail({ to, subject, textContent, htmlContent }) {
+  if (!BREVO_API_KEY) {
+    throw new Error("Thiếu BREVO_API_KEY");
+  }
+
+  if (!EMAIL_FROM) {
+    throw new Error("Thiếu EMAIL_FROM");
+  }
+
   const response = await fetch(BREVO_API_URL, {
     method: "POST",
     headers: {
       accept: "application/json",
       "content-type": "application/json",
-      "api-key": process.env.BREVO_API_KEY,
+      "api-key": BREVO_API_KEY,
     },
     body: JSON.stringify({
       sender: {
-        name: process.env.EMAIL_FROM_NAME || "English Vocabulary",
-        email: process.env.EMAIL_FROM,
+        name: EMAIL_FROM_NAME,
+        email: EMAIL_FROM,
       },
       to: [
         {
