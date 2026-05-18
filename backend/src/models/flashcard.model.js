@@ -1,100 +1,94 @@
 const db = require("../config/database");
 
 // =========================
-// LẤY TẤT CẢ FLASHCARD
-// Dùng cho GET /api/v1/vocab
+// LẤY FLASHCARD THEO BỘ THẺ (SET_ID)
+// =========================
+async function getFlashcardsBySet(setId) {
+  const [rows] = await db.execute(
+    `SELECT 
+        id,
+        set_id,
+        word,
+        meaning,
+        pronunciation,
+        example_sentence,
+        part_of_speech,
+        created_at
+     FROM flashcards
+     WHERE set_id = ?
+     ORDER BY created_at ASC`,
+    [setId]
+  );
+  return rows;
+}
+
+// =========================
+// LẤY TẤT CẢ FLASHCARD (kèm thông tin bộ thẻ)
 // =========================
 async function getAllFlashcards() {
   const [rows] = await db.execute(
     `SELECT 
         f.id,
-        f.service_id,
-        f.created_by,
+        f.set_id,
         f.word,
         f.meaning,
         f.pronunciation,
         f.example_sentence,
         f.part_of_speech,
         f.created_at,
-        f.updated_at,
-        u.full_name AS created_by_name
+        s.title AS set_title,
+        s.user_id AS set_owner_id
      FROM flashcards f
-     LEFT JOIN users u ON f.created_by = u.id
+     LEFT JOIN flashcard_sets s ON f.set_id = s.id
      ORDER BY f.created_at DESC`,
   );
-
   return rows;
 }
 
 // =========================
-// LẤY FLASHCARD THEO SERVICE
-// Dùng cho GET /api/v1/vocab/service/:serviceId
+// LẤY FLASHCARD THEO SERVICE (thông qua flashcard_sets)
 // =========================
 async function getFlashcardsByService(serviceId) {
   const [rows] = await db.execute(
     `SELECT 
         f.id,
-        f.service_id,
-        f.created_by,
+        f.set_id,
         f.word,
         f.meaning,
         f.pronunciation,
         f.example_sentence,
         f.part_of_speech,
         f.created_at,
-        f.updated_at,
-        u.full_name AS created_by_name
+        s.title AS set_title
      FROM flashcards f
-     LEFT JOIN users u ON f.created_by = u.id
-     WHERE f.service_id = ?
+     JOIN flashcard_sets s ON f.set_id = s.id
+     WHERE s.service_id = ?
      ORDER BY f.created_at DESC`,
-    [serviceId],
+    [serviceId]
   );
-
   return rows;
 }
 
 // =========================
-// THÊM FLASHCARD HỆ THỐNG
-// Dùng cho POST /api/v1/vocab
-// Chỉ ADMIN / SUPER_ADMIN gọi được ở route
+// THÊM FLASHCARD MỚI VÀO BỘ THỂ
 // =========================
 async function addFlashcard({
-  service_id,
-  created_by,
+  set_id,
   word,
   meaning,
-  pronunciation,
-  example_sentence,
-  part_of_speech,
+  pronunciation = null,
+  example_sentence = null,
+  part_of_speech = null,
 }) {
   const [result] = await db.execute(
     `INSERT INTO flashcards
-     (
-        service_id,
-        created_by,
-        word,
-        meaning,
-        pronunciation,
-        example_sentence,
-        part_of_speech
-     )
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      service_id,
-      created_by,
-      word,
-      meaning,
-      pronunciation,
-      example_sentence,
-      part_of_speech,
-    ],
+     (set_id, word, meaning, pronunciation, example_sentence, part_of_speech)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [set_id, word, meaning, pronunciation, example_sentence, part_of_speech]
   );
-
   return {
     id: result.insertId,
-    service_id,
-    created_by,
+    set_id,
     word,
     meaning,
     pronunciation,
@@ -105,80 +99,50 @@ async function addFlashcard({
 
 // =========================
 // CẬP NHẬT FLASHCARD
-// Hiện routes/vocabRoutes.js chưa dùng,
-// nhưng để sẵn cho chức năng sửa flashcard sau này
 // =========================
 async function updateFlashcard(
   flashcardId,
-  {
-    service_id,
-    word,
-    meaning,
-    pronunciation,
-    example_sentence,
-    part_of_speech,
-  },
+  { word, meaning, pronunciation, example_sentence, part_of_speech }
 ) {
   const [result] = await db.execute(
     `UPDATE flashcards
-     SET service_id = COALESCE(?, service_id),
-         word = COALESCE(?, word),
+     SET word = COALESCE(?, word),
          meaning = COALESCE(?, meaning),
          pronunciation = COALESCE(?, pronunciation),
          example_sentence = COALESCE(?, example_sentence),
          part_of_speech = COALESCE(?, part_of_speech)
      WHERE id = ?`,
-    [
-      service_id || null,
-      word || null,
-      meaning || null,
-      pronunciation || null,
-      example_sentence || null,
-      part_of_speech || null,
-      flashcardId,
-    ],
+    [word, meaning, pronunciation, example_sentence, part_of_speech, flashcardId]
   );
-
   return result.affectedRows > 0;
 }
 
 // =========================
-// XÓA FLASHCARD HỆ THỐNG
-// Dùng cho DELETE /api/v1/vocab/:id
+// XÓA FLASHCARD
 // =========================
 async function deleteFlashcard(flashcardId) {
   const [result] = await db.execute(
-    `DELETE FROM flashcards
-     WHERE id = ?`,
-    [flashcardId],
+    `DELETE FROM flashcards WHERE id = ?`,
+    [flashcardId]
   );
-
   return result.affectedRows > 0;
 }
 
 // =========================
-// THÊM FLASHCARD VÀO DANH SÁCH HỌC CỦA USER
-// Dùng cho POST /api/v1/vocab/learn/:flashcardId
+// THÊM FLASHCARD VÀO DANH SÁCH HỌC CỦA USER (user_flashcards)
 // =========================
 async function addToUserFlashcards(userId, flashcardId) {
   const [result] = await db.execute(
-    `INSERT INTO user_flashcards
-     (
-        user_id,
-        flashcard_id
-     )
-     VALUES (?, ?)
-     ON DUPLICATE KEY UPDATE
-        updated_at = CURRENT_TIMESTAMP`,
-    [userId, flashcardId],
+    `INSERT INTO user_flashcards (user_id, flashcard_id, next_review_date)
+     VALUES (?, ?, NOW())
+     ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP`,
+    [userId, flashcardId]
   );
-
   return result.affectedRows > 0;
 }
 
 // =========================
 // LẤY DANH SÁCH FLASHCARD USER ĐANG HỌC
-// Có thể dùng cho trang "Từ vựng của tôi"
 // =========================
 async function getUserFlashcards(userId) {
   const [rows] = await db.execute(
@@ -186,51 +150,62 @@ async function getUserFlashcards(userId) {
         uf.id AS user_flashcard_id,
         uf.user_id,
         uf.flashcard_id,
-        uf.created_at,
-        uf.updated_at,
-
-        f.service_id,
+        uf.status,
+        uf.repetition_count,
+        uf.ease_factor,
+        uf.interval_days,
+        uf.next_review_date,
+        uf.last_reviewed_at,
         f.word,
         f.meaning,
         f.pronunciation,
         f.example_sentence,
-        f.part_of_speech
+        f.part_of_speech,
+        fs.title AS set_title
      FROM user_flashcards uf
      JOIN flashcards f ON uf.flashcard_id = f.id
+     JOIN flashcard_sets fs ON f.set_id = fs.id
      WHERE uf.user_id = ?
-     ORDER BY uf.created_at DESC`,
-    [userId],
+     ORDER BY uf.next_review_date ASC`,
+    [userId]
   );
-
   return rows;
 }
 
 // =========================
 // KIỂM TRA FLASHCARD CÓ TỒN TẠI KHÔNG
-// Dùng khi cần validate nâng cao
 // =========================
 async function findFlashcardById(flashcardId) {
   const [rows] = await db.execute(
     `SELECT 
         id,
-        service_id,
-        created_by,
+        set_id,
         word,
         meaning,
         pronunciation,
         example_sentence,
         part_of_speech,
-        created_at,
-        updated_at
+        created_at
      FROM flashcards
      WHERE id = ?`,
-    [flashcardId],
+    [flashcardId]
   );
+  return rows[0] || null;
+}
 
+// =========================
+// KIỂM TRA FLASHCARD ĐÃ TỒN TẠI TRONG BỘ THẺ CHƯA
+// =========================
+async function findFlashcardBySetAndWord(setId, word) {
+  const [rows] = await db.execute(
+    `SELECT id FROM flashcards WHERE set_id = ? AND word = ?`,
+    [setId, word]
+  );
   return rows[0] || null;
 }
 
 module.exports = {
+  getFlashcardsBySet,
   getAllFlashcards,
   getFlashcardsByService,
   addFlashcard,
@@ -239,4 +214,5 @@ module.exports = {
   addToUserFlashcards,
   getUserFlashcards,
   findFlashcardById,
+  findFlashcardBySetAndWord,
 };

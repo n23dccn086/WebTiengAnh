@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
+import useSpeech from '../hooks/useSpeech';
 import { getFlashcardsByServiceApi, submitReviewApi } from '../services/flashcardApi';
 import styles from './FlashcardStudy.module.css';
 
@@ -8,6 +9,7 @@ const FlashcardStudy = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+  const { speak } = useSpeech();
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -22,6 +24,12 @@ const FlashcardStudy = () => {
     const data = await getFlashcardsByServiceApi(serviceId);
     setCards(data);
     setLoading(false);
+  };
+
+  const playPronunciation = () => {
+    if (cards[currentIndex]?.word) {
+      speak(cards[currentIndex].word);
+    }
   };
 
   const handleReview = async (rating) => {
@@ -61,6 +69,13 @@ const FlashcardStudy = () => {
         <div className={`${styles.card} ${flipped ? styles.flipped : ''}`}>
           <div className={styles.front}>
             <div className={styles.word}>{current.word}</div>
+            <button 
+              className={styles.speakBtn}
+              onClick={(e) => { e.stopPropagation(); playPronunciation(); }}
+              title="Phát âm"
+            >
+              🔊
+            </button>
             <div className={styles.hint}>
               {!flipped && (showHint ? '🔍 Nhấn vào thẻ để lật' : '🤔 Bạn đã nhớ chưa?')}
             </div>

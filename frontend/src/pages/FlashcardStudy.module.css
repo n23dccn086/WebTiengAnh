@@ -185,3 +185,16 @@
 .logoutBtn:hover {
   background: rgba(255,50,50,1);
 }
+
+.speakBtn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  color: white;
+  transition: transform 0.2s;
+}
+.speakBtn:hover {
+  transform: scale(1.1);
+}
