@@ -53,10 +53,17 @@ const resetPasswordSchema = Joi.object({
   }),
 });
 
+const refreshTokenSchema = Joi.object({
+  refresh_token: Joi.string().required().messages({
+    'any.required': 'refresh_token không được để trống',
+  }),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   verifyEmailSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  refreshTokenSchema,
 };

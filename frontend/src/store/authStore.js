@@ -6,10 +6,12 @@ import {
   verifyEmailApi,
   forgotPasswordApi,
   resetPasswordApi,
+  logoutApi,
 } from "../services/authApi";
 
 const clearAuthStorage = () => {
   localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
   localStorage.removeItem("auth-storage");
 };
@@ -19,6 +21,7 @@ const useAuthStore = create(
     (set) => ({
       user: null,
       accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
 
       login: async (email, password) => {
@@ -28,20 +31,23 @@ const useAuthStore = create(
           set({
             user: null,
             accessToken: null,
+            refreshToken: null,
             isAuthenticated: false,
           });
 
           const result = await loginApi(email, password);
 
           if (result.status === "success") {
-            const { accessToken, user } = result.data;
+            const { accessToken, refreshToken, user } = result.data;
 
             localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
             localStorage.setItem("user", JSON.stringify(user));
 
             set({
               user,
               accessToken,
+              refreshToken,
               isAuthenticated: true,
             });
 
@@ -56,6 +62,7 @@ const useAuthStore = create(
           set({
             user: null,
             accessToken: null,
+            refreshToken: null,
             isAuthenticated: false,
           });
 
@@ -69,6 +76,7 @@ const useAuthStore = create(
           set({
             user: null,
             accessToken: null,
+            refreshToken: null,
             isAuthenticated: false,
           });
 
@@ -116,7 +124,8 @@ const useAuthStore = create(
       },
 
       forgotPassword: async (email) => {
-        try {const result = await forgotPasswordApi(email);
+        try {
+          const result = await forgotPasswordApi(email);
 
           if (result.status === "success") {
             return { success: true, message: result.message };
@@ -149,12 +158,21 @@ const useAuthStore = create(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (refreshToken) {
+          try {
+            await logoutApi(refreshToken);
+          } catch (e) {
+            // bỏ qua lỗi nếu token đã hết hạn
+          }
+        }
         clearAuthStorage();
 
         set({
           user: null,
           accessToken: null,
+          refreshToken: null,
           isAuthenticated: false,
         });
       },
@@ -164,6 +182,7 @@ const useAuthStore = create(
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     },

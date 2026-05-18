@@ -24,3 +24,13 @@ export const resetPasswordApi = async (token, new_password) => {
   const res = await apiClient.post('/auth/reset-password', { token, new_password });
   return res.data;
 };
+
+export const logoutApi = async (refreshToken) => {
+  const res = await apiClient.post('/auth/logout', { refresh_token: refreshToken });
+  return res.data;
+};
+
+export const refreshTokenApi = async (refreshToken) => {
+  const res = await apiClient.post('/auth/refresh-token', { refresh_token: refreshToken });
+  return res.data;
+};

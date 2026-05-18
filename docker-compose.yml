@@ -12,7 +12,8 @@ services:
       - mysql_data:/var/lib/mysql
       - ./database/databasedoan.sql:/docker-entrypoint-initdb.d/databasedoan.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -31,10 +32,12 @@ services:
       DB_USER: "root"
       DB_PASSWORD: "Hao113205,"
       DB_NAME: "edtech_db"
-      JWT_SECRET: "Lap_trinh_web_do_an_cuoi_mon_2026"
+      JWT_SECRET: "Lap_trinh_web_do_an_cuoi_mon_2026!@#$%"
       FRONTEND_URL: "http://localhost:5173"
-      EMAIL_USER: "vohoang131005@gmail.com"
-      EMAIL_PASS: "rokttyrtpvghslvh"
+      EMAIL_PROVIDER: "brevo"
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      EMAIL_FROM: "vohoang131005@gmail.com"
+      EMAIL_FROM_NAME: "EngVocab"
     depends_on:
       mysql:
         condition: service_healthy
