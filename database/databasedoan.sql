@@ -1,7 +1,9 @@
 -- ==========================================
 -- KHỞI TẠO DATABASE
 -- ==========================================
-CREATE DATABASE IF NOT EXISTS edtech_db
+DROP DATABASE IF EXISTS edtech_db;
+
+CREATE DATABASE edtech_db
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
