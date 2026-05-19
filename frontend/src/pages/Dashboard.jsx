@@ -1,3 +1,4 @@
+// frontend/src/pages/Dashboard.jsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -8,7 +9,6 @@ const Dashboard = () => {
   const { user, fetchProfile, logout } = useAuthStore();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showSecret, setShowSecret] = useState(false);
 
   useEffect(() => {
     if (!user?.id) fetchProfile();
@@ -30,7 +30,7 @@ const Dashboard = () => {
 
   return (
     <div className={styles.container}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+      <div className={styles.topBar}>
         <button onClick={logout} className={styles.logoutBtn}>🚪 Đăng xuất</button>
       </div>
 
@@ -54,14 +54,6 @@ const Dashboard = () => {
           <div className={styles.statIcon}>⭐</div>
           <h3>Điểm trung bình</h3>
           <p>{user?.avg_score || 85}%</p>
-          <button 
-            className={styles.eyeBtn} 
-            onClick={() => setShowSecret(!showSecret)}
-            title="Xem bí mật điểm số"
-          >
-            {showSecret ? '🙈' : '👁️'}
-          </button>
-          {showSecret && <div className={styles.secret}>🎯 Bạn giỏi lắm!</div>}
         </div>
       </div>
 
@@ -74,15 +66,17 @@ const Dashboard = () => {
               {svc.id === 2 && '🎧'}
               {svc.id === 3 && '🌏'}
               {svc.id === 4 && '📖'}
+              {svc.id === 5 && '🚀'}
+              {svc.id === 6 && '📄'}
             </div>
             <h3>{svc.title}</h3>
             <p>{svc.description}</p>
-            <div className={styles.buttons}>
-              <Link to={`/flashcards/service/${svc.id}`} className={styles.btn}>
+            <div className={styles.buttonGroup}>
+              <Link to={`/flashcards/service/${svc.id}`} className={styles.btnLearn}>
                 📖 Học từ vựng
               </Link>
-              <Link to={`/quizzes/service/${svc.id}`} className={styles.btnOutline}>
-                📝 Làm quiz
+              <Link to={`/quizzes?service_id=${svc.id}`} className={styles.btnQuiz}>
+                📝 Làm bài kiểm tra
               </Link>
             </div>
           </div>

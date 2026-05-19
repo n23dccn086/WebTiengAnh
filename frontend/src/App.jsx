@@ -16,6 +16,8 @@ import StudyTest from './pages/StudyTest';
 import ProfilePage from './features/profile/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuthStore from './store/authStore';
+import Quizzes from './pages/Quizzes';
+import QuizDetail from './pages/QuizDetail';
 import './App.css'; // file CSS toàn cục (tạo bên dưới)
 
 function Navbar() {
@@ -65,6 +67,8 @@ function App() {
           <Route path="/sets/:id/practice" element={<ProtectedRoute><StudyPractice /></ProtectedRoute>} />
           <Route path="/sets/:id/test" element={<ProtectedRoute><StudyTest /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/quizzes" element={<ProtectedRoute><Quizzes /></ProtectedRoute>} />
+<Route path="/quizzes/:id" element={<ProtectedRoute><QuizDetail /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

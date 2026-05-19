@@ -70,7 +70,7 @@ async function getFlashcardsByService(serviceId) {
 }
 
 // =========================
-// THÊM FLASHCARD MỚI VÀO BỘ THỂ
+// THÊM FLASHCARD MỚI VÀO BỘ THẺ
 // =========================
 async function addFlashcard({
   set_id,

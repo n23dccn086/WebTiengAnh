@@ -12,15 +12,17 @@ const createSet = async ({ user_id, service_id, title, description, is_system = 
 const getSetsByUser = async (userId, { page = 1, limit = 20 }) => {
   const offset = (page - 1) * limit;
   const [rows] = await db.execute(
-    `SELECT s.*, serv.title as service_title, COUNT(f.id) as total_flashcards
+    `SELECT s.*, serv.title as service_title, COUNT(f.id) as total_flashcards,
+            us.is_srs_enabled
      FROM flashcard_sets s
      LEFT JOIN services serv ON s.service_id = serv.id
      LEFT JOIN flashcards f ON f.set_id = s.id
+     LEFT JOIN user_saved_sets us ON us.set_id = s.id AND us.user_id = ?
      WHERE s.user_id = ? OR s.is_system = TRUE
      GROUP BY s.id
      ORDER BY s.created_at DESC
      LIMIT ? OFFSET ?`,
-    [userId, limit, offset]
+    [userId, userId, limit, offset]
   );
   const [countRows] = await db.execute(
     `SELECT COUNT(*) as total FROM flashcard_sets WHERE user_id = ? OR is_system = TRUE`,

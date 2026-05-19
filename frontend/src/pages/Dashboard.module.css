@@ -6,16 +6,40 @@
   color: white;
 }
 
+.topBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.logoutBtn {
+  background: rgba(255,80,80,0.9);
+  border: none;
+  padding: 8px 20px;
+  border-radius: 40px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.logoutBtn:hover {
+  background: rgba(255,50,50,1);
+  transform: scale(1.02);
+}
+
 .welcome {
   text-align: center;
   margin-bottom: 2rem;
 }
-
 .welcome h1 {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.welcome p {
+  font-size: 1.2rem;
+  opacity: 0.9;
 }
 
 .stats {
@@ -25,7 +49,6 @@
   margin-bottom: 3rem;
   flex-wrap: wrap;
 }
-
 .statCard {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
@@ -35,50 +58,23 @@
   min-width: 180px;
   box-shadow: 0 25px 45px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.2);
-  position: relative;
   transition: transform 0.2s;
 }
-
 .statCard:hover {
   transform: translateY(-5px);
 }
-
 .statIcon {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
 }
-
 .statCard h3 {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
-
 .statCard p {
   font-size: 2rem;
   font-weight: 700;
-}
-
-.eyeBtn {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  color: white;
-  transition: 0.2s;
-}
-
-.eyeBtn:hover {
-  transform: scale(1.1);
-}
-
-.secret {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  background: rgba(0,0,0,0.3);
-  border-radius: 20px;
-  padding: 4px 8px;
 }
 
 .sectionTitle {
@@ -90,10 +86,9 @@
 
 .servicesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
 }
-
 .serviceCard {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
@@ -102,58 +97,62 @@
   transition: transform 0.2s;
   border: 1px solid rgba(255,255,255,0.2);
 }
-
 .serviceCard:hover {
   transform: translateY(-5px);
 }
-
 .serviceIcon {
-  font-size: 2rem;
+  font-size: 2.5rem;
   margin-bottom: 0.5rem;
 }
-
 .serviceCard h3 {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
-
 .serviceCard p {
   opacity: 0.9;
   margin-bottom: 1rem;
+  line-height: 1.4;
 }
 
-.buttons {
+.buttonGroup {
   display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: space-between;
 }
-
-.btn, .btnOutline {
-  padding: 8px 16px;
-  border-radius: 40px;
-  text-decoration: none;
-  font-weight: bold;
-  text-align: center;
-  transition: 0.2s;
+.btnLearn, .btnQuiz {
   flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  border-radius: 40px;
+  font-weight: 600;
   font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  cursor: pointer;
 }
-
-.btn {
-  background: linear-gradient(90deg, #ff9a9e, #fad0c4);
-  color: #2c3e66;
-}
-
-.btnOutline {
-  background: transparent;
-  border: 1px solid white;
+.btnLearn {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
   color: white;
+  border: none;
 }
-
-.btn:hover, .btnOutline:hover {
-  transform: scale(1.02);
-  background: rgba(255,255,255,0.2);
+.btnLearn:hover {
+  background: linear-gradient(90deg, #2563eb, #1e3a8a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+.btnQuiz {
+  background: rgba(255,255,255,0.25);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.6);
+  backdrop-filter: blur(4px);
+}
+.btnQuiz:hover {
+  background: rgba(255,255,255,0.4);
+  transform: translateY(-2px);
+  border-color: white;
 }
 
 .loading {
@@ -161,19 +160,4 @@
   padding: 4rem;
   font-size: 1.5rem;
   color: white;
-}
-
-.logoutBtn {
-  background: rgba(255,80,80,0.8);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 50px;
-  color: white;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.2s;
-}
-
-.logoutBtn:hover {
-  background: rgba(255,50,50,1);
 }
