@@ -59,3 +59,24 @@ exports.getSetSettings = catchAsync(async (req, res) => {
   const settings = await flashcardSetModel.getSetSettings(req.user.id, setId);
   successResponse(res, "Lấy cài đặt SRS thành công", settings);
 });
+
+// ============ THÊM HÀM MỚI ============
+exports.addFlashcardToSet = catchAsync(async (req, res) => {
+  const setId = parseInt(req.params.id);
+  const { word, meaning, pronunciation, example_sentence, part_of_speech } = req.body;
+  if (!word || !meaning) throw new AppError(400, "Thiếu word hoặc meaning", "MISSING_FIELDS");
+
+  // Kiểm tra bộ thẻ thuộc quyền user hiện tại (hoặc is_system)
+  const set = await flashcardSetModel.getSetById(setId, req.user.id);
+  if (!set) throw new AppError(404, "Bộ thẻ không tồn tại hoặc không thuộc quyền sở hữu", "SET_NOT_FOUND");
+
+  const newFlashcard = await flashcardModel.addFlashcard({
+    set_id: setId,
+    word,
+    meaning,
+    pronunciation: pronunciation || null,
+    example_sentence: example_sentence || null,
+    part_of_speech: part_of_speech || null,
+  });
+  successResponse(res, "Thêm flashcard thành công", newFlashcard, 201);
+});

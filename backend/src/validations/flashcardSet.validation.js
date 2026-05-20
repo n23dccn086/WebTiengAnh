@@ -16,4 +16,18 @@ const toggleSrsSchema = Joi.object({
   daily_new_words: Joi.number().integer().min(1).max(100).optional(),
 });
 
-module.exports = { createSetSchema, updateSetSchema, toggleSrsSchema };
+// Schema mới cho thêm flashcard vào bộ thẻ
+const createFlashcardSchema = Joi.object({
+  word: Joi.string().min(1).required(),
+  meaning: Joi.string().min(1).required(),
+  pronunciation: Joi.string().allow('', null).optional(),
+  example_sentence: Joi.string().allow('', null).optional(),
+  part_of_speech: Joi.string().allow('', null).optional(),
+});
+
+module.exports = {
+  createSetSchema,
+  updateSetSchema,
+  toggleSrsSchema,
+  createFlashcardSchema,
+};

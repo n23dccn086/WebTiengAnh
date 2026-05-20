@@ -14,7 +14,7 @@ export const getFlashcardsByServiceApi = async (serviceId) => {
   }
 };
 
-// Thêm flashcard vào danh sách học của user
+// Thêm flashcard vào danh sách học của user (user_flashcards)
 export const addFlashcardToUserApi = async (flashcardId) => {
   try {
     await apiClient.post(`/flashcards/learn/${flashcardId}`);
@@ -43,5 +43,18 @@ export const getFlashcardsBySetApi = async (setId) => {
 // Lấy chi tiết flashcard
 export const getFlashcardByIdApi = async (id) => {
   const res = await apiClient.get(`/flashcards/${id}`);
+  return res.data.data;
+};
+
+// ========== CÁC HÀM MỚI CHO CỤM 1 ==========
+// Tự động điền thông tin từ vựng qua Dictionary API
+export const autoFillWord = async (word) => {
+  const res = await apiClient.post('/dictionary/auto-fill', { word });
+  return res.data.data;
+};
+
+// Thêm flashcard trực tiếp vào bộ thẻ (set_id)
+export const addFlashcardToSet = async (setId, flashcardData) => {
+  const res = await apiClient.post(`/flashcard-sets/${setId}/flashcards`, flashcardData);
   return res.data.data;
 };

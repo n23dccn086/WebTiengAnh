@@ -5,7 +5,7 @@ import { getUserSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
 import styles from "./Library.module.css";
 
 const Library = () => {
-  const { user, logout } = useAuthStore();
+  const { logout } = useAuthStore();
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,25 +40,33 @@ const Library = () => {
         <Link to="/sets/create" className={styles.createBtn}>+ Tạo bộ thẻ mới</Link>
         <button onClick={logout} className={styles.logoutBtn}>Đăng xuất</button>
       </div>
-      <div className={styles.grid}>
-        {sets.map(set => (
-          <div key={set.id} className={styles.card}>
-            <h3>{set.title}</h3>
-            <p>{set.description || "Không có mô tả"}</p>
-            <div className={styles.meta}>
-              <span>📖 {set.total_flashcards} từ</span>
-              <span>📂 {set.service_title}</span>
+
+      {sets.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p>😢 Bạn chưa có bộ thẻ nào.</p>
+          <Link to="/sets/create" className={styles.createBtnLarge}>+ Tạo bộ thẻ đầu tiên</Link>
+        </div>
+      ) : (
+        <div className={styles.grid}>
+          {sets.map(set => (
+            <div key={set.id} className={styles.card}>
+              <h3>{set.title}</h3>
+              <p>{set.description || "Không có mô tả"}</p>
+              <div className={styles.meta}>
+                <span>📖 {set.total_flashcards} từ</span>
+                <span>📂 {set.service_title}</span>
+              </div>
+              <div className={styles.actions}>
+                <Link to={`/sets/${set.id}`} className={styles.btn}>Xem chi tiết</Link>
+                <button onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)} className={styles.srsBtn}>
+                  {set.is_srs_enabled ? "🔁 Đang bật SRS" : "⏸️ Bật SRS"}
+                </button>
+                <button onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>Xóa</button>
+              </div>
             </div>
-            <div className={styles.actions}>
-              <Link to={`/sets/${set.id}`} className={styles.btn}>Xem chi tiết</Link>
-              <button onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)} className={styles.srsBtn}>
-                {set.is_srs_enabled ? "🔁 Đang bật SRS" : "⏸️ Bật SRS"}
-              </button>
-              <button onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>Xóa</button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       <Link to="/dashboard" className={styles.backBtn}>← Về Dashboard</Link>
     </div>
   );

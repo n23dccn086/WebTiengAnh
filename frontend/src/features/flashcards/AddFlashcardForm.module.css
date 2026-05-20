@@ -1,0 +1,53 @@
+.container {
+  background: rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+.row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+.field {
+  flex: 1;
+  margin-bottom: 1rem;
+}
+.field label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+.field input, .field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 40px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.autoFillBtn {
+  background: #3b82f6;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 40px;
+  color: white;
+  cursor: pointer;
+  height: 42px;
+}
+.submitBtn {
+  background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+  border: none;
+  padding: 10px;
+  border-radius: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+.error {
+  background: rgba(255,80,80,0.8);
+  padding: 8px;
+  border-radius: 40px;
+  text-align: center;
+  margin-bottom: 1rem;
+}

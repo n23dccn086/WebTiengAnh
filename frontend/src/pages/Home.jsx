@@ -69,21 +69,24 @@ const Home = () => {
                 {svc.id === 2 && '🎧'}
                 {svc.id === 3 && '🌏'}
                 {svc.id === 4 && '📖'}
+                {svc.id === 5 && '🚀'}
+                {svc.id === 6 && '📄'}
               </div>
               <h3>{svc.title}</h3>
               <p>{svc.description}</p>
-              <div className={styles.buttons}>
-                {!isAuthenticated ? (
-                  <>
-                    <Link to="/login" className={styles.btnGuest}>📖 Học từ vựng</Link>
-                    <Link to="/login" className={styles.btnOutlineGuest}>📝 Làm quiz</Link>
-                  </>
-                ) : (
-                  <>
-                    <Link to={`/flashcards/service/${svc.id}`} className={styles.btn}>📖 Học từ vựng</Link>
-                    <Link to={`/quizzes/service/${svc.id}`} className={styles.btnOutline}>📝 Làm quiz</Link>
-                  </>
-                )}
+              <div className={styles.buttonGroup}>
+                <Link 
+                  to={isAuthenticated ? `/library?service_id=${svc.id}` : "/login"} 
+                  className={styles.btnLearn}
+                >
+                  📖 Học từ vựng
+                </Link>
+                <Link 
+                  to={isAuthenticated ? `/quizzes?service_id=${svc.id}` : "/login"} 
+                  className={styles.btnQuiz}
+                >
+                  📝 Làm bài kiểm tra
+                </Link>
               </div>
             </div>
           ))}

@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getSetDetail } from "../services/flashcardSetApi";
+import AddFlashcardForm from "../features/flashcards/AddFlashcardForm";
 import styles from "./SetDetail.module.css";
 
 const SetDetail = () => {
   const { id } = useParams();
   const [set, setSet] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     loadSet();
-  }, [id]);
+  }, [id, refresh]);
 
   const loadSet = async () => {
     const data = await getSetDetail(id);
@@ -29,19 +31,20 @@ const SetDetail = () => {
         <div className={styles.meta}>📦 {set.total_flashcards} từ vựng</div>
       </div>
       <div className={styles.actions}>
-        <Link to={`/sets/${id}/flashcard`} className={styles.btn}>📇 Học lật thẻ</Link>
+        <Link to={`/sets/${id}/flashcard-basic`} className={styles.btn}>📇 Học lật thẻ</Link>
         <Link to={`/sets/${id}/practice`} className={styles.btn}>✍️ Practice (ABCD)</Link>
         <Link to={`/sets/${id}/test`} className={styles.btn}>📝 Test (có lưu)</Link>
       </div>
       <div className={styles.flashcardList}>
         <h3>Danh sách từ vựng</h3>
-        {set.flashcards.map(fc => (
-          <div key={fc.id} className={fcItem}>
-            <span className={fcWord}>{fc.word}</span>
-            <span className={fcMeaning}>{fc.meaning}</span>
+        {set.flashcards && set.flashcards.map(fc => (
+          <div key={fc.id} className={styles.fcItem}>
+            <span className={styles.fcWord}>{fc.word}</span>
+            <span className={styles.fcMeaning}>{fc.meaning}</span>
           </div>
         ))}
       </div>
+      <AddFlashcardForm setId={id} onAdded={() => setRefresh(prev => !prev)} />
     </div>
   );
 };

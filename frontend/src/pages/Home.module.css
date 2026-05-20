@@ -142,32 +142,53 @@
   margin-bottom: 0.5rem;
 }
 
-.buttons {
+/* ========== CẬP NHẬT NÚT GIỐNG DASHBOARD ========== */
+.buttonGroup {
   display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: space-between;
 }
 
-.btnGuest, .btnOutlineGuest {
-  padding: 8px 16px;
+.btnLearn, .btnQuiz {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
   border-radius: 40px;
-  text-decoration: none;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  cursor: pointer;
 }
 
-.btnGuest {
-  background: #ff9a9e;
-  color: #2c3e66;
-}
-
-.btnOutlineGuest {
-  background: transparent;
-  border: 1px solid white;
+.btnLearn {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
   color: white;
+  border: none;
 }
 
+.btnLearn:hover {
+  background: linear-gradient(90deg, #2563eb, #1e3a8a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+.btnQuiz {
+  background: rgba(255,255,255,0.25);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.6);
+  backdrop-filter: blur(4px);
+}
+
+.btnQuiz:hover {
+  background: rgba(255,255,255,0.4);
+  transform: translateY(-2px);
+  border-color: white;
+}
+
+/* ========== CÁC STYLE CŨ GIỮ LẠI (NẾU CẦN) ========== */
 .contactForm {
   max-width: 500px;
   margin: 0 auto;

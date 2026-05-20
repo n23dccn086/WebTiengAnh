@@ -13,6 +13,7 @@ import Library from "./pages/Library";
 import SetDetail from "./pages/SetDetail";
 import CreateSetForm from "./features/flashcards/CreateSetForm";
 import FlashcardStudy from "./pages/FlashcardStudy";
+import FlashcardStudyBasic from "./pages/FlashcardStudyBasic";
 import StudyPractice from "./pages/StudyPractice";
 import StudyTest from "./pages/StudyTest";
 import ProfilePage from "./features/profile/ProfilePage";
@@ -109,7 +110,6 @@ function App() {
             }
           />
 
-          {/* Route này khớp với nút "Học từ vựng" ở Home.jsx */}
           <Route
             path="/flashcards/service/:serviceId"
             element={
@@ -142,6 +142,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <FlashcardStudy />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Route mới cho học lật thẻ cơ bản (không SRS) */}
+          <Route
+            path="/sets/:id/flashcard-basic"
+            element={
+              <ProtectedRoute>
+                <FlashcardStudyBasic />
               </ProtectedRoute>
             }
           />
@@ -182,7 +192,6 @@ function App() {
             }
           />
 
-          {/* Route này khớp với nút "Làm quiz" ở Home.jsx */}
           <Route
             path="/quizzes/service/:serviceId"
             element={
@@ -201,7 +210,6 @@ function App() {
             }
           />
 
-          {/* Nếu đường dẫn sai thì quay về trang chủ */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
