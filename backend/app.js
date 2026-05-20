@@ -5,26 +5,16 @@ const AppError = require("./src/utils/appError");
 
 const app = express();
 
-// =========================
-// CORS CONFIG
-// =========================
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-
-  // Domain frontend Railway cũ
   "https://frontend-production-6c8e.up.railway.app",
-
-  // Domain frontend Railway mới
   "https://frontend-production-5b45.up.railway.app",
-
-  // Domain frontend lấy từ biến môi trường Railway
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Cho phép request không có origin, ví dụ Postman, server-to-server
     if (!origin) {
       return callback(null, true);
     }
@@ -41,8 +31,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// Không thêm app.options("*", cors()) vì dòng đó từng làm backend crash
 
 app.use(express.json());
 
