@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { getServicesApi } from '../services/serviceApi';
-import useAuthStore from '../store/authStore';
-import styles from './Home.module.css';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getServicesApi } from "../services/serviceApi";
+import useAuthStore from "../store/authStore";
+import styles from "./Home.module.css";
 
 const Home = () => {
   const [services, setServices] = useState([]);
@@ -31,30 +31,50 @@ const Home = () => {
           <a href="#contact">Liên hệ</a>
           {!isAuthenticated ? (
             <>
-              <Link to="/login" className={styles.navBtn}>Đăng nhập</Link>
-              <Link to="/register" className={styles.navBtnPrimary}>Đăng ký</Link>
+              <Link to="/login" className={styles.navBtn}>
+                Đăng nhập
+              </Link>
+              <Link to="/register" className={styles.navBtnPrimary}>
+                Đăng ký
+              </Link>
             </>
           ) : (
             <>
               <span className={styles.userName}>👋 {user?.full_name}</span>
-              <Link to="/dashboard" className={styles.navBtn}>Dashboard</Link>
-              <button onClick={logout} className={styles.logoutBtn}>Đăng xuất</button>
+              <Link to="/dashboard" className={styles.navBtn}>
+                Dashboard
+              </Link>
+              <button onClick={logout} className={styles.logoutBtn}>
+                Đăng xuất
+              </button>
             </>
           )}
         </nav>
       </header>
 
       <section className={styles.hero}>
-        <h1>Chinh phục tiếng Anh <br />với <span>EngVocab</span></h1>
-        <p>Học từ vựng thông minh bằng Flashcard SRS, kiểm tra trình độ qua quiz, và sử dụng AI để tạo tài liệu cá nhân hóa.</p>
+        <h1>
+          Chinh phục tiếng Anh <br />
+          với <span>EngVocab</span>
+        </h1>
+        <p>
+          Học từ vựng thông minh bằng Flashcard SRS, kiểm tra trình độ qua quiz,
+          và sử dụng AI để tạo tài liệu cá nhân hóa.
+        </p>
         <div className={styles.heroButtons}>
           {!isAuthenticated ? (
             <>
-              <Link to="/register" className={styles.btnPrimary}>Bắt đầu ngay</Link>
-              <Link to="/login" className={styles.btnOutline}>Đã có tài khoản?</Link>
+              <Link to="/register" className={styles.btnPrimary}>
+                Bắt đầu ngay
+              </Link>
+              <Link to="/login" className={styles.btnOutline}>
+                Đã có tài khoản?
+              </Link>
             </>
           ) : (
-            <Link to="/dashboard" className={styles.btnPrimary}>Vào Dashboard</Link>
+            <Link to="/dashboard" className={styles.btnPrimary}>
+              Vào Dashboard
+            </Link>
           )}
         </div>
       </section>
@@ -62,27 +82,29 @@ const Home = () => {
       <section id="services" className={styles.servicesSection}>
         <h2>✨ Dịch vụ học tập</h2>
         <div className={styles.servicesGrid}>
-          {services.map(svc => (
+          {services.map((svc) => (
             <div key={svc.id} className={styles.serviceCard}>
               <div className={styles.serviceIcon}>
-                {svc.id === 1 && '🔤'}
-                {svc.id === 2 && '🎧'}
-                {svc.id === 3 && '🌏'}
-                {svc.id === 4 && '📖'}
-                {svc.id === 5 && '🚀'}
-                {svc.id === 6 && '📄'}
+                {svc.id === 1 && "🔤"}
+                {svc.id === 2 && "🎧"}
+                {svc.id === 3 && "🌏"}
+                {svc.id === 4 && "📖"}
+                {svc.id === 5 && "🚀"}
+                {svc.id === 6 && "📄"}
               </div>
               <h3>{svc.title}</h3>
               <p>{svc.description}</p>
               <div className={styles.buttonGroup}>
-                <Link 
-                  to={isAuthenticated ? `/library?service_id=${svc.id}` : "/login"} 
+                <Link
+                  to={`/system-decks/${svc.id}`}
                   className={styles.btnLearn}
                 >
                   📖 Học từ vựng
                 </Link>
-                <Link 
-                  to={isAuthenticated ? `/quizzes?service_id=${svc.id}` : "/login"} 
+                <Link
+                  to={
+                    isAuthenticated ? `/quizzes?service_id=${svc.id}` : "/login"
+                  }
                   className={styles.btnQuiz}
                 >
                   📝 Làm bài kiểm tra
@@ -116,7 +138,10 @@ const Home = () => {
 
       <section id="contact" className={styles.contactSection}>
         <h2>📬 Liên hệ</h2>
-        <form className={styles.contactForm} onSubmit={(e) => e.preventDefault()}>
+        <form
+          className={styles.contactForm}
+          onSubmit={(e) => e.preventDefault()}
+        >
           <input type="text" placeholder="Họ tên" required />
           <input type="email" placeholder="Email" required />
           <textarea rows="3" placeholder="Nội dung"></textarea>

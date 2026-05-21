@@ -34,22 +34,32 @@ const AddFlashcardForm = ({ setId, onAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     if (!word.trim() || !meaning.trim()) {
       setError('Vui lòng nhập từ và nghĩa');
       return;
     }
     setLoading(true);
     try {
-      await addFlashcardToSet(setId, { word, meaning, pronunciation, example, part_of_speech });
+      console.log('Gọi API thêm flashcard với setId:', setId);
+      await addFlashcardToSet(setId, { 
+        word: word.trim(), 
+        meaning: meaning.trim(), 
+        pronunciation: pronunciation.trim() || null,
+        example_sentence: example.trim() || null,
+        part_of_speech: partOfSpeech.trim() || null
+      });
+      // Clear form
       setWord('');
       setMeaning('');
       setPronunciation('');
       setExample('');
       setPartOfSpeech('');
-      setError('');
       if (onAdded) onAdded();
     } catch (err) {
-      setError(err.response?.data?.message || 'Thêm thất bại');
+      console.error('Lỗi thêm flashcard:', err);
+      const msg = err.response?.data?.message || err.message || 'Thêm thất bại';
+      setError(msg);
     } finally {
       setLoading(false);
     }

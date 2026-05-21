@@ -260,6 +260,65 @@ async function findFlashcardBySetAndWord(setId, word) {
   return rows[0] || null;
 }
 
+// =========================
+// LẤY FLASHCARD ĐẾN HẠN CỦA USER (SRS)
+// =========================
+async function getDueFlashcards(userId, limit = 50) {
+  const [rows] = await db.execute(
+    `SELECT 
+        uf.id AS user_flashcard_id,
+        uf.user_id,
+        uf.flashcard_id,
+        uf.status,
+        uf.repetition_count,
+        uf.ease_factor,
+        uf.interval_days,
+        uf.next_review_date,
+        uf.last_reviewed_at,
+        f.id,
+        f.set_id,
+        f.word,
+        f.meaning,
+        f.pronunciation,
+        f.example_sentence,
+        f.part_of_speech,
+        fs.title AS set_title
+     FROM user_flashcards uf
+     JOIN flashcards f ON uf.flashcard_id = f.id
+     JOIN flashcard_sets fs ON f.set_id = fs.id
+     WHERE uf.user_id = ? 
+       AND uf.next_review_date <= NOW()
+     ORDER BY uf.next_review_date ASC
+     LIMIT ?`,
+    [userId, limit]
+  );
+  return rows;
+}
+
+// =========================
+// CẬP NHẬT TIẾN ĐỘ FLASHCARD SAU ÔN TẬP (SRS)
+// =========================
+async function updateFlashcardProgress(userId, flashcardId, {
+  repetition_count,
+  ease_factor,
+  interval_days,
+  next_review_date,
+  status
+}) {
+  const [result] = await db.execute(
+    `UPDATE user_flashcards
+     SET repetition_count = ?,
+         ease_factor = ?,
+         interval_days = ?,
+         next_review_date = ?,
+         status = ?,
+         last_reviewed_at = NOW()
+     WHERE user_id = ? AND flashcard_id = ?`,
+    [repetition_count, ease_factor, interval_days, next_review_date, status, userId, flashcardId]
+  );
+  return result.affectedRows > 0;
+}
+
 module.exports = {
   getFlashcardsBySet,
   getAllFlashcards,
@@ -271,4 +330,6 @@ module.exports = {
   getUserFlashcards,
   findFlashcardById,
   findFlashcardBySetAndWord,
+  getDueFlashcards,
+  updateFlashcardProgress
 };

@@ -1,7 +1,9 @@
 import apiClient from "./apiClient";
 
-export const getUserSets = async () => {
-  const res = await apiClient.get("/flashcard-sets");
+export const getUserSets = async (serviceId = null) => {
+  // Nếu có serviceId, chỉ lấy bộ thẻ hệ thống (is_system = true) thuộc service đó
+  const url = serviceId ? `/flashcard-sets?service_id=${serviceId}&is_system=true` : '/flashcard-sets';
+  const res = await apiClient.get(url);
   return res.data.data;
 };
 

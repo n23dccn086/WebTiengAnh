@@ -1,9 +1,9 @@
 // frontend/src/pages/Dashboard.jsx
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
-import { getServicesApi } from '../services/serviceApi';
-import styles from './Dashboard.module.css';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import useAuthStore from "../store/authStore";
+import { getServicesApi } from "../services/serviceApi";
+import styles from "./Dashboard.module.css";
 
 const Dashboard = () => {
   const { user, fetchProfile, logout } = useAuthStore();
@@ -20,23 +20,28 @@ const Dashboard = () => {
       const data = await getServicesApi();
       setServices(data);
     } catch (error) {
-      console.error('Lỗi tải services:', error);
+      console.error("Lỗi tải services:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className={styles.loading}>📖 Đang tải dữ liệu...</div>;
+  if (loading)
+    return <div className={styles.loading}>📖 Đang tải dữ liệu...</div>;
 
   return (
     <div className={styles.container}>
       <div className={styles.topBar}>
-        <button onClick={logout} className={styles.logoutBtn}>🚪 Đăng xuất</button>
+        <button onClick={logout} className={styles.logoutBtn}>
+          🚪 Đăng xuất
+        </button>
       </div>
 
       <div className={styles.welcome}>
-        <h1>👋 Chào mừng, {user?.full_name || 'bạn'}!</h1>
-        <p>Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.</p>
+        <h1>👋 Chào mừng, {user?.full_name || "bạn"}!</h1>
+        <p>
+          Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.
+        </p>
       </div>
 
       <div className={styles.stats}>
@@ -62,20 +67,23 @@ const Dashboard = () => {
         {services.map((svc) => (
           <div key={svc.id} className={styles.serviceCard}>
             <div className={styles.serviceIcon}>
-              {svc.id === 1 && '🔤'}
-              {svc.id === 2 && '🎧'}
-              {svc.id === 3 && '🌏'}
-              {svc.id === 4 && '📖'}
-              {svc.id === 5 && '🚀'}
-              {svc.id === 6 && '📄'}
+              {svc.id === 1 && "🔤"}
+              {svc.id === 2 && "🎧"}
+              {svc.id === 3 && "🌏"}
+              {svc.id === 4 && "📖"}
+              {svc.id === 5 && "🚀"}
+              {svc.id === 6 && "📄"}
             </div>
             <h3>{svc.title}</h3>
             <p>{svc.description}</p>
             <div className={styles.buttonGroup}>
-              <Link to={`/flashcards/service/${svc.id}`} className={styles.btnLearn}>
+              <Link to={`/system-decks/${svc.id}`} className={styles.btnLearn}>
                 📖 Học từ vựng
               </Link>
-              <Link to={`/quizzes?service_id=${svc.id}`} className={styles.btnQuiz}>
+              <Link
+                to={`/quizzes?service_id=${svc.id}`}
+                className={styles.btnQuiz}
+              >
                 📝 Làm bài kiểm tra
               </Link>
             </div>

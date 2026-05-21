@@ -409,7 +409,19 @@ async function checkRolePermission(roleId, permissionName) {
   return rows.length > 0;
 }
 
-// Nhớ kéo xuống dưới cùng thêm `checkRolePermission` vào module.exports nhé!
+// =========================
+// CẬP NHẬT STREAK VÀ LAST_ACTIVE_DATE
+// =========================
+async function updateStreak(userId, streak, lastActiveDate) {
+  const [result] = await db.execute(
+    `UPDATE users
+     SET current_streak = ?,
+         last_active_date = ?
+     WHERE id = ?`,
+    [streak, lastActiveDate, userId]
+  );
+  return result.affectedRows > 0;
+}
 
 module.exports = {
   ROLE_IDS,
@@ -443,4 +455,5 @@ module.exports = {
   deleteUser,
 
   checkRolePermission,
+  updateStreak
 };

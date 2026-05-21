@@ -20,6 +20,8 @@ import ProfilePage from "./features/profile/ProfilePage";
 
 import Quizzes from "./pages/Quizzes";
 import QuizDetail from "./pages/QuizDetail";
+import SRSDaily from "./pages/SRSDaily";
+import SystemDeckList from "./pages/SystemDeckList";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthStore from "./store/authStore";
@@ -50,6 +52,10 @@ function Navbar() {
 
             <Link to="/profile" style={linkStyle}>
               Hồ sơ
+            </Link>
+
+            <Link to="/srs/daily" style={linkStyle}>
+              📅 Ôn tập SRS
             </Link>
 
             {user?.full_name && (
@@ -206,6 +212,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <QuizDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/srs/daily"
+            element={
+              <ProtectedRoute>
+                <SRSDaily />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/system-decks/:serviceId"
+            element={
+              <ProtectedRoute>
+                <SystemDeckList />
               </ProtectedRoute>
             }
           />
