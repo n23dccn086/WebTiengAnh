@@ -121,24 +121,39 @@ const resetPassword = async (token, newPassword) => {
   await User.deleteUserToken(token, 'RESET_PASSWORD');
 };
 
-const logout = async (userId, refreshToken) => {
-  const [rows] = await db.execute(
-    `DELETE FROM user_tokens 
-     WHERE user_id = ? AND token = ? AND type = 'REFRESH_TOKEN'`,
-    [userId, refreshToken]
-  );
-  if (rows.affectedRows === 0) {
-    throw new AppError(400, 'Token không hợp lệ hoặc đã bị thu hồi', 'INVALID_REFRESH_TOKEN');
+const logout = async (refreshToken) => {
+  // Chỉ gọi anh Thủ Kho (Model) làm việc, tuyệt đối không viết db.execute ở đây
+  if (refreshToken) {
+    await User.deleteRefreshToken(refreshToken);
   }
-  return true;
+  
+  // Trả về true kể cả khi không có token, để Frontend yên tâm dọn dẹp state
+  return true; 
 };
 
 const refreshAccessToken = async (refreshToken) => {
-  const user = await User.findUserByToken(refreshToken, 'REFRESH_TOKEN');
-  if (!user) {
+  if (!refreshToken) {
+    throw new AppError(401, 'Không tìm thấy Refresh Token', 'TOKEN_MISSING');
+  }
+
+  // 1. Tìm record của token trong bảng user_tokens (Hàm mới trong User.model.js)
+  const tokenRecord = await User.findRefreshToken(refreshToken);
+  
+  if (!tokenRecord) {
     throw new AppError(401, 'Refresh token không hợp lệ hoặc đã hết hạn', 'INVALID_REFRESH_TOKEN');
   }
-  const accessToken = generateAccessToken(user);
+
+  // 2. Tìm thông tin User dựa vào user_id trong token record
+  const user = await User.findUserById(tokenRecord.user_id);
+  
+  // Kiểm tra thêm xem tài khoản có bị khóa giữa chừng không
+  if (!user || user.status !== 'ACTIVE') {
+    throw new AppError(403, 'Tài khoản không hợp lệ hoặc đã bị khóa', 'USER_INVALID');
+  }
+
+  // 3. Sinh Access Token mới (Nhớ truyền đúng dữ liệu cần thiết của user)
+  const accessToken = generateAccessToken({ id: user.id, role: user.role }); 
+  
   return { accessToken };
 };
 

@@ -33,21 +33,31 @@ const resetPassword = catchAsync(async (req, res) => {
   return successResponse(res, 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.');
 });
 
+// File: src/controllers/auth.controller.js (hoặc file chứa code của bạn)
+
 const logout = catchAsync(async (req, res) => {
   const refreshToken = req.body.refresh_token;
-  if (!refreshToken) {
-    throw new AppError(400, 'Thiếu refresh_token', 'MISSING_REFRESH_TOKEN');
+  
+  // Nếu Frontend không gửi refresh_token (ví dụ: lỡ xóa mất trên LocalStorage), 
+  // ta vẫn cứ trả về thành công để Frontend tự tin dọn dẹp nốt State và chuyển hướng về Login.
+  if (refreshToken) {
+    // CHỈ truyền 1 tham số là refreshToken, bỏ req.user.id đi
+    await authService.logout(refreshToken);
   }
-  await authService.logout(req.user.id, refreshToken);
+  
+  // Trả về theo format API Contract: { status: "success", message: "...", data: null }
   return successResponse(res, 'Đăng xuất thành công');
 });
 
 const refreshToken = catchAsync(async (req, res) => {
   const { refresh_token } = req.body;
+  
   if (!refresh_token) {
     throw new AppError(400, 'Thiếu refresh_token', 'MISSING_REFRESH_TOKEN');
   }
+  
   const { accessToken } = await authService.refreshAccessToken(refresh_token);
+  
   return successResponse(res, 'Cấp mới access token thành công', { accessToken });
 });
 
