@@ -1,73 +1,173 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { getUserSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
 import styles from "./Library.module.css";
 
 const Library = () => {
   const { logout } = useAuthStore();
+  const navigate = useNavigate();
+
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadSets();
   }, []);
 
   const loadSets = async () => {
-    const data = await getUserSets();
-    setSets(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getUserSets();
+
+      if (Array.isArray(data)) {
+        setSets(data);
+      } else if (Array.isArray(data?.data)) {
+        setSets(data.data);
+      } else {
+        setSets([]);
+      }
+    } catch (error) {
+      console.error("Lỗi tải thư viện:", error);
+
+      setSets([]);
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+
+        await logout();
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 800);
+
+        return;
+      }
+
+      setError("Không thể tải thư viện. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Xóa bộ thẻ này?")) {
+    try {
+      if (!window.confirm("Xóa bộ thẻ này?")) return;
+
       await deleteSet(id);
-      loadSets();
+      await loadSets();
+    } catch (error) {
+      console.error("Lỗi xóa bộ thẻ:", error);
+      alert("Không thể xóa bộ thẻ. Vui lòng thử lại.");
     }
   };
 
   const handleToggleSrs = async (id, currentStatus) => {
-    await toggleSrs(id, !currentStatus);
-    loadSets();
+    try {
+      await toggleSrs(id, !currentStatus);
+      await loadSets();
+    } catch (error) {
+      console.error("Lỗi bật/tắt SRS:", error);
+      alert("Không thể cập nhật SRS. Vui lòng thử lại.");
+    }
   };
 
-  if (loading) return <div className={styles.loading}>📚 Đang tải thư viện...</div>;
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  if (loading) {
+    return <div className={styles.loading}>📚 Đang tải thư viện...</div>;
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>📚 Thư viện của tôi</h2>
-        <Link to="/sets/create" className={styles.createBtn}>+ Tạo bộ thẻ mới</Link>
-        <button onClick={logout} className={styles.logoutBtn}>Đăng xuất</button>
+
+        <Link to="/sets/create" className={styles.createBtn}>
+          + Tạo bộ thẻ mới
+        </Link>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className={styles.logoutBtn}
+        >
+          Đăng xuất
+        </button>
       </div>
+
+      {error && (
+        <div
+          style={{
+            background: "#fee2e2",
+            color: "#991b1b",
+            padding: "12px 16px",
+            borderRadius: "10px",
+            marginBottom: "16px",
+            fontWeight: "700",
+            border: "1px solid #ef4444",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       {sets.length === 0 ? (
         <div className={styles.emptyState}>
           <p>😢 Bạn chưa có bộ thẻ nào.</p>
-          <Link to="/sets/create" className={styles.createBtnLarge}>+ Tạo bộ thẻ đầu tiên</Link>
+
+          <Link to="/sets/create" className={styles.createBtnLarge}>
+            + Tạo bộ thẻ đầu tiên
+          </Link>
         </div>
       ) : (
         <div className={styles.grid}>
-          {sets.map(set => (
+          {sets.map((set) => (
             <div key={set.id} className={styles.card}>
               <h3>{set.title}</h3>
+
               <p>{set.description || "Không có mô tả"}</p>
+
               <div className={styles.meta}>
-                <span>📖 {set.total_flashcards} từ</span>
-                <span>📂 {set.service_title}</span>
+                <span>📖 {set.total_flashcards || 0} từ</span>
+                <span>📂 {set.service_title || "Chưa phân loại"}</span>
               </div>
+
               <div className={styles.actions}>
-                <Link to={`/sets/${set.id}`} className={styles.btn}>Xem chi tiết</Link>
-                <button onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)} className={styles.srsBtn}>
+                <Link to={`/sets/${set.id}`} className={styles.btn}>
+                  Xem chi tiết
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)}
+                  className={styles.srsBtn}
+                >
                   {set.is_srs_enabled ? "🔁 Đang bật SRS" : "⏸️ Bật SRS"}
                 </button>
-                <button onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>Xóa</button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDelete(set.id)}
+                  className={styles.deleteBtn}
+                >
+                  Xóa
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
-      <Link to="/dashboard" className={styles.backBtn}>← Về Dashboard</Link>
+
+      <Link to="/dashboard" className={styles.backBtn}>
+        ← Về Dashboard
+      </Link>
     </div>
   );
 };

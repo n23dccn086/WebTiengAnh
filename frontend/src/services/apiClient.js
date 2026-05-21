@@ -7,7 +7,6 @@ const apiClient = axios.create({
   },
 });
 
-// Gắn token vào request nếu có
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
@@ -21,8 +20,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Không redirect/reload trong interceptor.
-// Để component tự xử lý lỗi và hiển thị thông báo.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -30,6 +27,7 @@ apiClient.interceptors.response.use(
 
     if (status === 401 || status === 403) {
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
       localStorage.removeItem("auth-storage");
     }

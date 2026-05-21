@@ -6,7 +6,6 @@ import {
   verifyEmailApi,
   forgotPasswordApi,
   resetPasswordApi,
-  logoutApi,
 } from "../services/authApi";
 
 const clearAuthStorage = () => {
@@ -14,6 +13,16 @@ const clearAuthStorage = () => {
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
   localStorage.removeItem("auth-storage");
+};
+
+const getLoginData = (result) => {
+  const data = result?.data || {};
+
+  return {
+    accessToken: data.accessToken || data.token || null,
+    refreshToken: data.refreshToken || null,
+    user: data.user || null,
+  };
 };
 
 const useAuthStore = create(
@@ -37,38 +46,48 @@ const useAuthStore = create(
 
           const result = await loginApi(email, password);
 
-          if (result.status === "success") {
-            const { accessToken, refreshToken, user } = result.data;
-
-            localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("refreshToken", refreshToken);
-            localStorage.setItem("user", JSON.stringify(user));
-
-            set({
-              user,
-              accessToken,
-              refreshToken,
-              isAuthenticated: true,
-            });
-
+          if (result.status !== "success") {
             return {
-              success: true,
-              message: result.message || "Đăng nhập thành công.",
+              success: false,
+              message: result.message || "Email hoặc mật khẩu không chính xác.",
             };
           }
 
-          clearAuthStorage();
+          const { accessToken, refreshToken, user } = getLoginData(result);
+
+          if (!accessToken || !user) {
+            clearAuthStorage();
+
+            set({
+              user: null,
+              accessToken: null,
+              refreshToken: null,
+              isAuthenticated: false,
+            });
+
+            return {
+              success: false,
+              message: "Dữ liệu đăng nhập không hợp lệ.",
+            };
+          }
+
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("user", JSON.stringify(user));
+
+          if (refreshToken) {
+            localStorage.setItem("refreshToken", refreshToken);
+          }
 
           set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            isAuthenticated: false,
+            user,
+            accessToken,
+            refreshToken,
+            isAuthenticated: true,
           });
 
           return {
-            success: false,
-            message: result.message || "Email hoặc mật khẩu không chính xác.",
+            success: true,
+            message: result.message || "Đăng nhập thành công.",
           };
         } catch (error) {
           clearAuthStorage();
@@ -94,14 +113,20 @@ const useAuthStore = create(
           const result = await registerApi(email, password, full_name);
 
           if (result.status === "success") {
-            return { success: true, message: result.message };
+            return {
+              success: true,
+              message: result.message || "Đăng ký thành công.",
+            };
           }
 
-          return { success: false, message: result.message };
+          return {
+            success: false,
+            message: result.message || "Đăng ký thất bại.",
+          };
         } catch (error) {
           return {
             success: false,
-            message: error.response?.data?.message || "Đăng ký thất bại",
+            message: error.response?.data?.message || "Đăng ký thất bại.",
           };
         }
       },
@@ -111,14 +136,20 @@ const useAuthStore = create(
           const result = await verifyEmailApi(token);
 
           if (result.status === "success") {
-            return { success: true, message: result.message };
+            return {
+              success: true,
+              message: result.message || "Xác thực thành công.",
+            };
           }
 
-          return { success: false, message: result.message };
+          return {
+            success: false,
+            message: result.message || "Xác thực thất bại.",
+          };
         } catch (error) {
           return {
             success: false,
-            message: error.response?.data?.message || "Xác thực thất bại",
+            message: error.response?.data?.message || "Xác thực thất bại.",
           };
         }
       },
@@ -128,14 +159,20 @@ const useAuthStore = create(
           const result = await forgotPasswordApi(email);
 
           if (result.status === "success") {
-            return { success: true, message: result.message };
+            return {
+              success: true,
+              message: result.message || "Đã gửi yêu cầu đặt lại mật khẩu.",
+            };
           }
 
-          return { success: false, message: result.message };
+          return {
+            success: false,
+            message: result.message || "Gửi yêu cầu thất bại.",
+          };
         } catch (error) {
           return {
             success: false,
-            message: error.response?.data?.message || "Gửi yêu cầu thất bại",
+            message: error.response?.data?.message || "Gửi yêu cầu thất bại.",
           };
         }
       },
@@ -145,28 +182,26 @@ const useAuthStore = create(
           const result = await resetPasswordApi(token, new_password);
 
           if (result.status === "success") {
-            return { success: true, message: result.message };
+            return {
+              success: true,
+              message: result.message || "Đặt lại mật khẩu thành công.",
+            };
           }
 
-          return { success: false, message: result.message };
+          return {
+            success: false,
+            message: result.message || "Đặt lại mật khẩu thất bại.",
+          };
         } catch (error) {
           return {
             success: false,
             message:
-              error.response?.data?.message || "Đặt lại mật khẩu thất bại",
+              error.response?.data?.message || "Đặt lại mật khẩu thất bại.",
           };
         }
       },
 
-      logout: async () => {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
-          try {
-            await logoutApi(refreshToken);
-          } catch (e) {
-            // bỏ qua lỗi nếu token đã hết hạn
-          }
-        }
+      logout: () => {
         clearAuthStorage();
 
         set({
