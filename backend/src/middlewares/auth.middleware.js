@@ -20,7 +20,14 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // Giải mã Token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  // Bọc try...catch để bắt chính xác lỗi token hết hạn hoặc bị can thiệp
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (error) {
+    logger.warn(`❌ Token lỗi hoặc hết hạn - IP: ${req.ip} - Lỗi: ${error.message}`);
+    return next(new AppError(401, 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn.', 'AUTH_INVALID_TOKEN'));
+  }
 
   // Gọi anh Thủ Kho (Model)
   const user = await User.findUserById(decoded.id);

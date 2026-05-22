@@ -50,7 +50,7 @@ const logout = catchAsync(async (req, res) => {
 });
 
 const refreshToken = catchAsync(async (req, res) => {
-  const { refresh_token } = req.body;
+  const { refresh_token } = req.body; 
   
   if (!refresh_token) {
     throw new AppError(400, 'Thiếu refresh_token', 'MISSING_REFRESH_TOKEN');
