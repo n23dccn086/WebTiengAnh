@@ -28,11 +28,21 @@ const storeRefreshToken = async (userId, token, expiresAt) => {
 const register = async (email, password, full_name) => {
   const normalizedEmail = email.trim().toLowerCase();
 
+  // 1. Kiểm tra user đã tồn tại chưa
   const existingUser = await User.findUserByEmail(normalizedEmail);
+  
   if (existingUser) {
-    throw new AppError(400, 'Email đã được đăng ký.', 'AUTH_EMAIL_EXISTS');
+    if (existingUser.status === 'UNVERIFIED') {
+      // Nếu user chưa xác thực -> Xóa luôn account rác này để làm lại từ đầu
+      // (Bảng user_tokens có ON DELETE CASCADE nên token cũ cũng sẽ tự động bay màu theo)
+      await User.deleteUser(existingUser.id); 
+    } else {
+      // Nếu là ACTIVE hoặc BANNED thì mới chặn không cho đăng ký
+      throw new AppError(400, 'Email đã được đăng ký.', 'AUTH_EMAIL_EXISTS');
+    }
   }
 
+  // 2. Chạy tiếp luồng tạo user mới bình thường
   const passwordHash = await bcrypt.hash(password, 10);
   const newUser = await User.createUser({
     email: normalizedEmail,
@@ -45,13 +55,12 @@ const register = async (email, password, full_name) => {
   const verificationToken = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 phút
 
-  await User.deleteUserTokensByType(newUser.id, 'VERIFY_EMAIL');
+  // 3. Tạo token và gửi mail
   await User.createUserToken(newUser.id, verificationToken, 'VERIFY_EMAIL', expiresAt);
   await sendVerificationEmail(normalizedEmail, verificationToken);
 
   return newUser;
 };
-
 const login = async (email, password) => {
   const normalizedEmail = email.trim().toLowerCase();
   const user = await User.findUserByEmail(normalizedEmail);
