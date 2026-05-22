@@ -19,6 +19,10 @@ router.post('/verify-email', validate(verifyEmailSchema), authController.verifyE
 router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
 router.post('/refresh-token', validate(refreshTokenSchema), authController.refreshToken);
+
+// [MỚI] Tái sử dụng forgotPasswordSchema vì body chỉ cần gửi { "email": "..." }
+router.post('/resend-verification', validate(forgotPasswordSchema), authController.resendVerificationEmail);
+
 router.post('/logout', protect, authController.logout);
 
 module.exports = router;

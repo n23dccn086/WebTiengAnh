@@ -201,7 +201,51 @@ Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua emai
   }
 }
 
+// =========================
+// GỬI EMAIL NHẮC NHỞ HỌC SRS (CRON JOB)
+// =========================
+async function sendSrsReminderEmail(email, fullName, dueCount) {
+  try {
+    const studyLink = `${FRONTEND_URL}/study`; // Link dẫn tới trang học của bạn
+
+    await sendBrevoEmail({
+      to: email,
+      subject: `⏳ Đến giờ ôn tập rồi! Bạn có ${dueCount} từ vựng cần ôn hôm nay`,
+      textContent: `
+Chào ${fullName},
+
+Hôm nay bạn có ${dueCount} từ vựng đã đến hạn ôn tập trong hệ thống English Vocabulary.
+Việc ôn tập đúng hạn sẽ giúp bạn nhớ từ vựng lâu hơn rất nhiều!
+
+Hãy vào học ngay kẻo quên nhé:
+${studyLink}
+      `,
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+          <h2>Đến giờ học rồi ${fullName} ơi! 🚀</h2>
+          <p>Hôm nay thuật toán của chúng mình phát hiện ra bạn có <strong>${dueCount} từ vựng</strong> đã đến hạn cần ôn tập.</p>
+          <p>Chỉ cần 5 phút mỗi ngày, việc ôn tập đúng lúc (Spaced Repetition) sẽ giúp từ vựng in sâu vào trí nhớ dài hạn của bạn.</p>
+          <p>
+            <a href="${studyLink}" style="display: inline-block; padding: 10px 16px; background-color: #10b981; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;">
+              👉 Vào ôn tập ngay
+            </a>
+          </p>
+          <p style="font-size: 12px; color: #6b7280; margin-top: 30px;">
+            Nếu bạn không muốn nhận email nhắc nhở nữa, có thể tắt trong phần Cài đặt tài khoản.
+          </p>
+        </div>
+      `,
+    });
+
+    console.log(`✅ Đã gửi email nhắc nhở SRS tới: ${email} (${dueCount} thẻ)`);
+  } catch (error) {
+    console.error(`❌ Lỗi gửi email nhắc nhở tới ${email}:`, error.message);
+  }
+}
+
+// Đừng quên export hàm mới này ra nhé
 module.exports = {
   sendVerificationEmail,
   sendResetPasswordEmail,
+  sendSrsReminderEmail // <--- THÊM VÀO ĐÂY
 };

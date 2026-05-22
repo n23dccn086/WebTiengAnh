@@ -1,66 +1,58 @@
-const flashcardModel = require("../models/flashcard.model");
-const flashcardSetModel = require("../models/flashcardSet.model");
-const quizModel = require("../models/quiz.model");
-const geminiService = require("../services/gemini.service");
-const { successResponse } = require("../utils/response.helper");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
+const StudyService = require('../services/study.service');
+const catchAsync = require('../utils/catchAsync');
+const { successResponse } = require('../utils/response.helper');
 
-// POST /api/v1/study/:setId/practice
-exports.practice = catchAsync(async (req, res) => {
-  const setId = parseInt(req.params.setId);
-  // Lấy flashcards trong bộ thẻ
-  const flashcards = await flashcardModel.getFlashcardsBySet(setId);
-  if (flashcards.length < 4) {
-    throw new AppError(400, "Cần ít nhất 4 từ vựng để tạo câu hỏi practice", "INSUFFICIENT_FLASHCARDS");
-  }
-  const questions = await geminiService.generatePracticeQuestions(flashcards);
-  successResponse(res, "Tạo câu hỏi practice thành công", questions);
+// API 2: Sinh câu hỏi Practice (Không lưu DB)
+const generatePractice = catchAsync(async (req, res) => {
+  const setId = parseInt(req.params.setId, 10);
+  const { num_questions } = req.body;
+
+  const data = await StudyService.generatePractice(req.user, setId, num_questions);
+  return successResponse(res, "Sinh câu hỏi ôn tập thành công", data);
 });
 
-// POST /api/v1/study/:setId/test
-exports.createTest = catchAsync(async (req, res) => {
-  const setId = parseInt(req.params.setId);
-  // Kiểm tra bộ thẻ tồn tại
-  const set = await flashcardSetModel.getSetById(setId, req.user.id);
-  if (!set) throw new AppError(404, "Bộ thẻ không tồn tại", "SET_NOT_FOUND");
+// API 3: Tạo phiên Test (Có lưu DB)
+const createTest = catchAsync(async (req, res) => {
+  const setId = parseInt(req.params.setId, 10);
+  const { num_questions } = req.body;
 
-  const flashcards = await flashcardModel.getFlashcardsBySet(setId);
-  if (flashcards.length < 4) {
-    throw new AppError(400, "Cần ít nhất 4 từ vựng để tạo đề thi", "INSUFFICIENT_FLASHCARDS");
-  }
-
-  // Sinh đề thi từ AI
-  const testQuestions = await geminiService.generateTestQuestions(flashcards);
-  // Tạo attempt
-  const attemptId = await quizModel.createAttempt(req.user.id, setId);
-  // Lưu câu hỏi và options
-  await quizModel.saveQuestionsAndOptions(attemptId, testQuestions, flashcards);
-  // Lấy lại câu hỏi vừa lưu (kèm options) để trả về frontend
-  const questions = await quizModel.getQuestionsByAttempt(attemptId);
-  successResponse(res, "Tạo đề thi thành công", { attempt_id: attemptId, questions });
+  const data = await StudyService.createTest(req.user, setId, num_questions);
+  return res.status(201).json({
+    status: "success",
+    message: "Tạo bài kiểm tra thành công",
+    data: data
+  });
 });
 
-// PATCH /api/v1/tests/:attemptId/auto-save
-exports.autoSave = catchAsync(async (req, res) => {
-  const attemptId = parseInt(req.params.attemptId);
-  const { answers } = req.body; // answers = [{question_id, selected_option_id}]
-  // Kiểm tra attempt có thuộc user không
-  const isValid = await quizModel.verifyAttemptOwnership(attemptId, req.user.id);
-  if (!isValid) throw new AppError(403, "Không có quyền truy cập bài test này", "FORBIDDEN");
+// API 4: Lưu nháp tiến độ
+const autoSaveProgress = catchAsync(async (req, res) => {
+  const attemptId = parseInt(req.params.attemptId, 10);
+  const { answers } = req.body;
 
-  for (const ans of answers) {
-    await quizModel.saveAnswer(attemptId, ans.question_id, ans.selected_option_id);
-  }
-  successResponse(res, "Đã lưu tiến độ");
+  await StudyService.saveProgress(req.user.id, attemptId, answers);
+  return successResponse(res, "Đã lưu nháp tiến độ");
 });
 
-// POST /api/v1/tests/:attemptId/submit
-exports.submitTest = catchAsync(async (req, res) => {
-  const attemptId = parseInt(req.params.attemptId);
-  const isValid = await quizModel.verifyAttemptOwnership(attemptId, req.user.id);
-  if (!isValid) throw new AppError(403, "Không có quyền truy cập bài test này", "FORBIDDEN");
+// API 5: Nộp bài Test
+const submitTest = catchAsync(async (req, res) => {
+  const attemptId = parseInt(req.params.attemptId, 10);
 
-  const result = await quizModel.submitAttempt(attemptId);
-  successResponse(res, "Nộp bài thành công", result);
+  const data = await StudyService.submitTest(req.user.id, attemptId);
+  return successResponse(res, "Nộp bài thành công", data);
 });
+
+// API 6: Lịch sử làm bài
+const getHistory = catchAsync(async (req, res) => {
+  const setId = parseInt(req.params.setId, 10);
+
+  const data = await StudyService.getHistory(req.user.id, setId);
+  return successResponse(res, "Lấy lịch sử làm bài thành công", data);
+});
+
+module.exports = {
+  generatePractice,
+  createTest,
+  autoSaveProgress,
+  submitTest,
+  getHistory
+};

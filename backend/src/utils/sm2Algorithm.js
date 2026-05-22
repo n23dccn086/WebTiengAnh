@@ -1,46 +1,37 @@
-/**
- * Cập nhật thông số SM-2 cho flashcard
- * @param {number} repetitionCount - số lần lặp lại hiện tại
- * @param {number} easeFactor - hệ số dễ (mặc định 2.5)
- * @param {number} intervalDays - khoảng cách ngày hiện tại
- * @param {string} rating - 'again', 'hard', 'good', 'easy'
- * @returns {object} { repetition_count, ease_factor, interval_days, status }
- */
-function updateFlashcardRating(repetitionCount, easeFactor, intervalDays, rating) {
-  let newRepetition = repetitionCount;
-  let newEase = easeFactor;
-  let newInterval = intervalDays;
+function calculateSM2(easeFactor, intervalDays, repetitionCount, rating) {
+  const ratingMap = { AGAIN: 0, HARD: 1, GOOD: 3, EASY: 5 };
+  const q = ratingMap[rating];
 
-  switch (rating) {
-    case 'again':
-      newRepetition = 0;
-      newInterval = 1;
-      newEase = Math.max(1.3, easeFactor - 0.2);
-      break;
-    case 'hard':
-      newRepetition = repetitionCount;
-      newInterval = Math.max(1, Math.floor(intervalDays * 0.8));
-      newEase = Math.max(1.3, easeFactor - 0.15);
-      break;
-    case 'good':
-      newRepetition = repetitionCount + 1;
-      if (newRepetition === 1) newInterval = 1;
-      else if (newRepetition === 2) newInterval = 6;
-      else newInterval = Math.round(intervalDays * easeFactor);
-      break;
-    case 'easy':
-      newRepetition = repetitionCount + 1;
-      if (newRepetition === 1) newInterval = 4;
-      else newInterval = Math.round(intervalDays * easeFactor * 1.3);
-      newEase = easeFactor + 0.15;
-      break;
-    default:
-      throw new Error('Invalid rating');
+  let newEaseFactor = easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+  if (newEaseFactor < 1.3) newEaseFactor = 1.3;
+
+  let newInterval, newRepetition = repetitionCount;
+
+  if (q < 2) {
+    newInterval = 1; 
+    newRepetition = 0;
+  } else if (newRepetition === 0) {
+    newInterval = 1; 
+    newRepetition = 1;
+  } else if (newRepetition === 1) {
+    newInterval = 6; 
+    newRepetition = 2;
+  } else {
+    newInterval = Math.round(intervalDays * newEaseFactor);
+    newRepetition += 1;
   }
-  let status = 'NEW';
-  if (newRepetition > 0) status = 'LEARNING';
-  if (newInterval >= 21) status = 'REVIEW';
-  return { repetition_count: newRepetition, ease_factor: newEase, interval_days: newInterval, status };
+
+  // FIX LỖI TIMEZONE: Đưa về 00:00:00 chuẩn UTC để tránh lệch ngày
+  const nextReviewDate = new Date();
+  nextReviewDate.setUTCHours(0, 0, 0, 0); 
+  nextReviewDate.setUTCDate(nextReviewDate.getUTCDate() + newInterval);
+
+  return {
+    easeFactor: parseFloat(newEaseFactor.toFixed(2)),
+    intervalDays: newInterval,
+    repetitionCount: newRepetition,
+    nextReviewDate
+  };
 }
 
-module.exports = { updateFlashcardRating };
+module.exports = { calculateSM2 };

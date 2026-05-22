@@ -61,6 +61,13 @@ const refreshToken = catchAsync(async (req, res) => {
   return successResponse(res, 'Cấp mới access token thành công', { accessToken });
 });
 
+// [MỚI] Hàm gửi lại email xác thực
+const resendVerificationEmail = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  await authService.resendVerificationEmail(email);
+  return successResponse(res, 'Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư.');
+});
+
 module.exports = {
   register,
   login,
@@ -69,4 +76,5 @@ module.exports = {
   resetPassword,
   logout,
   refreshToken,
+  resendVerificationEmail, // Đừng quên export cái này ra
 };

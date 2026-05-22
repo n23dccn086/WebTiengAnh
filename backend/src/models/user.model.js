@@ -289,6 +289,30 @@ async function deleteUser(userId) {
   return result.affectedRows > 0;
 }
 
+
+// Trừ 1 quota AI của User
+const decrementAiQuota = async (userId) => {
+  await db.execute(
+    `UPDATE users SET ai_quota = ai_quota - 1 WHERE id = ? AND ai_quota > 0`,
+    [userId]
+  );
+};
+
+// Cập nhật chuỗi ngày học liên tiếp (Streak)
+// Hàm mới của Sprint 3 (Đổi tên để không bị trùng)
+const updateSrsStreak = async (userId, action) => {
+  if (action === 'RESET') {
+    await db.execute(`UPDATE users SET current_streak = 0 WHERE id = ?`, [userId]);
+  } else if (action === 'INCREMENT') {
+    await db.execute(
+      `UPDATE users 
+       SET current_streak = current_streak + 1, last_active_date = CURRENT_DATE 
+       WHERE id = ?`,
+      [userId]
+    );
+  }
+};
+
 module.exports = {
   ROLE_IDS,
   findUserByEmail,
@@ -321,5 +345,9 @@ module.exports = {
   updateStreak,
 
   deleteUser,
-  checkRolePermission
+  checkRolePermission,
+
+  decrementAiQuota,
+  updateSrsStreak
+  
 };

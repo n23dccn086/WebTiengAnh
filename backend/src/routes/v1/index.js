@@ -1,26 +1,24 @@
 const express = require('express');
 const router = express.Router();
 
+// Import tất cả các route
 const authRoutes = require('./auth.route');
 const userRoutes = require('./user.route');
 const flashcardRoutes = require('./flashcard.route');
 const flashcardSetRoutes = require('./flashcardSet.route');
 const serviceRoutes = require('./service.route');
-const staticQuizRoutes = require('./staticQuiz.route');
-const dictionaryRoutes = require('./dictionary.route');
 const studyRoutes = require("./study.route");
-const testRoutes = require("./test.route");
 const srsRoutes = require("./srs.route");
+const dictionaryRoutes = require("./dictionary.route"); // Thêm route dictionary
 
+// Gắn route vào hệ thống
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/flashcards', flashcardRoutes);
 router.use('/flashcard-sets', flashcardSetRoutes);
 router.use('/services', serviceRoutes);
-router.use('/static-quizzes', staticQuizRoutes);
-router.use('/dictionary', dictionaryRoutes);
 router.use("/study", studyRoutes);
-router.use("/tests", testRoutes);
 router.use("/srs", srsRoutes);
+router.use("/dictionary", dictionaryRoutes); // Gắn route dictionary
 
 module.exports = router;
