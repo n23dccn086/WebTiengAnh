@@ -1,121 +1,63 @@
-const flashcardSetModel = require("../models/flashcardSet.model");
-const flashcardModel = require("../models/flashcard.model");
-const { successResponse } = require("../utils/response.helper");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
+const FlashcardSetService = require('../services/flashcardSet.service');
+const catchAsync = require('../utils/catchAsync');
+const { successResponse } = require('../utils/response.helper');
 
-const parsePositiveInt = (value, fieldName) => {
-  const number = Number.parseInt(value, 10);
-  if (!Number.isInteger(number) || number <= 0) {
-    throw new AppError(400, `${fieldName} không hợp lệ`, "INVALID_ID");
-  }
-  return number;
-};
-
-exports.getUserSets = catchAsync(async (req, res) => {
-  const { page = 1, limit = 20, service_id = null, serviceId = null } = req.query;
-  const data = await flashcardSetModel.getSetsByUser(req.user.id, { page, limit, service_id, serviceId });
-  return successResponse(res, "Lấy danh sách bộ thẻ thành công", data.sets, 200, {
-    total: data.total,
-    page: Number.parseInt(page, 10) || 1,
-    limit: Number.parseInt(limit, 10) || 20,
-    service_id: service_id || serviceId || null,
+const getUserSets = catchAsync(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 12;
+  const data = await FlashcardSetService.getUserSets(req.user.id, page, limit);
+  
+  return res.status(200).json({
+    status: "success",
+    message: "Lấy danh sách bộ thẻ thành công",
+    data: data
   });
 });
 
-exports.getSetDetail = catchAsync(async (req, res) => {
-  const setId = parsePositiveInt(req.params.id, "setId");
-  const set = await flashcardSetModel.getSetById(setId, req.user.id);
-  if (!set) throw new AppError(404, "Bộ thẻ không tồn tại hoặc không thuộc quyền sở hữu", "SET_NOT_FOUND");
-  const flashcards = await flashcardModel.getFlashcardsBySet(setId);
-  set.flashcards = flashcards;
-  return successResponse(res, "Lấy chi tiết bộ thẻ thành công", set);
+const getSystemSets = catchAsync(async (req, res) => {
+  const data = await FlashcardSetService.getSystemSets(req.user.id);
+  return successResponse(res, "Lấy danh sách bộ thẻ hệ thống thành công", data);
 });
 
-exports.createSet = catchAsync(async (req, res) => {
-  const { service_id, title, description, document_id } = req.body;
-  if (!service_id) throw new AppError(400, "Thiếu service_id", "MISSING_SERVICE_ID");
-  if (!title || title.trim().length < 3) {
-    throw new AppError(400, "Tên bộ thẻ phải có ít nhất 3 ký tự", "INVALID_TITLE");
-  }
-  const newSet = await flashcardSetModel.createSet({
-    user_id: req.user.id,
-    service_id: Number(service_id),
-    title: title.trim(),
-    description: description?.trim() || null,
-    document_id: document_id || null,
-    is_system: false,
-  });
-  return successResponse(res, "Tạo bộ thẻ thành công", newSet, 201);
+const createSet = catchAsync(async (req, res) => {
+  const { title, description, service_id } = req.body;
+  const newSet = await FlashcardSetService.createSet(req.user.id, title, description, service_id);
+  return res.status(201).json({ status: "success", message: "Tạo bộ thẻ thành công", data: newSet });
 });
 
-exports.updateSet = catchAsync(async (req, res) => {
-  const setId = parsePositiveInt(req.params.id, "setId");
+const getSetDetail = catchAsync(async (req, res) => {
+  const data = await FlashcardSetService.getSetDetail(parseInt(req.params.id, 10), req.user.id);
+  return successResponse(res, "Lấy chi tiết bộ thẻ thành công", data);
+});
+
+const updateSet = catchAsync(async (req, res) => {
   const { title, description } = req.body;
-  const set = await flashcardSetModel.getSetById(setId, req.user.id);
-  if (!set) throw new AppError(404, "Bộ thẻ không tồn tại hoặc không thuộc quyền sở hữu", "SET_NOT_FOUND");
-  if (set.is_system) throw new AppError(403, "Không được chỉnh sửa bộ thẻ hệ thống", "CANNOT_UPDATE_SYSTEM_SET");
-  if (title !== undefined && title.trim().length < 3) {
-    throw new AppError(400, "Tên bộ thẻ phải có ít nhất 3 ký tự", "INVALID_TITLE");
-  }
-  const updated = await flashcardSetModel.updateSet(setId, {
-    title: title?.trim(),
-    description: description?.trim() || null,
-  });
-  if (!updated) throw new AppError(400, "Cập nhật thất bại", "UPDATE_FAILED");
+  await FlashcardSetService.updateSet(parseInt(req.params.id, 10), req.user.id, title, description);
   return successResponse(res, "Cập nhật bộ thẻ thành công");
 });
 
-exports.deleteSet = catchAsync(async (req, res) => {
-  const setId = parsePositiveInt(req.params.id, "setId");
-  const deleted = await flashcardSetModel.deleteSet(setId, req.user.id);
-  if (!deleted) throw new AppError(404, "Không tìm thấy bộ thẻ hoặc không thể xóa bộ thẻ hệ thống", "DELETE_FAILED");
+const deleteSet = catchAsync(async (req, res) => {
+  await FlashcardSetService.deleteSet(parseInt(req.params.id, 10), req.user.id);
   return successResponse(res, "Xóa bộ thẻ thành công");
 });
 
-exports.toggleSrs = catchAsync(async (req, res) => {
-  const setId = parsePositiveInt(req.params.id, "setId");
+const toggleSrs = catchAsync(async (req, res) => {
   const { is_srs_enabled, daily_new_words = 20 } = req.body;
-  const set = await flashcardSetModel.getSetById(setId, req.user.id);
-  if (!set) throw new AppError(404, "Bộ thẻ không tồn tại hoặc không thuộc quyền sở hữu", "SET_NOT_FOUND");
-  await flashcardSetModel.toggleSrs(req.user.id, setId, is_srs_enabled, daily_new_words);
-  if (is_srs_enabled) {
-    const flashcards = await flashcardModel.getFlashcardsBySet(setId);
-    for (const card of flashcards) {
-      await flashcardModel.addToUserFlashcards(req.user.id, card.id);
-    }
-  }
-  return successResponse(res, `Đã ${is_srs_enabled ? "bật" : "tắt"} chế độ SRS`);
+  await FlashcardSetService.toggleSrs(req.user.id, parseInt(req.params.id, 10), is_srs_enabled, daily_new_words);
+  return successResponse(res, `Đã ${is_srs_enabled ? 'bật' : 'tắt'} chế độ ôn tập SRS`);
 });
 
-exports.getSetSettings = catchAsync(async (req, res) => {
-  const setId = parsePositiveInt(req.params.id, "setId");
-  const set = await flashcardSetModel.getSetById(setId, req.user.id);
-  if (!set) throw new AppError(404, "Bộ thẻ không tồn tại hoặc không thuộc quyền sở hữu", "SET_NOT_FOUND");
-  const settings = await flashcardSetModel.getSetSettings(req.user.id, setId);
-  return successResponse(res, "Lấy cài đặt SRS thành công", settings);
+const saveSystemSet = catchAsync(async (req, res) => {
+  await FlashcardSetService.saveSystemSet(req.user.id, parseInt(req.params.id, 10), 'SAVE');
+  return successResponse(res, "Đã lưu bộ thẻ hệ thống");
 });
 
-exports.addFlashcardToSet = catchAsync(async (req, res) => {
-  const setId = parsePositiveInt(req.params.id, "setId");
-  const { word, meaning, pronunciation, example_sentence, part_of_speech } = req.body;
-  if (!word || !meaning) throw new AppError(400, "Thiếu word hoặc meaning", "MISSING_FIELDS");
-  const set = await flashcardSetModel.getSetById(setId, req.user.id);
-  if (!set) throw new AppError(404, "Bộ thẻ không tồn tại hoặc không thuộc quyền sở hữu", "SET_NOT_FOUND");
-  if (set.is_system) throw new AppError(403, "Không được thêm flashcard vào bộ thẻ hệ thống", "CANNOT_UPDATE_SYSTEM_SET");
-  const existing = await flashcardModel.findFlashcardBySetAndWord(setId, word.trim());
-  if (existing) throw new AppError(409, "Từ này đã tồn tại trong bộ thẻ", "FLASHCARD_ALREADY_EXISTS");
-  const newFlashcard = await flashcardModel.addFlashcard({
-    set_id: setId,
-    word: word.trim(),
-    meaning: meaning.trim(),
-    pronunciation: pronunciation?.trim() || null,
-    example_sentence: example_sentence?.trim() || null,
-    part_of_speech: part_of_speech?.trim() || null,
-  });
-  const settings = await flashcardSetModel.getSetSettings(req.user.id, setId);
-  if (settings.is_srs_enabled) {
-    await flashcardModel.addToUserFlashcards(req.user.id, newFlashcard.id);
-  }
-  return successResponse(res, "Thêm flashcard thành công", newFlashcard, 201);
+const unsaveSystemSet = catchAsync(async (req, res) => {
+  await FlashcardSetService.saveSystemSet(req.user.id, parseInt(req.params.id, 10), 'UNSAVE');
+  return successResponse(res, "Đã bỏ lưu bộ thẻ hệ thống");
 });
+
+module.exports = {
+  getUserSets, getSystemSets, createSet, getSetDetail,
+  updateSet, deleteSet, toggleSrs, saveSystemSet, unsaveSystemSet
+};

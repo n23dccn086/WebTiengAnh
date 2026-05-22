@@ -1,29 +1,32 @@
 const axios = require('axios');
+const AppError = require('../utils/appError');
 
-/**
- * Gọi Free Dictionary API để lấy thông tin từ vựng
- * @param {string} word - Từ tiếng Anh cần tra
- * @returns {Promise<Object|null>} - Trả về object nghĩa, phiên âm, ví dụ, loại từ hoặc null nếu không tìm thấy
- */
-async function lookupWord(word) {
+const autoFillWord = async (word) => {
   try {
-    const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
     const data = response.data[0];
-    if (!data) return null;
 
-    const meaning = data.meanings[0];
-    const definition = meaning.definitions[0];
+    // Bóc tách dữ liệu thông minh, tránh lỗi undefined nếu API thiếu field
+    const meaningObj = data.meanings[0];
+    const definitionObj = meaningObj?.definitions[0];
+
     return {
       word: data.word,
-      meaning: definition.definition,
-      pronunciation: data.phonetic || '',
-      example_sentence: definition.example || '',
-      part_of_speech: meaning.partOfSpeech || '',
+      pronunciation: data.phonetic || data.phonetics?.find(p => p.text)?.text || null,
+      part_of_speech: meaningObj?.partOfSpeech || null,
+      meaning: definitionObj?.definition || null,
+      example_sentence: definitionObj?.example || null,
     };
   } catch (error) {
-    console.error(`Dictionary lookup failed for "${word}":`, error.message);
-    return null;
+    // Bắt êm lỗi 404 (Từ không tồn tại) -> Trả về null cho Frontend tự xử lý
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
+    // Lỗi mạng hoặc lỗi server khác
+    throw new AppError(500, 'Lỗi khi gọi API từ điển. Vui lòng nhập thủ công.', 'DICTIONARY_API_ERROR');
   }
-}
+};
 
-module.exports = { lookupWord };
+module.exports = {
+  autoFillWord,
+};
