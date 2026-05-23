@@ -3,8 +3,8 @@ const DictionaryService = require('../services/dictionary.service');
 const catchAsync = require('../utils/catchAsync');
 const { successResponse } = require('../utils/response.helper');
 
-const autoFill = catchAsync(async (req, res) => {
-  const data = await DictionaryService.autoFillWord(req.body.word);
+const lookupWord = catchAsync(async (req, res) => {
+  const data = await DictionaryService.lookupWord(req.body.word);
   return successResponse(res, "Lấy thông tin từ vựng thành công", data);
 });
 
@@ -29,4 +29,4 @@ const deleteFlashcard = catchAsync(async (req, res) => {
   return successResponse(res, "Xóa từ vựng thành công");
 });
 
-module.exports = { autoFill, addFlashcard, updateFlashcard, deleteFlashcard };
+module.exports = { lookupWord, addFlashcard, updateFlashcard, deleteFlashcard };

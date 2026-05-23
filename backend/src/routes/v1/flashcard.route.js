@@ -7,7 +7,7 @@ const { autoFillSchema, flashcardSchema, updateFlashcardSchema } = require('../.
 
 router.use(protect);
 
-router.post('/auto-fill', validate(autoFillSchema), flashcardController.autoFill);
+router.post('/auto-fill', validate(autoFillSchema), flashcardController.lookupWord);
 router.post('/', validate(flashcardSchema), flashcardController.addFlashcard);
 router.put('/:id', validate(updateFlashcardSchema), flashcardController.updateFlashcard);
 router.delete('/:id', flashcardController.deleteFlashcard);
