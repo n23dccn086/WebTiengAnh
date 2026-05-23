@@ -62,6 +62,7 @@ const register = async (email, password, full_name) => {
     password_hash: passwordHash,
     role_id: User.ROLE_IDS.USER,
     status: 'UNVERIFIED',
+    ai_quota: 10
   });
 
   const verificationToken = crypto.randomBytes(32).toString('hex');

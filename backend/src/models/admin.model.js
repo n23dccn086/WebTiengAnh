@@ -1,0 +1,196 @@
+const db = require('../config/database');
+
+// ==========================================
+// API 4: LẤY DANH SÁCH USER (KÈM PHÂN TRANG & TÌM KIẾM)
+// ==========================================
+const getUsers = async (limit, offset, search, status) => {
+  let queryStr = `
+    SELECT u.id, u.email, u.full_name, u.status, u.ai_quota, u.premium_until, r.name as role 
+    FROM users u
+    JOIN roles r ON u.role_id = r.id
+    WHERE 1=1
+  `;
+  let countQueryStr = `
+    SELECT COUNT(*) as total 
+    FROM users u
+    JOIN roles r ON u.role_id = r.id
+    WHERE 1=1
+  `;
+  const params = [];
+
+  if (search) {
+    queryStr += ` AND (u.email LIKE ? OR u.full_name LIKE ?)`;
+    countQueryStr += ` AND (u.email LIKE ? OR u.full_name LIKE ?)`;
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
+  if (status) {
+    queryStr += ` AND u.status = ?`;
+    countQueryStr += ` AND u.status = ?`;
+    params.push(status);
+  }
+
+  queryStr += ` ORDER BY u.created_at DESC LIMIT ? OFFSET ?`;
+  
+  // Lưu ý: LIMIT và OFFSET phải truyền dưới dạng số (Number)
+  const queryParams = [...params, Number(limit), Number(offset)];
+
+  const [rows] = await db.execute(queryStr, queryParams);
+  const [countResult] = await db.execute(countQueryStr, params);
+
+  return {
+    users: rows,
+    total: countResult[0].total
+  };
+};
+
+// ==========================================
+// API 5 & 6: CẬP NHẬT STATUS VÀ ROLE CHO USER
+// ==========================================
+const updateUserStatus = async (userId, status) => {
+  await db.execute(`UPDATE users SET status = ? WHERE id = ?`, [status, userId]);
+};
+
+const updateUserRole = async (userId, roleName) => {
+  await db.execute(
+    `UPDATE users SET role_id = (SELECT id FROM roles WHERE name = ?) WHERE id = ?`,
+    [roleName, userId]
+  );
+};
+
+// ==========================================
+// API 7: QUẢN LÝ SERVICES
+// ==========================================
+const createService = async (title, description, status) => {
+  const [result] = await db.execute(
+    `INSERT INTO services (title, description, status) VALUES (?, ?, ?)`,
+    [title, description, status || 'VISIBLE']
+  );
+  return result.insertId;
+};
+
+const updateService = async (serviceId, title, description, status) => {
+  await db.execute(
+    `UPDATE services SET title = ?, description = ?, status = ? WHERE id = ?`,
+    [title, description, status, serviceId]
+  );
+};
+
+const deleteService = async (serviceId) => {
+  await db.execute(`DELETE FROM services WHERE id = ?`, [serviceId]);
+};
+
+// ==========================================
+// API 8: TẠO BỘ FLASHCARD HỆ THỐNG (CÓ TRANSACTION)
+// ==========================================
+const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) => {
+  const rawConnection = await db.getConnection();
+  const connection = rawConnection.promise();
+
+  try {
+    await connection.beginTransaction();
+
+    // 1. Tạo bộ thẻ hệ thống
+    const [setResult] = await connection.execute(
+      `INSERT INTO flashcard_sets (user_id, service_id, title, is_system) VALUES (?, ?, ?, TRUE)`,
+      [adminId, serviceId, title]
+    );
+    const setId = setResult.insertId;
+
+    // 2. Insert mảng flashcards
+    if (flashcards && flashcards.length > 0) {
+      const values = [];
+      const placeholders = flashcards.map(card => {
+        values.push(setId, card.word, card.meaning, card.pronunciation || null, card.example_sentence || null, card.part_of_speech || null);
+        return `(?, ?, ?, ?, ?, ?)`;
+      }).join(', ');
+
+      await connection.execute(
+        `INSERT INTO flashcards (set_id, word, meaning, pronunciation, example_sentence, part_of_speech) VALUES ${placeholders}`,
+        values
+      );
+    }
+
+    await connection.commit();
+    return setId;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    rawConnection.release();
+  }
+};
+
+// ==========================================
+// API 9: XEM DANH SÁCH GIAO DỊCH & DOANH THU
+// ==========================================
+const getTransactions = async (limit, offset, status) => {
+  let queryStr = `
+    SELECT t.id, t.transaction_ref, t.amount, t.provider, t.status, t.created_at, u.email 
+    FROM transactions t
+    JOIN users u ON t.user_id = u.id
+    WHERE 1=1
+  `;
+  const params = [];
+
+  if (status) {
+    queryStr += ` AND t.status = ?`;
+    params.push(status);
+  }
+
+  queryStr += ` ORDER BY t.created_at DESC LIMIT ? OFFSET ?`;
+  const queryParams = [...params, Number(limit), Number(offset)];
+
+  const [rows] = await db.execute(queryStr, queryParams);
+
+  // Tính tổng doanh thu (chỉ tính SUCCESS)
+  let revenueQuery = `SELECT SUM(amount) as total_revenue FROM transactions WHERE status = 'SUCCESS'`;
+  let revenueParams = [];
+  
+  // Nếu có lọc thêm status (mà khác SUCCESS thì doanh thu = 0, nhưng cứ query cho chuẩn)
+  if (status) {
+    revenueQuery += ` AND status = ?`;
+    revenueParams.push(status);
+  }
+  
+  const [revenueResult] = await db.execute(revenueQuery, revenueParams);
+
+  return {
+    transactions: rows,
+    total_revenue: revenueResult[0].total_revenue || 0
+  };
+};
+
+// ==========================================
+// API 10: QUẢN LÝ ADMIN (SUPER_ADMIN)
+// ==========================================
+const createStaff = async (email, full_name, passwordHash) => {
+  const [result] = await db.execute(
+    `INSERT INTO users (email, full_name, password_hash, role_id, status) 
+     VALUES (?, ?, ?, (SELECT id FROM roles WHERE name = 'ADMIN'), 'ACTIVE')`,
+    [email, full_name, passwordHash]
+  );
+  return result.insertId;
+};
+
+const deleteStaff = async (staffId) => {
+  await db.execute(`DELETE FROM users WHERE id = ?`, [staffId]);
+};
+
+const updateStaffPassword = async (staffId, passwordHash) => {
+  await db.execute(`UPDATE users SET password_hash = ? WHERE id = ?`, [passwordHash, staffId]);
+};
+
+module.exports = {
+  getUsers,
+  updateUserStatus,
+  updateUserRole,
+  createService,
+  updateService,
+  deleteService,
+  createSystemFlashcardSet,
+  getTransactions,
+  createStaff,
+  deleteStaff,
+  updateStaffPassword
+};

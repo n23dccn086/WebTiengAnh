@@ -10,6 +10,8 @@ const serviceRoutes = require('./service.route');
 const studyRoutes = require("./study.route");
 const srsRoutes = require("./srs.route");
 const dictionaryRoutes = require("./dictionary.route"); // Thêm route dictionary
+const paymentRoutes = require('./payment.route');
+const adminRoute = require('./admin.route');
 
 // Gắn route vào hệ thống
 router.use('/auth', authRoutes);
@@ -20,5 +22,9 @@ router.use('/services', serviceRoutes);
 router.use("/study", studyRoutes);
 router.use("/srs", srsRoutes);
 router.use("/dictionary", dictionaryRoutes); // Gắn route dictionary
+router.use('/payments', paymentRoutes);
+
+router.use('/admin', adminRoute.adminRouter); 
+router.use('/super-admin', adminRoute.superAdminRouter);
 
 module.exports = router;
