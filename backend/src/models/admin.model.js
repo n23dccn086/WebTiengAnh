@@ -30,12 +30,12 @@ const getUsers = async (limit, offset, search, status) => {
     params.push(status);
   }
 
-  queryStr += ` ORDER BY u.created_at DESC LIMIT ? OFFSET ?`;
-  
-  // Lưu ý: LIMIT và OFFSET phải truyền dưới dạng số (Number)
-  const queryParams = [...params, Number(limit), Number(offset)];
+  const limitNum = Math.max(1, parseInt(limit, 10));
+  const offsetNum = Math.max(0, parseInt(offset, 10));
 
-  const [rows] = await db.execute(queryStr, queryParams);
+  queryStr += ` ORDER BY u.created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
+  
+  const [rows] = await db.execute(queryStr, params);
   const [countResult] = await db.execute(countQueryStr, params);
 
   return {
@@ -90,14 +90,12 @@ const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) =
   try {
     await connection.beginTransaction();
 
-    // 1. Tạo bộ thẻ hệ thống
     const [setResult] = await connection.execute(
       `INSERT INTO flashcard_sets (user_id, service_id, title, is_system) VALUES (?, ?, ?, TRUE)`,
       [adminId, serviceId, title]
     );
     const setId = setResult.insertId;
 
-    // 2. Insert mảng flashcards
     if (flashcards && flashcards.length > 0) {
       const values = [];
       const placeholders = flashcards.map(card => {
@@ -123,6 +121,7 @@ const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) =
 
 // ==========================================
 // API 9: XEM DANH SÁCH GIAO DỊCH & DOANH THU
+// Đã fix lỗi LIMIT / OFFSET
 // ==========================================
 const getTransactions = async (limit, offset, status) => {
   let queryStr = `
@@ -138,16 +137,18 @@ const getTransactions = async (limit, offset, status) => {
     params.push(status);
   }
 
-  queryStr += ` ORDER BY t.created_at DESC LIMIT ? OFFSET ?`;
-  const queryParams = [...params, Number(limit), Number(offset)];
+  // Ép kiểu số nguyên và nhét thẳng vào chuỗi
+  const limitNum = Math.max(1, parseInt(limit, 10));
+  const offsetNum = Math.max(0, parseInt(offset, 10));
 
-  const [rows] = await db.execute(queryStr, queryParams);
+  queryStr += ` ORDER BY t.created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
+  
+  const [rows] = await db.execute(queryStr, params);
 
-  // Tính tổng doanh thu (chỉ tính SUCCESS)
+  // Tính tổng doanh thu
   let revenueQuery = `SELECT SUM(amount) as total_revenue FROM transactions WHERE status = 'SUCCESS'`;
   let revenueParams = [];
   
-  // Nếu có lọc thêm status (mà khác SUCCESS thì doanh thu = 0, nhưng cứ query cho chuẩn)
   if (status) {
     revenueQuery += ` AND status = ?`;
     revenueParams.push(status);
@@ -189,7 +190,7 @@ module.exports = {
   updateService,
   deleteService,
   createSystemFlashcardSet,
-  getTransactions,
+  getTransactions, // Trả lại em nó về đúng vị trí
   createStaff,
   deleteStaff,
   updateStaffPassword

@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const AdminModel = require('../models/admin.model');
 const UserModel = require('../models/user.model');
+const TransactionModel = require('../models/transaction.model'); // 👉 THÊM DÒNG NÀY
 const AppError = require('../utils/appError');
 
 // ==========================================
@@ -84,7 +85,8 @@ const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) =
 // ==========================================
 const getTransactions = async (page = 1, limit = 20, status = '') => {
   const offset = (page - 1) * limit;
-  const result = await AdminModel.getTransactions(limit, offset, status);
+  // Trở lại dùng AdminModel
+  const result = await AdminModel.getTransactions(limit, offset, status); 
   
   return {
     transactions: result.transactions,

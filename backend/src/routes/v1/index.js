@@ -9,7 +9,6 @@ const flashcardSetRoutes = require('./flashcardSet.route');
 const serviceRoutes = require('./service.route');
 const studyRoutes = require("./study.route");
 const srsRoutes = require("./srs.route");
-// const dictionaryRoutes = require("./dictionary.route"); // Thêm route dictionary
 const paymentRoutes = require('./payment.route');
 const adminRoute = require('./admin.route');
 
