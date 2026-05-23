@@ -14,16 +14,15 @@ const StudyPractice = () => {
   useEffect(() => {
     const load = async () => {
       const data = await generatePractice(id);
-      setQuestions(data);
+      setQuestions(data.questions || data);
       setLoading(false);
     };
     load();
   }, [id]);
 
-  const handleAnswer = (optionIndex) => {
-    setSelected(optionIndex);
-    const isCorrect = optionIndex === questions[currentIndex].correct_index;
-    setResult({ isCorrect, explanation: questions[currentIndex].explanation });
+  const handleAnswer = (optionId, isCorrect, explanation) => {
+    setSelected(optionId);
+    setResult({ isCorrect, explanation });
   };
 
   const nextQuestion = () => {
@@ -46,22 +45,22 @@ const StudyPractice = () => {
       <Link to={`/sets/${id}`} className={styles.backBtn}>← Quay lại</Link>
       <div className={styles.questionCard}>
         <h3>Câu {currentIndex+1}/{questions.length}</h3>
-        <p className={styles.question}>{q.question}</p>
+        <p className={styles.question}>{q.content}</p>
         <div className={styles.options}>
-          {q.options.map((opt, idx) => (
+          {q.options.map((opt) => (
             <button
-              key={idx}
-              className={`${styles.option} ${selected !== null && idx === q.correct_index ? styles.correct : ''} ${selected === idx && !q.correct_index ? styles.wrong : ''}`}
-              onClick={() => handleAnswer(idx)}
+              key={opt.id}
+              className={`${styles.option} ${selected !== null && opt.is_correct ? styles.correct : ''} ${selected === opt.id && !opt.is_correct ? styles.wrong : ''}`}
+              onClick={() => handleAnswer(opt.id, opt.is_correct, q.explanation)}
               disabled={selected !== null}
             >
-              {opt}
+              {opt.content}
             </button>
           ))}
         </div>
         {result && (
           <div className={result.isCorrect ? styles.correctMsg : styles.wrongMsg}>
-            {result.isCorrect ? '✅ Đúng!' : `❌ Sai. ${result.explanation}`}
+            {result.isCorrect ? '✅ Đúng!' : `❌ Sai. ${result.explanation || 'Đáp án đúng đã được tô xanh.'}`}
             <button onClick={nextQuestion} className={styles.nextBtn}>Tiếp theo</button>
           </div>
         )}

@@ -28,7 +28,7 @@ const SetDetail = () => {
       <div className={styles.header}>
         <h2>{set.title}</h2>
         <p>{set.description}</p>
-        <div className={styles.meta}>📦 {set.total_flashcards} từ vựng</div>
+        <div className={styles.meta}>📦 {set.total_cards} từ vựng</div>
       </div>
       <div className={styles.actions}>
         <Link to={`/sets/${id}/flashcard-basic`} className={styles.btn}>📇 Học lật thẻ</Link>

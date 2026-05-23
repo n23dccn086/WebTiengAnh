@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import useSpeech from '../hooks/useSpeech';
-import { getTodayReviews, submitReview, completeSession } from '../services/srsApi';
+import { getTodayReviews, submitReview } from '../services/srsApi';
 import styles from './SRSDaily.module.css';
 
 const SRSDaily = () => {
@@ -26,9 +26,7 @@ const SRSDaily = () => {
   };
 
   const playPronunciation = () => {
-    if (cards[currentIndex]?.word) {
-      speak(cards[currentIndex].word);
-    }
+    if (cards[currentIndex]?.word) speak(cards[currentIndex].word);
   };
 
   const handleRating = async (rating) => {
@@ -38,8 +36,6 @@ const SRSDaily = () => {
       setCurrentIndex(currentIndex + 1);
       setFlipped(false);
     } else {
-      // Hoàn thành tất cả
-      await completeSession();
       setFinished(true);
     }
   };
@@ -94,10 +90,10 @@ const SRSDaily = () => {
 
       {flipped && (
         <div className={styles.rating}>
-          <button onClick={() => handleRating('again')} className={styles.again}>😵 Again</button>
-          <button onClick={() => handleRating('hard')} className={styles.hard}>🤔 Hard</button>
-          <button onClick={() => handleRating('good')} className={styles.good}>😊 Good</button>
-          <button onClick={() => handleRating('easy')} className={styles.easy}>😎 Easy</button>
+          <button onClick={() => handleRating('AGAIN')} className={styles.again}>😵 Again</button>
+          <button onClick={() => handleRating('HARD')} className={styles.hard}>🤔 Hard</button>
+          <button onClick={() => handleRating('GOOD')} className={styles.good}>😊 Good</button>
+          <button onClick={() => handleRating('EASY')} className={styles.easy}>😎 Easy</button>
         </div>
       )}
     </div>

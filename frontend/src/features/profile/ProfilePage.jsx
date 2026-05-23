@@ -15,6 +15,36 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
 
+  // States cho ẩn/hiện mật khẩu
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Style cho wrapper của input + nút mắt
+  const inputWrapperStyle = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%'
+  };
+
+  const eyeButtonStyle = {
+    position: 'absolute',
+    right: '12px',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '1.2rem',
+    color: '#aaa',
+    padding: 0,
+    width: '30px',
+    height: '30px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1
+  };
+
   useEffect(() => {
     if (user?.id) {
       setFullName(user.full_name || '');
@@ -81,9 +111,54 @@ const ProfilePage = () => {
         )}
         {activeTab === 'password' && (
           <form onSubmit={handleChangePassword} className={styles.form}>
-            <div className={styles.field}><label>Mật khẩu cũ</label><input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className={styles.input} /></div>
-            <div className={styles.field}><label>Mật khẩu mới</label><input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className={styles.input} /></div>
-            <div className={styles.field}><label>Xác nhận mật khẩu mới</label><input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className={styles.input} /></div>
+            <div className={styles.field}>
+              <label>Mật khẩu cũ</label>
+              <div style={inputWrapperStyle}>
+                <input
+                  type={showOldPassword ? 'text' : 'password'}
+                  value={oldPassword}
+                  onChange={e => setOldPassword(e.target.value)}
+                  required
+                  className={styles.input}
+                  style={{ flex: 1, paddingRight: '40px' }}
+                />
+                <button type="button" onClick={() => setShowOldPassword(!showOldPassword)} style={eyeButtonStyle}>
+                  {showOldPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </div>
+            <div className={styles.field}>
+              <label>Mật khẩu mới</label>
+              <div style={inputWrapperStyle}>
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  required
+                  className={styles.input}
+                  style={{ flex: 1, paddingRight: '40px' }}
+                />
+                <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} style={eyeButtonStyle}>
+                  {showNewPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </div>
+            <div className={styles.field}>
+              <label>Xác nhận mật khẩu mới</label>
+              <div style={inputWrapperStyle}>
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  required
+                  className={styles.input}
+                  style={{ flex: 1, paddingRight: '40px' }}
+                />
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={eyeButtonStyle}>
+                  {showConfirmPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </div>
             <button type="submit" disabled={loading} className={styles.button}>{loading ? 'Đang xử lý...' : 'Đổi mật khẩu'}</button>
           </form>
         )}

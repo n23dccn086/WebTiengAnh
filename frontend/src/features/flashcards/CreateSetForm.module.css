@@ -38,3 +38,17 @@
   border-radius: 40px;
   text-align: center;
 }
+
+.backLink {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 40px;
+  text-decoration: none;
+  color: white;
+  margin-bottom: 1rem;
+  transition: 0.2s;
+}
+.backLink:hover {
+  background: rgba(255, 255, 255, 0.4);
+}

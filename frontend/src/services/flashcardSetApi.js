@@ -1,10 +1,15 @@
 import apiClient from "./apiClient";
 
 export const getUserSets = async (serviceId = null) => {
-  // Nếu có serviceId, chỉ lấy bộ thẻ hệ thống (is_system = true) thuộc service đó
   const url = serviceId ? `/flashcard-sets?service_id=${serviceId}&is_system=true` : '/flashcard-sets';
   const res = await apiClient.get(url);
-  return res.data.data;
+  // Contract trả về { data: { sets, pagination } }
+  return res.data.data.sets; // ✅ trả về mảng sets
+};
+
+export const getSystemSets = async () => {
+  const res = await apiClient.get('/flashcard-sets/system');
+  return res.data.data; // ✅ mảng các bộ hệ thống
 };
 
 export const getSetDetail = async (id) => {
@@ -27,4 +32,12 @@ export const deleteSet = async (id) => {
 
 export const toggleSrs = async (id, is_srs_enabled, daily_new_words = 20) => {
   await apiClient.put(`/flashcard-sets/${id}/toggle-srs`, { is_srs_enabled, daily_new_words });
+};
+
+export const saveSystemSet = async (id) => {
+  await apiClient.post(`/flashcard-sets/${id}/save`);
+};
+
+export const unsaveSystemSet = async (id) => {
+  await apiClient.delete(`/flashcard-sets/${id}/save`);
 };

@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import useSpeech from '../hooks/useSpeech';
-import { getFlashcardsByServiceApi, submitReviewApi } from '../services/flashcardApi';
+import { getFlashcardsBySetApi } from '../services/flashcardApi';
+import { submitReview } from '../services/srsApi';
 import styles from './FlashcardStudy.module.css';
 
 const FlashcardStudy = () => {
-  const { serviceId } = useParams();
+  const { id } = useParams(); // Lấy set_id từ URL
   const navigate = useNavigate();
   const { logout } = useAuthStore();
   const { speak } = useSpeech();
@@ -18,12 +19,17 @@ const FlashcardStudy = () => {
 
   useEffect(() => {
     loadCards();
-  }, [serviceId]);
+  }, [id]);
 
   const loadCards = async () => {
-    const data = await getFlashcardsByServiceApi(serviceId);
-    setCards(data);
-    setLoading(false);
+    try {
+      const data = await getFlashcardsBySetApi(id);
+      setCards(data);
+    } catch (error) {
+      console.error("Lỗi tải flashcards:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const playPronunciation = () => {
@@ -34,19 +40,19 @@ const FlashcardStudy = () => {
 
   const handleReview = async (rating) => {
     const card = cards[currentIndex];
-    await submitReviewApi(card.id, rating);
+    await submitReview(card.id, rating);
     if (currentIndex + 1 < cards.length) {
       setCurrentIndex(currentIndex + 1);
       setFlipped(false);
       setShowHint(false);
     } else {
       alert('🎉 Xuất sắc! Bạn đã học xong bộ thẻ này.');
-      navigate('/dashboard');
+      navigate(`/sets/${id}`);
     }
   };
 
   if (loading) return <div className={styles.loading}>📦 Đang tải thẻ học...</div>;
-  if (cards.length === 0) return <div className={styles.empty}>😢 Chưa có từ vựng nào trong dịch vụ này.</div>;
+  if (cards.length === 0) return <div className={styles.empty}>😢 Chưa có từ vựng nào trong bộ thẻ này.</div>;
 
   const current = cards[currentIndex];
   const progress = ((currentIndex + 1) / cards.length) * 100;
@@ -58,7 +64,7 @@ const FlashcardStudy = () => {
       </div>
 
       <div className={styles.topBar}>
-        <Link to={`/flashcards/service/${serviceId}`} className={styles.backBtn}>← Thoát</Link>
+        <Link to={`/sets/${id}`} className={styles.backBtn}>← Thoát</Link>
         <div className={styles.progressBar}>
           <div className={styles.progressFill} style={{ width: `${progress}%` }}></div>
         </div>
@@ -97,10 +103,10 @@ const FlashcardStudy = () => {
 
       {flipped && (
         <div className={styles.rating}>
-          <button onClick={() => handleReview('again')} className={styles.again}>😵 Again</button>
-          <button onClick={() => handleReview('hard')} className={styles.hard}>🤔 Hard</button>
-          <button onClick={() => handleReview('good')} className={styles.good}>😊 Good</button>
-          <button onClick={() => handleReview('easy')} className={styles.easy}>😎 Easy</button>
+          <button onClick={() => handleReview('AGAIN')} className={styles.again}>😵 Again</button>
+          <button onClick={() => handleReview('HARD')} className={styles.hard}>🤔 Hard</button>
+          <button onClick={() => handleReview('GOOD')} className={styles.good}>😊 Good</button>
+          <button onClick={() => handleReview('EASY')} className={styles.easy}>😎 Easy</button>
         </div>
       )}
     </div>

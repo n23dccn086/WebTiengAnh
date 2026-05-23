@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { createSet } from "../../services/flashcardSetApi";
 import styles from "./CreateSetForm.module.css";
 
@@ -8,13 +8,13 @@ const CreateSetForm = () => {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [serviceId, setServiceId] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const DEFAULT_SERVICE_ID = 6;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
 
     const cleanTitle = title.trim();
@@ -25,35 +25,26 @@ const CreateSetForm = () => {
       return;
     }
 
-    if (!serviceId) {
-      setError("Vui lòng chọn danh mục.");
-      return;
-    }
-
     try {
       setLoading(true);
-
       const result = await createSet({
         title: cleanTitle,
         description: cleanDescription || null,
-        service_id: Number(serviceId),
+        service_id: DEFAULT_SERVICE_ID,
       });
 
       const newSetId = result?.data?.id || result?.id;
-
       if (newSetId) {
         navigate(`/sets/${newSetId}`);
         return;
       }
-
       setError("Tạo bộ thẻ thất bại. Không nhận được ID bộ thẻ.");
     } catch (err) {
       console.error("Lỗi tạo bộ thẻ:", err);
-
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
-          "Tạo bộ thẻ thất bại. Vui lòng thử lại.",
+          "Tạo bộ thẻ thất bại. Vui lòng thử lại."
       );
     } finally {
       setLoading(false);
@@ -62,6 +53,7 @@ const CreateSetForm = () => {
 
   return (
     <div className={styles.container}>
+      <Link to="/library" className={styles.backLink}>← Thư viện</Link>
       <h2>📘 Tạo bộ thẻ mới</h2>
 
       <form onSubmit={handleSubmit} className={styles.form}>
@@ -71,7 +63,7 @@ const CreateSetForm = () => {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ví dụ: TOEIC Set"
+            placeholder="Ví dụ: Từ vựng của tôi"
             required
           />
         </div>
@@ -82,23 +74,8 @@ const CreateSetForm = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows="3"
-            placeholder="Nhập mô tả cho bộ thẻ"
+            placeholder="Nhập mô tả cho bộ thẻ (không bắt buộc)"
           />
-        </div>
-
-        <div className={styles.field}>
-          <label>Danh mục</label>
-          <select
-            value={serviceId}
-            onChange={(e) => setServiceId(Number(e.target.value))}
-          >
-            <option value={1}>Từ vựng cơ bản</option>
-            <option value={2}>TOEIC</option>
-            <option value={3}>IELTS</option>
-            <option value={4}>Grammar</option>
-            <option value={5}>Từ vựng nâng cao</option>
-            <option value={6}>Tài liệu cá nhân</option>
-          </select>
         </div>
 
         {error && <div className={styles.error}>{error}</div>}

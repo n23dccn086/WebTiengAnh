@@ -43,7 +43,7 @@ const SystemDeckList = () => {
               <h3>{deck.title}</h3>
               <p>{deck.description || 'Không có mô tả'}</p>
               <div className={styles.meta}>
-                <span>📖 {deck.total_flashcards || 0} từ</span>
+                <span>📖 {deck.total_cards || 0} từ</span>
               </div>
               <Link to={`/sets/${deck.id}`} className={styles.btn}>Xem chi tiết</Link>
             </div>

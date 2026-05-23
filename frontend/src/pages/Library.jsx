@@ -135,7 +135,7 @@ const Library = () => {
               <p>{set.description || "Không có mô tả"}</p>
 
               <div className={styles.meta}>
-                <span>📖 {set.total_flashcards || 0} từ</span>
+                <span>📖 {set.total_cards || 0} từ</span>
                 <span>📂 {set.service_title || "Chưa phân loại"}</span>
               </div>
 
