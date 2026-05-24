@@ -5,14 +5,26 @@ import styles from './UploadPdfModal.module.css';
 const UploadPdfModal = ({ onClose, onSuccess }) => {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
-  const [serviceId, setServiceId] = useState(1);
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.type !== 'application/pdf') {
+      setError('Chỉ chấp nhận file PDF. Vui lòng chọn file có đuôi .pdf');
+      setFile(null);
+      e.target.value = '';
+    } else {
+      setError('');
+      setFile(selectedFile);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file || !title.trim()) {
-      setError('Vui lòng chọn file và nhập tiêu đề');
+      setError('Vui lòng chọn file PDF và nhập tên bộ thẻ.');
       return;
     }
     setLoading(true);
@@ -20,8 +32,8 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('set_title', title);
-    formData.append('service_id', serviceId);
+    formData.append('title', title);
+    if (description.trim()) formData.append('description', description.trim());
 
     try {
       const res = await apiClient.post('/flashcard-sets/pdf-extract', formData, {
@@ -30,7 +42,9 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
       if (onSuccess) onSuccess(res.data.data);
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || 'Có lỗi xảy ra khi xử lý PDF');
+      console.error('Upload error:', err);
+      const msg = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi xử lý PDF';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -39,31 +53,48 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        <h3>Tạo bộ thẻ từ PDF</h3>
+        <h3>📄 Tạo bộ thẻ từ PDF</h3>
         <form onSubmit={handleSubmit}>
           <div className={styles.field}>
-            <label>Tiêu đề bộ thẻ *</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <label>Tên bộ thẻ *</label>
+            <input
+              type="text"
+              placeholder="Ví dụ: Từ vựng từ sách giáo khoa"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
           </div>
           <div className={styles.field}>
-            <label>Danh mục</label>
-            <select value={serviceId} onChange={(e) => setServiceId(Number(e.target.value))}>
-              <option value={1}>Từ vựng cơ bản</option>
-              <option value={2}>TOEIC</option>
-              <option value={3}>IELTS</option>
-              <option value={4}>Grammar</option>
-              <option value={5}>Từ vựng nâng cao</option>
-              <option value={6}>Tài liệu cá nhân</option>
-            </select>
+            <label>Mô tả (không bắt buộc)</label>
+            <textarea
+              placeholder="Nhập mô tả cho bộ thẻ..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows="3"
+              className={styles.textarea}
+            />
           </div>
           <div className={styles.field}>
             <label>File PDF *</label>
-            <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files[0])} required />
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+              required
+            />
+            {file && (
+              <div className={styles.fileName}>
+                📄 {file.name} ({(file.size / 1024).toFixed(1)} KB)
+              </div>
+            )}
           </div>
           {error && <div className={styles.error}>{error}</div>}
           <div className={styles.actions}>
             <button type="button" onClick={onClose}>Hủy</button>
-            <button type="submit" disabled={loading}>{loading ? 'Đang xử lý...' : 'Tạo bộ thẻ'}</button>
+            <button type="submit" disabled={loading}>
+              {loading ? '⏳ Đang xử lý...' : '✨ Tạo bộ thẻ'}
+            </button>
           </div>
         </form>
       </div>

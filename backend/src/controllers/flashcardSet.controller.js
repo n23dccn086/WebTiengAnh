@@ -61,23 +61,27 @@ const unsaveSystemSet = catchAsync(async (req, res) => {
 
 // --- [API MỚI CỦA SPRINT 3] ---
 const createSetFromPdf = catchAsync(async (req, res) => {
-  // Kiểm tra xem user có đính kèm file chưa
   if (!req.file) {
     throw new AppError(400, 'Vui lòng đính kèm file PDF.', 'MISSING_PDF_FILE');
   }
 
-  const { title, service_id } = req.body;
-  
-  // Validate cơ bản (Vì form-data thỉnh thoảng khó dùng chung với Joi nên ta check tay cho chắc)
-  if (!title || !title.trim()) throw new AppError(400, 'Vui lòng nhập tên bộ thẻ.', 'MISSING_TITLE');
-  if (!service_id) throw new AppError(400, 'Vui lòng chọn danh mục.', 'MISSING_SERVICE_ID');
+  let title = req.body.title || req.body.set_title;
+  if (!title || !title.trim()) {
+    throw new AppError(400, 'Vui lòng nhập tên bộ thẻ.', 'MISSING_TITLE');
+  }
+  title = title.trim();
+
+  const description = req.body.description ? req.body.description.trim() : null; // Lấy mô tả
+
+  let service_id = req.body.service_id ? parseInt(req.body.service_id, 10) : 6;
 
   const result = await FlashcardSetService.createSetFromPdf(
     req.user,
-    req.file.buffer,         // File nằm trên RAM do Multer xử lý
-    req.file.originalname,   // Tên gốc của file PDF
-    title.trim(),
-    parseInt(service_id, 10)
+    req.file.buffer,
+    req.file.originalname,
+    title,
+    description, // Thêm tham số description
+    service_id
   );
 
   return res.status(201).json({
@@ -90,5 +94,5 @@ const createSetFromPdf = catchAsync(async (req, res) => {
 module.exports = {
   getUserSets, getSystemSets, createSet, getSetDetail,
   updateSet, deleteSet, toggleSrs, saveSystemSet, unsaveSystemSet,
-  createSetFromPdf // Export hàm mới ra
+  createSetFromPdf
 };

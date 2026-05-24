@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { getUserSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
+import UploadPdfModal from "../features/flashcards/UploadPdfModal";
+import DocumentsButton from "../components/ui/DocumentsButton";
+import PerspectiveButton from "../components/ui/PerspectiveButton";
 import styles from "./Library.module.css";
 
 const Library = () => {
@@ -11,6 +14,7 @@ const Library = () => {
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   useEffect(() => {
     loadSets();
@@ -20,9 +24,7 @@ const Library = () => {
     try {
       setLoading(true);
       setError("");
-
       const data = await getUserSets();
-
       if (Array.isArray(data)) {
         setSets(data);
       } else if (Array.isArray(data?.data)) {
@@ -32,21 +34,13 @@ const Library = () => {
       }
     } catch (error) {
       console.error("Lỗi tải thư viện:", error);
-
       setSets([]);
-
       if (error.response?.status === 401 || error.response?.status === 403) {
         setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-
         await logout();
-
-        setTimeout(() => {
-          navigate("/login");
-        }, 800);
-
+        setTimeout(() => navigate("/login"), 800);
         return;
       }
-
       setError("Không thể tải thư viện. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
@@ -56,7 +50,6 @@ const Library = () => {
   const handleDelete = async (id) => {
     try {
       if (!window.confirm("Xóa bộ thẻ này?")) return;
-
       await deleteSet(id);
       await loadSets();
     } catch (error) {
@@ -88,32 +81,25 @@ const Library = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>📚 Thư viện của tôi</h2>
-
-        <Link to="/sets/create" className={styles.createBtn}>
-          + Tạo bộ thẻ mới
-        </Link>
-
-        <button
-          type="button"
-          onClick={handleLogout}
-          className={styles.logoutBtn}
-        >
+        <DocumentsButton onClick={() => setShowUploadModal(true)} />
+        <PerspectiveButton onClick={() => navigate('/sets/create')}>
+          + Tạo bộ thẻ
+        </PerspectiveButton>
+        <button onClick={handleLogout} className={styles.logoutBtn}>
           Đăng xuất
         </button>
       </div>
 
       {error && (
-        <div
-          style={{
-            background: "#fee2e2",
-            color: "#991b1b",
-            padding: "12px 16px",
-            borderRadius: "10px",
-            marginBottom: "16px",
-            fontWeight: "700",
-            border: "1px solid #ef4444",
-          }}
-        >
+        <div style={{
+          background: "#fee2e2",
+          color: "#991b1b",
+          padding: "12px 16px",
+          borderRadius: "10px",
+          marginBottom: "16px",
+          fontWeight: "700",
+          border: "1px solid #ef4444",
+        }}>
           {error}
         </div>
       )}
@@ -121,29 +107,24 @@ const Library = () => {
       {sets.length === 0 ? (
         <div className={styles.emptyState}>
           <p>😢 Bạn chưa có bộ thẻ nào.</p>
-
-          <Link to="/sets/create" className={styles.createBtnLarge}>
-            + Tạo bộ thẻ đầu tiên
-          </Link>
+          <PerspectiveButton onClick={() => navigate('/sets/create')}>
+            Tạo bộ thẻ đầu tiên
+          </PerspectiveButton>
         </div>
       ) : (
         <div className={styles.grid}>
           {sets.map((set) => (
             <div key={set.id} className={styles.card}>
               <h3>{set.title}</h3>
-
               <p>{set.description || "Không có mô tả"}</p>
-
               <div className={styles.meta}>
                 <span>📖 {set.total_cards || 0} từ</span>
                 <span>📂 {set.service_title || "Chưa phân loại"}</span>
               </div>
-
               <div className={styles.actions}>
                 <Link to={`/sets/${set.id}`} className={styles.btn}>
                   Xem chi tiết
                 </Link>
-
                 <button
                   type="button"
                   onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)}
@@ -151,7 +132,6 @@ const Library = () => {
                 >
                   {set.is_srs_enabled ? "🔁 Đang bật SRS" : "⏸️ Bật SRS"}
                 </button>
-
                 <button
                   type="button"
                   onClick={() => handleDelete(set.id)}
@@ -168,6 +148,13 @@ const Library = () => {
       <Link to="/dashboard" className={styles.backBtn}>
         ← Về Dashboard
       </Link>
+
+      {showUploadModal && (
+        <UploadPdfModal
+          onClose={() => setShowUploadModal(false)}
+          onSuccess={() => loadSets()}
+        />
+      )}
     </div>
   );
 };

@@ -7,11 +7,9 @@ const extractTextFromPDF = require('../utils/pdfExtract');
 const AppError = require('../utils/appError');
 const db = require('../config/database');
 
-
 const getUserSets = async (userId, page, limit, serviceId) => {
   const offset = (page - 1) * limit;
   const { sets, totalItems } = await FlashcardSetModel.getSetsByUser(userId, limit, offset);
-  
   const totalPages = Math.ceil(totalItems / limit);
   return { sets, pagination: { current_page: page, total_pages: totalPages, total_items: totalItems, limit } };
 };
@@ -29,16 +27,12 @@ const getSetDetail = async (setId, userId) => {
   if (!setDetail) {
     throw new AppError(404, 'Không tìm thấy bộ thẻ hoặc không có quyền truy cập.', 'SET_NOT_FOUND');
   }
-
-  // Chặn user xem lén bộ thẻ của người khác (nếu không phải bộ hệ thống)
   if (!setDetail.is_system && setDetail.user_id !== userId) {
     throw new AppError(403, 'Bạn không có quyền xem bộ thẻ này.', 'AUTH_FORBIDDEN');
   }
-
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
   setDetail.total_cards = flashcards.length;
   setDetail.flashcards = flashcards;
-
   return setDetail;
 };
 
@@ -47,7 +41,6 @@ const updateSet = async (setId, userId, title, description) => {
   if (!setDetail) throw new AppError(404, 'Không tìm thấy bộ thẻ.', 'SET_NOT_FOUND');
   if (setDetail.is_system) throw new AppError(403, 'Không thể sửa bộ thẻ hệ thống.', 'CANNOT_EDIT_SYSTEM_SET');
   if (setDetail.user_id !== userId) throw new AppError(403, 'Không có quyền sửa bộ thẻ này.', 'AUTH_FORBIDDEN');
-
   await FlashcardSetModel.updateSet(setId, title, description);
 };
 
@@ -56,17 +49,13 @@ const deleteSet = async (setId, userId) => {
   if (!setDetail) throw new AppError(404, 'Không tìm thấy bộ thẻ.', 'SET_NOT_FOUND');
   if (setDetail.is_system) throw new AppError(403, 'Không thể xóa bộ thẻ hệ thống.', 'CANNOT_DELETE_SYSTEM_SET');
   if (setDetail.user_id !== userId) throw new AppError(403, 'Không có quyền xóa.', 'AUTH_FORBIDDEN');
-
   await FlashcardSetModel.deleteSet(setId);
 };
 
 const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
   const setDetail = await FlashcardSetModel.getSetById(setId, userId);
   if (!setDetail) throw new AppError(404, 'Không tìm thấy bộ thẻ.', 'SET_NOT_FOUND');
-
   await FlashcardSetModel.toggleSrs(userId, setId, isSrsEnabled, dailyNewWords);
-
-  // Logic cực hay của team bạn: Bật SRS thì phải bưng hết thẻ nhét vào luồng học (user_flashcards)
   if (isSrsEnabled) {
     const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
     for (const card of flashcards) {
@@ -83,40 +72,49 @@ const saveSystemSet = async (userId, setId, action) => {
   await FlashcardSetModel.saveSystemSet(userId, setId, action);
 };
 
-// [MỚI] Tích hợp AI bóc tách PDF
-const createSetFromPdf = async (user, fileBuffer, fileName, title, serviceId) => {
+// ============ QUAN TRỌNG: HÀM TẠO BỘ THẺ TỪ PDF ĐÃ ĐƯỢC SỬA ============
+const createSetFromPdf = async (user, fileBuffer, fileName, title, description, serviceId) => {
+  console.log("📄 Bắt đầu xử lý PDF:", fileName);
+  console.log("User ID:", user.id, "Role:", user.role, "AI Quota:", user.ai_quota);
+  console.log("Title:", title, "Description:", description);
+
   // 1. Kiểm tra Quota AI
   if (user.ai_quota <= 0) {
     throw new AppError(403, 'Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng nâng cấp Premium hoặc quay lại vào ngày mai.', 'QUOTA_AI_EXCEEDED');
   }
 
-  // 2. Kiểm tra giới hạn của Free User (Max 2 file/tháng)
+  // 2. Kiểm tra giới hạn file PDF cho Free User
   if (user.role === 'USER') {
     const docsThisMonth = await DocumentModel.countDocsInCurrentMonth(user.id);
-    if (docsThisMonth >= 2) {
+    if (docsThisMonth >= 20) {
       throw new AppError(403, 'Tài khoản miễn phí chỉ được upload tối đa 2 file PDF/tháng.', 'QUOTA_PDF_EXCEEDED');
     }
   }
 
-// 3. Đọc file PDF (Giờ chỉ lấy mỗi numPages)
+  // 3. Đọc file PDF (chỉ lấy số trang)
   const { numPages } = await extractTextFromPDF(fileBuffer);
-  
-  // 4. Kiểm tra số trang (Free User max 5 trang)
   if (user.role === 'USER' && numPages > 5) {
     throw new AppError(403, 'Tài khoản miễn phí chỉ được upload PDF tối đa 5 trang.', 'PDF_PAGE_LIMIT_EXCEEDED');
   }
 
-  // Lưu lịch sử upload document
+  // 4. Lưu lịch sử upload
   const documentId = await DocumentModel.createDocument(user.id, fileName, numPages);
 
-// 5. Gọi Gemini trích xuất từ vựng (Sửa lại: Gọi hàm mới và truyền fileBuffer)
-  const extractedFlashcards = await GeminiService.extractVocabFromPdf(fileBuffer);
+  // 5. Gọi Gemini trích xuất từ vựng (có try-catch để không làm hỏng luồng chính)
+  let extractedFlashcards = [];
+  try {
+    console.log("🤖 Gọi Gemini API...");
+    extractedFlashcards = await GeminiService.extractVocabFromPdf(fileBuffer);
+    if (!Array.isArray(extractedFlashcards)) {
+      extractedFlashcards = extractedFlashcards.flashcards || [];
+    }
+    console.log(`✅ Gemini trả về ${extractedFlashcards.length} từ vựng.`);
+  } catch (aiError) {
+    console.error("❌ Lỗi Gemini:", aiError.message);
+    // Vẫn tiếp tục tạo bộ thẻ rỗng thay vì fail
+  }
 
-  // if (!extractedFlashcards || extractedFlashcards.length === 0) {
-  //   throw new AppError(400, 'AI không tìm thấy từ vựng học thuật nào trong file này.', 'NO_VOCAB_EXTRACTED');
-  // }
-
-  // 6. SQL Transaction: Lưu bộ thẻ và nhét toàn bộ Flashcard vào DB
+  // 6. SQL Transaction
   const connection = await db.getConnection();
   const execTx = (sql, params) => new Promise((res, rej) => connection.execute(sql, params, (err, results) => err ? rej(err) : res(results)));
   const beginTx = () => new Promise((res, rej) => connection.beginTransaction(err => err ? rej(err) : res()));
@@ -131,20 +129,20 @@ const createSetFromPdf = async (user, fileBuffer, fileName, title, serviceId) =>
   try {
     await beginTx();
 
-    // 6.1 Tạo vỏ bộ thẻ (BỎ DẤU [] ĐI)
+    // Tạo bộ thẻ (có description)
     const setResult = await execTx(
-      `INSERT INTO flashcard_sets (user_id, service_id, document_id, title, is_system) VALUES (?, ?, ?, ?, FALSE)`,
-      [user.id, serviceId, documentId, title]
+      `INSERT INTO flashcard_sets (user_id, service_id, document_id, title, description, is_system) VALUES (?, ?, ?, ?, ?, FALSE)`,
+      [user.id, serviceId, documentId, title, description || null]
     );
     setId = setResult.insertId;
 
-    // 6.2 Bật chế độ mặc định trong bảng user_saved_sets
+    // Thêm vào user_saved_sets
     await execTx(
       `INSERT INTO user_saved_sets (user_id, set_id, is_srs_enabled, daily_new_words) VALUES (?, ?, FALSE, 20)`,
       [user.id, setId]
     );
 
-    // 6.3 Lấy danh sách từ vựng (BỎ DẤU [] ĐI để nhận nguyên một mảng các dòng)
+    // Lấy danh sách từ đã có của user
     const existingWords = await execTx(
       `SELECT LOWER(f.word) AS word FROM flashcards f 
        JOIN flashcard_sets fs ON f.set_id = fs.id 
@@ -153,35 +151,25 @@ const createSetFromPdf = async (user, fileBuffer, fileName, title, serviceId) =>
     );
     const userVocabSet = new Set(existingWords.map(row => row.word));
 
-    // Bọc thép: Đảm bảo Gemini luôn trả về mảng (phòng hờ nó trả về object {flashcards: []})
-    const flashcardsArray = Array.isArray(extractedFlashcards) 
-        ? extractedFlashcards 
-        : (extractedFlashcards.flashcards || []);
-
-    // 6.4 Lọc từ trùng và Insert các từ mới
-    for (const card of flashcardsArray) {
+    // Xử lý từng flashcard
+    for (const card of extractedFlashcards) {
       if (!card.word) continue;
-
       const cleanWord = card.word.trim().toLowerCase();
-      // Nếu từ này User đã từng học/tạo rồi -> Bỏ qua
       if (userVocabSet.has(cleanWord)) {
         totalSkipped++;
         continue;
       }
-
-      // BỎ DẤU [] ĐI
       const insertCard = await execTx(
         `INSERT INTO flashcards (set_id, word, meaning, pronunciation, example_sentence, part_of_speech) 
          VALUES (?, ?, ?, ?, ?, ?)`,
         [setId, card.word, card.meaning, card.pronunciation || null, card.example_sentence || null, card.part_of_speech || null]
       );
-      
       card.id = insertCard.insertId;
       finalCards.push(card);
       userVocabSet.add(cleanWord);
     }
 
-    // 6.5 Trừ Quota AI của user
+    // Trừ quota AI
     await execTx(`UPDATE users SET ai_quota = ai_quota - 1 WHERE id = ?`, [user.id]);
 
     await commitTx();

@@ -107,7 +107,6 @@ const useAuthStore = create(
         }
       },
 
-      // 🆕 FETCH PROFILE
       fetchProfile: async () => {
         try {
           const res = await apiClient.get('/users/profile');
@@ -118,7 +117,6 @@ const useAuthStore = create(
         }
       },
 
-      // 🆕 UPDATE PROFILE
       updateProfile: async (data) => {
         try {
           const res = await apiClient.put('/users/profile', data);
@@ -129,11 +127,21 @@ const useAuthStore = create(
         }
       },
 
-      // 🆕 CHANGE PASSWORD
       changePassword: async (old_password, new_password) => {
         try {
           await apiClient.put('/users/password', { old_password, new_password });
           return { success: true, message: 'Đổi mật khẩu thành công' };
+        } catch (error) {
+          return { success: false, message: error.response?.data?.message };
+        }
+      },
+
+      // 🆕 UPDATE REMINDER SETTING
+      updateReminder: async (isEnabled) => {
+        try {
+          const res = await apiClient.put('/users/reminder', { is_enabled: isEnabled });
+          set((state) => ({ user: { ...state.user, is_reminder_enabled: isEnabled } }));
+          return { success: true, message: res.data.message };
         } catch (error) {
           return { success: false, message: error.response?.data?.message };
         }
