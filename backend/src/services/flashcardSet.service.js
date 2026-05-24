@@ -86,7 +86,7 @@ const createSetFromPdf = async (user, fileBuffer, fileName, title, description, 
   // 2. Kiểm tra giới hạn file PDF cho Free User
   if (user.role === 'USER') {
     const docsThisMonth = await DocumentModel.countDocsInCurrentMonth(user.id);
-    if (docsThisMonth >= 20) {
+    if (docsThisMonth >= 2) {
       throw new AppError(403, 'Tài khoản miễn phí chỉ được upload tối đa 2 file PDF/tháng.', 'QUOTA_PDF_EXCEEDED');
     }
   }
