@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { getServicesApi } from "../services/serviceApi";
+import LogoutButton from "../components/ui/LogoutButton";
 import styles from "./Dashboard.module.css";
 
 const Dashboard = () => {
@@ -32,9 +33,7 @@ const Dashboard = () => {
   return (
     <div className={styles.container}>
       <div className={styles.topBar}>
-        <button onClick={logout} className={styles.logoutBtn}>
-          🚪 Đăng xuất
-        </button>
+        <LogoutButton onClick={logout} />
       </div>
 
       <div className={styles.welcome}>

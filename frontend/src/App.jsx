@@ -25,6 +25,7 @@ import SystemDeckList from "./pages/SystemDeckList";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthStore from "./store/authStore";
+import LogoutButton from "./components/ui/LogoutButton";
 
 import "./App.css";
 
@@ -62,9 +63,7 @@ function Navbar() {
               <span style={userNameStyle}>👋 {user.full_name}</span>
             )}
 
-            <button type="button" onClick={logout} style={logoutBtnStyle}>
-              Đăng xuất
-            </button>
+            <LogoutButton onClick={logout} />
           </>
         ) : (
           <>
@@ -281,16 +280,6 @@ const linkStyle = {
 const userNameStyle = {
   color: "#ffefb9",
   fontWeight: "600",
-};
-
-const logoutBtnStyle = {
-  background: "#dc3545",
-  border: "none",
-  padding: "0.5rem 1rem",
-  borderRadius: "40px",
-  color: "white",
-  cursor: "pointer",
-  fontFamily: "inherit",
 };
 
 export default App;

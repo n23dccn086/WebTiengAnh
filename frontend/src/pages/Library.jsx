@@ -5,6 +5,7 @@ import { getUserSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
 import UploadPdfModal from "../features/flashcards/UploadPdfModal";
 import DocumentsButton from "../components/ui/DocumentsButton";
 import PerspectiveButton from "../components/ui/PerspectiveButton";
+import LogoutButton from "../components/ui/LogoutButton";
 import styles from "./Library.module.css";
 
 const Library = () => {
@@ -81,25 +82,28 @@ const Library = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>📚 Thư viện của tôi</h2>
+
         <DocumentsButton onClick={() => setShowUploadModal(true)} />
+
         <PerspectiveButton onClick={() => navigate('/sets/create')}>
           + Tạo bộ thẻ
         </PerspectiveButton>
-        <button onClick={handleLogout} className={styles.logoutBtn}>
-          Đăng xuất
-        </button>
+
+        <LogoutButton onClick={handleLogout} />
       </div>
 
       {error && (
-        <div style={{
-          background: "#fee2e2",
-          color: "#991b1b",
-          padding: "12px 16px",
-          borderRadius: "10px",
-          marginBottom: "16px",
-          fontWeight: "700",
-          border: "1px solid #ef4444",
-        }}>
+        <div
+          style={{
+            background: "#fee2e2",
+            color: "#991b1b",
+            padding: "12px 16px",
+            borderRadius: "10px",
+            marginBottom: "16px",
+            fontWeight: "700",
+            border: "1px solid #ef4444",
+          }}
+        >
           {error}
         </div>
       )}
@@ -107,9 +111,9 @@ const Library = () => {
       {sets.length === 0 ? (
         <div className={styles.emptyState}>
           <p>😢 Bạn chưa có bộ thẻ nào.</p>
-          <PerspectiveButton onClick={() => navigate('/sets/create')}>
-            Tạo bộ thẻ đầu tiên
-          </PerspectiveButton>
+          <Link to="/sets/create" className={styles.createBtnLarge}>
+            + Tạo bộ thẻ đầu tiên
+          </Link>
         </div>
       ) : (
         <div className={styles.grid}>
