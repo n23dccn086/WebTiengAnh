@@ -3,7 +3,11 @@ const router = express.Router();
 const { protect } = require("../../middlewares/auth.middleware");
 const paymentController = require("../../controllers/payment.controller");
 
+
+
 router.get("/webhooks/momo", (req, res) => {
+  console.log("=== MOMO HIT GET ROUTE ==="); // THÊM DÒNG NÀY
+  console.log("Query:", req.query);
   res.json({ status: "success", message: "MoMo webhook route exists." });
 });
 
