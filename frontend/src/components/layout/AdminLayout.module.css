@@ -1,0 +1,54 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+  width: 260px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.nav a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+.nav a:hover {
+  background: rgba(255,255,255,0.2);
+}
+.logoutBtn {
+  margin-top: auto;
+  background: rgba(255,80,80,0.8);
+  border: none;
+  padding: 8px;
+  border-radius: 40px;
+  color: white;
+  cursor: pointer;
+}
+.content {
+  flex: 1;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow-y: auto;
+}
+.error {
+  padding: 2rem;
+  text-align: center;
+  color: white;
+  font-size: 1.2rem;
+}

@@ -3,13 +3,17 @@ import apiClient from "./apiClient";
 export const getUserSets = async (serviceId = null) => {
   const url = serviceId ? `/flashcard-sets?service_id=${serviceId}&is_system=true` : '/flashcard-sets';
   const res = await apiClient.get(url);
-  // Contract trả về { data: { sets, pagination } }
-  return res.data.data.sets; // ✅ trả về mảng sets
+  return res.data.data.sets;
+};
+
+export const getPersonalSets = async () => {
+  const res = await apiClient.get('/flashcard-sets/personal');
+  return res.data.data.sets;
 };
 
 export const getSystemSets = async () => {
   const res = await apiClient.get('/flashcard-sets/system');
-  return res.data.data; // ✅ mảng các bộ hệ thống
+  return res.data.data;
 };
 
 export const getSetDetail = async (id) => {

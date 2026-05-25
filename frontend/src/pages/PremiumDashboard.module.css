@@ -1,0 +1,60 @@
+.container {
+  padding: 2rem;
+  color: white;
+}
+.statsGrid {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border-radius: 24px;
+  padding: 1.5rem;
+  min-width: 150px;
+}
+.large {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+.section {
+  margin-bottom: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 24px;
+  padding: 1.5rem;
+}
+.chart {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+.barWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 50px;
+}
+.bar {
+  width: 30px;
+  background: #ffd966;
+  transition: 0.2s;
+  border-radius: 4px;
+}
+.wordList {
+  list-style: none;
+  padding: 0;
+}
+.wordList li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.difficulty {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}

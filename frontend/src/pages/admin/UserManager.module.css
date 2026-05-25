@@ -1,0 +1,90 @@
+.container {
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.backBtn, .refreshBtn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 40px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+.backBtn:hover, .refreshBtn:hover {
+  background: rgba(255,255,255,0.4);
+}
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.searchInput, .filterSelect {
+  padding: 8px 12px;
+  border-radius: 40px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  flex: 1;
+}
+.searchInput::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+.table {
+  width: 100%;
+  background: rgba(255,255,255,0.1);
+  border-radius: 16px;
+  overflow-x: auto;
+}
+.table th, .table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.statusActive {
+  color: #4ade80;
+}
+.statusBanned {
+  color: #f87171;
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.btnBan {
+  background: #f59e0b;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 40px;
+  cursor: pointer;
+  color: white;
+}
+.roleSelect {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  padding: 4px 8px;
+  border-radius: 40px;
+  color: white;
+  cursor: pointer;
+}
+.error, .success, .loading {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 40px;
+  margin: 1rem 0;
+}
+.error { background: rgba(255,80,80,0.9); }
+.success { background: rgba(76,175,80,0.9); }
+.loading { background: rgba(0,0,0,0.5); }

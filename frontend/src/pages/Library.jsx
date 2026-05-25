@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
-import { getUserSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
+import { getPersonalSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
 import UploadPdfModal from "../features/flashcards/UploadPdfModal";
 import DocumentsButton from "../components/ui/DocumentsButton";
 import PerspectiveButton from "../components/ui/PerspectiveButton";
@@ -25,14 +25,8 @@ const Library = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getUserSets();
-      if (Array.isArray(data)) {
-        setSets(data);
-      } else if (Array.isArray(data?.data)) {
-        setSets(data.data);
-      } else {
-        setSets([]);
-      }
+      const data = await getPersonalSets();
+      setSets(data);
     } catch (error) {
       console.error("Lỗi tải thư viện:", error);
       setSets([]);
@@ -82,28 +76,13 @@ const Library = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>📚 Thư viện của tôi</h2>
-
         <DocumentsButton onClick={() => setShowUploadModal(true)} />
-
-        <PerspectiveButton onClick={() => navigate('/sets/create')}>
-          + Tạo bộ thẻ
-        </PerspectiveButton>
-
+        <PerspectiveButton onClick={() => navigate('/sets/create')}>+ Tạo bộ thẻ</PerspectiveButton>
         <LogoutButton onClick={handleLogout} />
       </div>
 
       {error && (
-        <div
-          style={{
-            background: "#fee2e2",
-            color: "#991b1b",
-            padding: "12px 16px",
-            borderRadius: "10px",
-            marginBottom: "16px",
-            fontWeight: "700",
-            border: "1px solid #ef4444",
-          }}
-        >
+        <div style={{ background: "#fee2e2", color: "#991b1b", padding: "12px 16px", borderRadius: "10px", marginBottom: "16px", fontWeight: "700", border: "1px solid #ef4444" }}>
           {error}
         </div>
       )}
@@ -111,9 +90,7 @@ const Library = () => {
       {sets.length === 0 ? (
         <div className={styles.emptyState}>
           <p>😢 Bạn chưa có bộ thẻ nào.</p>
-          <Link to="/sets/create" className={styles.createBtnLarge}>
-            + Tạo bộ thẻ đầu tiên
-          </Link>
+          <Link to="/sets/create" className={styles.createBtnLarge}>+ Tạo bộ thẻ đầu tiên</Link>
         </div>
       ) : (
         <div className={styles.grid}>
@@ -126,39 +103,18 @@ const Library = () => {
                 <span>📂 {set.service_title || "Chưa phân loại"}</span>
               </div>
               <div className={styles.actions}>
-                <Link to={`/sets/${set.id}`} className={styles.btn}>
-                  Xem chi tiết
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)}
-                  className={styles.srsBtn}
-                >
+                <Link to={`/sets/${set.id}`} className={styles.btn}>Xem chi tiết</Link>
+                <button type="button" onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)} className={styles.srsBtn}>
                   {set.is_srs_enabled ? "🔁 Đang bật SRS" : "⏸️ Bật SRS"}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(set.id)}
-                  className={styles.deleteBtn}
-                >
-                  Xóa
-                </button>
+                <button type="button" onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>Xóa</button>
               </div>
             </div>
           ))}
         </div>
       )}
-
-      <Link to="/dashboard" className={styles.backBtn}>
-        ← Về Dashboard
-      </Link>
-
-      {showUploadModal && (
-        <UploadPdfModal
-          onClose={() => setShowUploadModal(false)}
-          onSuccess={() => loadSets()}
-        />
-      )}
+      <Link to="/dashboard" className={styles.backBtn}>← Về Dashboard</Link>
+      {showUploadModal && <UploadPdfModal onClose={() => setShowUploadModal(false)} onSuccess={() => loadSets()} />}
     </div>
   );
 };

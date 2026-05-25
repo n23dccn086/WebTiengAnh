@@ -3,22 +3,24 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { successResponse } = require('../utils/response.helper');
 
-// --- [CÁC API CỦA SPRINT 2] ---
 const getUserSets = catchAsync(async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 12;
   const data = await FlashcardSetService.getUserSets(req.user.id, page, limit);
-  
-  return res.status(200).json({
-    status: "success",
-    message: "Lấy danh sách bộ thẻ thành công",
-    data: data
-  });
+  return res.status(200).json({ status: "success", message: "Lấy danh sách bộ thẻ thành công", data });
 });
 
 const getSystemSets = catchAsync(async (req, res) => {
-  const data = await FlashcardSetService.getSystemSets(req.user.id);
+  const serviceId = req.query.service_id ? parseInt(req.query.service_id, 10) : null;
+  const data = await FlashcardSetService.getSystemSets(req.user.id, serviceId);
   return successResponse(res, "Lấy danh sách bộ thẻ hệ thống thành công", data);
+});
+
+const getPersonalSets = catchAsync(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 12;
+  const data = await FlashcardSetService.getPersonalSets(req.user.id, page, limit);
+  return successResponse(res, "Lấy danh sách bộ thẻ cá nhân thành công", data);
 });
 
 const createSet = catchAsync(async (req, res) => {
@@ -59,40 +61,18 @@ const unsaveSystemSet = catchAsync(async (req, res) => {
   return successResponse(res, "Đã bỏ lưu bộ thẻ hệ thống");
 });
 
-// --- [API MỚI CỦA SPRINT 3] ---
 const createSetFromPdf = catchAsync(async (req, res) => {
-  if (!req.file) {
-    throw new AppError(400, 'Vui lòng đính kèm file PDF.', 'MISSING_PDF_FILE');
-  }
-
+  if (!req.file) throw new AppError(400, 'Vui lòng đính kèm file PDF.', 'MISSING_PDF_FILE');
   let title = req.body.title || req.body.set_title;
-  if (!title || !title.trim()) {
-    throw new AppError(400, 'Vui lòng nhập tên bộ thẻ.', 'MISSING_TITLE');
-  }
+  if (!title || !title.trim()) throw new AppError(400, 'Vui lòng nhập tên bộ thẻ.', 'MISSING_TITLE');
   title = title.trim();
-
-  const description = req.body.description ? req.body.description.trim() : null; // Lấy mô tả
-
+  const description = req.body.description ? req.body.description.trim() : null;
   let service_id = req.body.service_id ? parseInt(req.body.service_id, 10) : 6;
-
-  const result = await FlashcardSetService.createSetFromPdf(
-    req.user,
-    req.file.buffer,
-    req.file.originalname,
-    title,
-    description, // Thêm tham số description
-    service_id
-  );
-
-  return res.status(201).json({
-    status: "success",
-    message: "Trích xuất từ vựng từ PDF thành công",
-    data: result
-  });
+  const result = await FlashcardSetService.createSetFromPdf(req.user, req.file.buffer, req.file.originalname, title, description, service_id);
+  return res.status(201).json({ status: "success", message: "Trích xuất từ vựng từ PDF thành công", data: result });
 });
 
 module.exports = {
-  getUserSets, getSystemSets, createSet, getSetDetail,
-  updateSet, deleteSet, toggleSrs, saveSystemSet, unsaveSystemSet,
-  createSetFromPdf
+  getUserSets, getSystemSets, getPersonalSets, createSet, getSetDetail,
+  updateSet, deleteSet, toggleSrs, saveSystemSet, unsaveSystemSet, createSetFromPdf
 };
