@@ -4,18 +4,13 @@ const { protect } = require("../../middlewares/auth.middleware");
 const paymentController = require("../../controllers/payment.controller");
 
 router.get("/webhooks/momo", (req, res) => {
-  res.json({
-    status: "success",
-    message: "MoMo webhook route exists. Use POST for real webhook.",
-  });
+  res.json({ status: "success", message: "MoMo webhook route exists." });
 });
 
-// API 1: Tạo giao dịch (Cần đăng nhập)
-// Đổi tên cho ĐÚNG với hàm export trong controller
-router.post("/momo", protect, paymentController.createMoMoPayment); 
+// API 1: Tạo giao dịch 
+router.post("/momo", protect, paymentController.createPayment);
 
-// API 2: Webhook nhận kết quả từ MoMo (KHÔNG protect)
-// Đổi tên cho ĐÚNG với hàm Radar export trong controller
-router.post("/webhooks/momo", paymentController.handleMoMoWebhook);
+// API 2: Webhook nhận kết quả từ MoMo (Sửa lại gọi ĐÚNG hàm momoWebhook)
+router.post("/webhooks/momo", paymentController.momoWebhook);
 
 module.exports = router;
