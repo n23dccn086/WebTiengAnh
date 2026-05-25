@@ -142,7 +142,46 @@ const handleMoMoWebhook = async (ipnData) => {
   }
 };
 
+// service - thêm vào payment.service.js
+const verifyMomoPayment = async (orderId, resultCode) => {
+  const transaction = await TransactionModel.getTransactionByOrderId(orderId);
+
+  if (!transaction) throw new AppError(404, 'Không tìm thấy đơn hàng', 'NOT_FOUND');
+  if (transaction.status === 'SUCCESS') {
+    return { alreadyUpgraded: true };
+  }
+
+  const rawConnection = await db.getConnection();
+  const exec = (sql, params) => new Promise((resolve, reject) => {
+    rawConnection.execute(sql, params, (err, results) => {
+      if (err) reject(err); else resolve(results);
+    });
+  });
+  const beginTx = () => new Promise((res, rej) => rawConnection.beginTransaction(err => err ? rej(err) : res()));
+  const commitTx = () => new Promise((res, rej) => rawConnection.commit(err => err ? rej(err) : res()));
+  const rollbackTx = () => new Promise(res => rawConnection.rollback(() => res()));
+
+  await beginTx();
+  try {
+    if (Number(resultCode) === 0) {
+      await TransactionModel.updateTransactionStatus(rawConnection, orderId, 'SUCCESS');
+      await TransactionModel.upgradeUserToPremium(rawConnection, transaction.user_id);
+      console.log(`🎉 Nâng cấp Premium cho user: ${transaction.user_id}`);
+    } else {
+      await TransactionModel.updateTransactionStatus(rawConnection, orderId, 'FAILED');
+    }
+    await commitTx();
+    rawConnection.release();
+    return { upgraded: Number(resultCode) === 0 };
+  } catch (err) {
+    await rollbackTx();
+    rawConnection.release();
+    throw err;
+  }
+};
+
 module.exports = {
   createMoMoPayment,
   handleMoMoWebhook,
+  verifyMomoPayment
 };

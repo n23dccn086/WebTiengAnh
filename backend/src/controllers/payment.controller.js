@@ -23,7 +23,37 @@ const momoWebhook = catchAsync(async (req, res) => {
   }
 });
 
+// controller
+const verifyMomoPayment = catchAsync(async (req, res) => {
+  const { orderId, resultCode } = req.query;
+  console.log("=== VERIFY HIT ===", req.query);
+
+  if (!orderId) throw new AppError(400, 'Thiếu orderId', 'BAD_REQUEST');
+
+  const result = await PaymentService.verifyMomoPayment(orderId, resultCode);
+  return successResponse(res, "Xác minh thanh toán thành công", result);
+});
+
+const momoRedirect = catchAsync(async (req, res) => {
+  const { orderId, resultCode } = req.query;
+  console.log("=== MOMO REDIRECT HIT ===", req.query);
+
+  if (!orderId) throw new AppError(400, 'Thiếu orderId', 'BAD_REQUEST');
+
+  await PaymentService.verifyMomoPayment(orderId, resultCode);
+
+  // Redirect về frontend báo kết quả
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (Number(resultCode) === 0) {
+    return res.redirect(`${frontendUrl}/payment/result?status=success`);
+  } else {
+    return res.redirect(`${frontendUrl}/payment/result?status=failed`);
+  }
+});
+
 module.exports = {
   createPayment,
-  momoWebhook
+  momoWebhook,
+  verifyMomoPayment,
+  momoRedirect
 };
