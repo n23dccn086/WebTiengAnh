@@ -8,8 +8,11 @@ const createPayment = catchAsync(async (req, res) => {
 });
 
 const momoWebhook = catchAsync(async (req, res) => {
+  console.log('=== CONTROLLER WEBHOOK HIT ==='); // THÊM DÒNG NÀY
+  console.log('Body:', JSON.stringify(req.body)); // THÊM DÒNG NÀY
+
   const isSuccess = await PaymentService.handleMoMoWebhook(req.body);
-  
+
   // Theo tài liệu MoMo, khi IPN trả về, ta luôn phải nhả về HTTP 204 No Content
   // Hoặc nhả về status 200 để MoMo biết ta đã nhận được, không cần gọi lại nữa.
   if (isSuccess) {

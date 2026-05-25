@@ -58,24 +58,23 @@ const createMoMoPayment = async (userId) => {
 // API 2: XỬ LÝ IPN/WEBHOOK TỪ MOMO GỬI VỀ
 // API 2: XỬ LÝ IPN/WEBHOOK TỪ MOMO GỬI VỀ (BẢN RADAR DÒ BUG CHUẨN HOSTING)
 const handleMoMoWebhook = async (ipnData) => {
-  console.log("\n🚀🚀🚀 [WEBHOOK SERVICE] Bắt đầu xử lý IPN từ MoMo!");
-  console.log("📦 Dữ liệu MoMo gửi tới:", ipnData);
+  console.log("\n🚀 [WEBHOOK] Nhận data từ MoMo:");
+  console.log(JSON.stringify(ipnData, null, 2));
 
-  if (!ipnData || !ipnData.orderId) {
-    console.error("❌ [LỖI GIẢI MÃ] Không tìm thấy dữ liệu hợp lệ từ MoMo.");
-    return false;
-  }
+  // THÊM: Log signature để so sánh
+  const { partnerCode, orderId, requestId, amount, orderInfo, orderType,
+    transId, resultCode, message, payType, responseTime, extraData, signature } = ipnData;
 
-  const {
-    partnerCode, orderId, requestId, amount, orderInfo, orderType,
-    transId, resultCode, message, payType, responseTime, extraData, signature
-  } = ipnData;
-
-  // 1. Xác thực chữ ký
   const rawSignature = `accessKey=${momoConfig.accessKey}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
   const mySignature = createSignature(rawSignature);
 
+  console.log("→ MoMo signature  :", signature);
+  console.log("→ System signature :", mySignature);
+  console.log("→ accessKey đang dùng:", momoConfig.accessKey); // THÊM DÒNG NÀY
+  console.log("→ secretKey đang dùng:", momoConfig.secretKey); // THÊM DÒNG NÀY
+
   if (mySignature !== signature) {
+    console.error('❌ Chữ ký KHÔNG khớp!');
     console.error('❌ CẢNH BÁO: Chữ ký MoMo Webhook không hợp lệ!');
     console.log("-> Chữ ký của MoMo:", signature);
     console.log("-> Chữ ký hệ thống tính:", mySignature);
