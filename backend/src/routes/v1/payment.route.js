@@ -11,9 +11,11 @@ router.get("/webhooks/momo", (req, res) => {
 });
 
 // API 1: Tạo giao dịch (Cần đăng nhập)
-router.post("/momo", protect, paymentController.createPayment);
+// Đổi tên cho ĐÚNG với hàm export trong controller
+router.post("/momo", protect, paymentController.createMoMoPayment); 
 
-// API 2: Webhook nhận kết quả từ MoMo (KHÔNG DÙNG middleware protect vì MoMo gọi vào)
-router.post("/webhooks/momo", paymentController.momoWebhook);
+// API 2: Webhook nhận kết quả từ MoMo (KHÔNG protect)
+// Đổi tên cho ĐÚNG với hàm Radar export trong controller
+router.post("/webhooks/momo", paymentController.handleMoMoWebhook);
 
 module.exports = router;
