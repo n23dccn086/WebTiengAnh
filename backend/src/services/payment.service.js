@@ -57,16 +57,13 @@ const createMoMoPayment = async (userId) => {
 
 // API 2: XỬ LÝ IPN/WEBHOOK TỪ MOMO GỬI VỀ
 // API 2: XỬ LÝ IPN/WEBHOOK TỪ MOMO GỬI VỀ (BẢN RADAR DÒ BUG CHUẨN HOSTING)
-const handleMoMoWebhook = async (req, res) => {
-  console.log("\n🚀🚀🚀 [WEBHOOK] MOMO ĐÃ GÕ CỬA APPS CỦA BẠN!!!");
-  
-  // Lấy dữ liệu từ body do Express parse
-  const ipnData = req.body;
-  console.log("📦 Cục dữ liệu MoMo gửi tới Body:", ipnData);
+const handleMoMoWebhook = async (ipnData) => {
+  console.log("\n🚀🚀🚀 [WEBHOOK SERVICE] Bắt đầu xử lý IPN từ MoMo!");
+  console.log("📦 Dữ liệu MoMo gửi tới:", ipnData);
 
   if (!ipnData || !ipnData.orderId) {
-    console.error("❌ [LỖI GIẢI MÃ] Không tìm thấy dữ liệu Body. Kiểm tra xem app đã cài app.use(express.json()) chưa.");
-    return res.status(400).json({ message: "Bad Request: No Body Data" });
+    console.error("❌ [LỖI GIẢI MÃ] Không tìm thấy dữ liệu hợp lệ từ MoMo.");
+    return false;
   }
 
   const {
@@ -74,67 +71,75 @@ const handleMoMoWebhook = async (req, res) => {
     transId, resultCode, message, payType, responseTime, extraData, signature
   } = ipnData;
 
-  // 1. Xác thực chữ ký để đảm bảo request này thật sự do MoMo gửi tới
+  // 1. Xác thực chữ ký
   const rawSignature = `accessKey=${momoConfig.accessKey}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
   const mySignature = createSignature(rawSignature);
 
   if (mySignature !== signature) {
     console.error('❌ CẢNH BÁO: Chữ ký MoMo Webhook không hợp lệ!');
     console.log("-> Chữ ký của MoMo:", signature);
-    console.log("-> Chữ ký hệ thống tự tính:", mySignature);
-    return res.status(400).json({ message: "Invalid Signature" }); 
+    console.log("-> Chữ ký hệ thống tính:", mySignature);
+    return false;
   }
 
-  console.log("✅ Chữ ký hợp lệ! Khớp 100%. Đang truy vấn Database cho mã đơn:", orderId);
+  console.log("✅ Chữ ký hợp lệ! Đang truy vấn Database cho mã đơn:", orderId);
   
   try {
     const transaction = await TransactionModel.getTransactionByOrderId(orderId);
     
     if (!transaction) {
       console.error("❌ [LỖI DATABASE] Không tìm thấy mã đơn này trong bảng transactions!");
-      return res.status(200).json({ message: "Transaction not found but acknowledged" });
+      return true; // Return true để Controller trả 200 cho MoMo, tránh bị gọi lại
     }
     
     if (transaction.status !== 'PENDING') {
-      console.log("⚠️ Đơn hàng này đã được xử lý trước đó rồi. Trạng thái hiện tại:", transaction.status);
-      return res.status(200).json({ message: "Already processed" }); 
+      console.log("⚠️ Đơn hàng này đã xử lý trước đó. Trạng thái:", transaction.status);
+      return true; 
     }
 
-    console.log("✅ Đơn hàng hợp lệ (PENDING). Tiến hành mở Transaction MySQL để nâng cấp Premium...");
+    console.log("✅ Đơn hàng PENDING. Tiến hành mở Transaction MySQL cập nhật Premium...");
     
-    // Sử dụng cấu hình bọc Promise từ file database.js của bạn
     const rawConnection = await db.getConnection(); 
-    const connection = rawConnection.promise(); 
+    
+    // 🔥 FIX LỖI PROMISE (Nếu dùng db pool tự custom)
+    // Thay vì rawConnection.promise(), ta tạo một helper để xài Promise cho connection
+    const exec = (sql, params) => new Promise((resolve, reject) => {
+      rawConnection.execute(sql, params, (err, results) => {
+        if (err) reject(err); else resolve(results);
+      });
+    });
+    const beginTx = () => new Promise((res, rej) => rawConnection.beginTransaction(err => err ? rej(err) : res()));
+    const commitTx = () => new Promise((res, rej) => rawConnection.commit(err => err ? rej(err) : res()));
+    const rollbackTx = () => new Promise(res => rawConnection.rollback(() => res()));
 
-    await connection.beginTransaction();
+    await beginTx();
 
     try {
       if (Number(resultCode) === 0) {
         // Giao dịch thành công
-        await TransactionModel.updateTransactionStatus(connection, orderId, 'SUCCESS');
-        await TransactionModel.upgradeUserToPremium(connection, transaction.user_id);
+        // Lưu ý: Đảm bảo TransactionModel hỗ trợ truyền connection raw vào
+        await TransactionModel.updateTransactionStatus(rawConnection, orderId, 'SUCCESS');
+        await TransactionModel.upgradeUserToPremium(rawConnection, transaction.user_id);
         console.log(`🎉 [THÀNH CÔNG RỰC RỠ] Đã nâng cấp Premium thành công cho User ID: ${transaction.user_id}`);
       } else {
         // Giao dịch thất bại
-        await TransactionModel.updateTransactionStatus(connection, orderId, 'FAILED');
-        console.log(`❌ Giao dịch thất bại từ phía khách hàng (Mã lỗi MoMo: ${resultCode})`);
+        await TransactionModel.updateTransactionStatus(rawConnection, orderId, 'FAILED');
+        console.log(`❌ Giao dịch thất bại từ phía khách hàng (Mã lỗi: ${resultCode})`);
       }
 
-      await connection.commit();
+      await commitTx();
       rawConnection.release();
-      
-      // BẮT BUỘC: Phải trả về trạng thái 204 hoặc 200 cho MoMo biết là bạn đã nhận hàng
-      return res.status(204).send();
+      return true; // Xử lý thành công toàn bộ
     } catch (error) {
-      await connection.rollback();
+      await rollbackTx();
       rawConnection.release();
-      console.error('🔥 Lỗi khi đang thực thi ghi dữ liệu SQL (Rollback kích hoạt):', error);
-      return res.status(500).json({ error: "Database transaction execution error" });
+      console.error('🔥 Lỗi khi đang thực thi ghi dữ liệu SQL (Rollback):', error);
+      return false;
     }
 
   } catch (error) {
-    console.error('🔥 Lỗi nghẽn kết nối đầu vào Database:', error);
-    return res.status(500).json({ error: "Database connection error" });
+    console.error('🔥 Lỗi truy vấn Database hoặc mất kết nối:', error);
+    return false;
   }
 };
 
