@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../../services/apiClient';
+import ImportExcelModal from '../../features/admin/ImportExcelModal'; // Import modal
 import styles from './SystemDeckManager.module.css';
 
 const SystemDeckManager = () => {
@@ -17,6 +18,7 @@ const SystemDeckManager = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [autoFillLoading, setAutoFillLoading] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false); // State cho modal import
 
   useEffect(() => {
     fetchServices();
@@ -107,25 +109,29 @@ const SystemDeckManager = () => {
     }
   };
 
+  const handleImportSuccess = () => {
+    setMessage('Import bộ thẻ thành công!');
+    setTimeout(() => setMessage(''), 3000);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>📚 Tạo bộ thẻ hệ thống</h2>
-        <button className={styles.backBtn} onClick={() => window.location.href = '/admin'}>
-          ← Quay lại Admin
-        </button>
+        <div>
+          <button className={styles.importBtn} onClick={() => setShowImportModal(true)}>
+            📂 Import từ Excel/CSV
+          </button>
+          <button className={styles.backBtn} onClick={() => window.location.href = '/admin'}>
+            ← Quay lại Admin
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.field}>
           <label>Tên bộ thẻ *</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ví dụ: 1000 từ Oxford"
-            required
-          />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
 
         <div className={styles.field}>
@@ -143,11 +149,7 @@ const SystemDeckManager = () => {
           <div className={styles.row}>
             <div className={styles.field}>
               <label>Từ *</label>
-              <input
-                type="text"
-                value={currentCard.word}
-                onChange={(e) => setCurrentCard({ ...currentCard, word: e.target.value })}
-              />
+              <input type="text" value={currentCard.word} onChange={(e) => setCurrentCard({ ...currentCard, word: e.target.value })} />
             </div>
             <button type="button" onClick={handleAutoFill} disabled={autoFillLoading} className={styles.autoFillBtn}>
               {autoFillLoading ? '⏳' : '🔍 Tự động điền'}
@@ -155,35 +157,19 @@ const SystemDeckManager = () => {
           </div>
           <div className={styles.field}>
             <label>Nghĩa *</label>
-            <input
-              type="text"
-              value={currentCard.meaning}
-              onChange={(e) => setCurrentCard({ ...currentCard, meaning: e.target.value })}
-            />
+            <input type="text" value={currentCard.meaning} onChange={(e) => setCurrentCard({ ...currentCard, meaning: e.target.value })} />
           </div>
           <div className={styles.field}>
             <label>Phiên âm (IPA)</label>
-            <input
-              type="text"
-              value={currentCard.pronunciation}
-              onChange={(e) => setCurrentCard({ ...currentCard, pronunciation: e.target.value })}
-            />
+            <input type="text" value={currentCard.pronunciation} onChange={(e) => setCurrentCard({ ...currentCard, pronunciation: e.target.value })} />
           </div>
           <div className={styles.field}>
             <label>Câu ví dụ</label>
-            <textarea
-              rows="2"
-              value={currentCard.example_sentence}
-              onChange={(e) => setCurrentCard({ ...currentCard, example_sentence: e.target.value })}
-            />
+            <textarea rows="2" value={currentCard.example_sentence} onChange={(e) => setCurrentCard({ ...currentCard, example_sentence: e.target.value })} />
           </div>
           <div className={styles.field}>
             <label>Từ loại</label>
-            <input
-              type="text"
-              value={currentCard.part_of_speech}
-              onChange={(e) => setCurrentCard({ ...currentCard, part_of_speech: e.target.value })}
-            />
+            <input type="text" value={currentCard.part_of_speech} onChange={(e) => setCurrentCard({ ...currentCard, part_of_speech: e.target.value })} />
           </div>
           <button type="button" onClick={addFlashcard} className={styles.addFlashcardBtn}>
             + Thêm flashcard
@@ -199,13 +185,7 @@ const SystemDeckManager = () => {
                   <strong>{card.word}</strong> – {card.meaning}
                   {card.pronunciation && <span className={styles.pronounce}> /{card.pronunciation}/</span>}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeFlashcard(card.id)}
-                  className={styles.removeBtn}
-                >
-                  ❌ Xóa
-                </button>
+                <button type="button" onClick={() => removeFlashcard(card.id)} className={styles.removeBtn}>❌ Xóa</button>
               </div>
             ))}
           </div>
@@ -217,6 +197,13 @@ const SystemDeckManager = () => {
           {loading ? 'Đang tạo...' : '✅ Tạo bộ thẻ hệ thống'}
         </button>
       </form>
+
+      {showImportModal && (
+        <ImportExcelModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={handleImportSuccess}
+        />
+      )}
     </div>
   );
 };

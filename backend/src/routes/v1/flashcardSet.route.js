@@ -4,15 +4,13 @@ const { protect } = require('../../middlewares/auth.middleware');
 const validate = require('../../middlewares/validate.middleware');
 const flashcardSetController = require('../../controllers/flashcardSet.controller');
 const { createSetSchema, updateSetSchema, toggleSrsSchema } = require('../../validations/flashcardSet.validation');
-
-const upload = require('../../config/multer');
+const { upload } = require('../../config/multer'); // ✅ import đúng
 
 router.use(protect);
 
-// Lấy danh sách
 router.get('/', flashcardSetController.getUserSets);
 router.get('/system', flashcardSetController.getSystemSets);
-router.get('/personal', flashcardSetController.getPersonalSets); // 🆕 route mới
+router.get('/personal', flashcardSetController.getPersonalSets);
 
 router.post('/pdf-extract', upload.single('file'), flashcardSetController.createSetFromPdf);
 router.post('/', validate(createSetSchema), flashcardSetController.createSet);

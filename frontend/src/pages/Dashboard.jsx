@@ -76,14 +76,8 @@ const Dashboard = () => {
             <h3>{svc.title}</h3>
             <p>{svc.description}</p>
             <div className={styles.buttonGroup}>
-              <Link to={`/system-decks/${svc.id}`} className={styles.btnLearn}>
+              <Link to={`/sets/service/${svc.id}`} className={styles.btnLearn}>
                 📖 Học từ vựng
-              </Link>
-              <Link
-                to={`/quizzes?service_id=${svc.id}`}
-                className={styles.btnQuiz}
-              >
-                📝 Làm bài kiểm tra
               </Link>
             </div>
           </div>

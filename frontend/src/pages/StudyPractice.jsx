@@ -13,7 +13,7 @@ const StudyPractice = () => {
 
   useEffect(() => {
     const load = async () => {
-      const data = await generatePractice(id);
+      const data = await generatePractice(id, 10);
       setQuestions(data.questions || data);
       setLoading(false);
     };

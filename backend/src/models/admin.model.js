@@ -182,15 +182,20 @@ const updateStaffPassword = async (staffId, passwordHash) => {
   await db.execute(`UPDATE users SET password_hash = ? WHERE id = ?`, [passwordHash, staffId]);
 };
 
+const updateServiceStatus = async (serviceId, status) => {
+  await db.execute(`UPDATE services SET status = ? WHERE id = ?`, [status, serviceId]);
+};
+
 module.exports = {
   getUsers,
   updateUserStatus,
   updateUserRole,
   createService,
   updateService,
+  updateServiceStatus,
   deleteService,
   createSystemFlashcardSet,
-  getTransactions, // Trả lại em nó về đúng vị trí
+  getTransactions,
   createStaff,
   deleteStaff,
   updateStaffPassword

@@ -1,38 +1,39 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
-import { getUserSets } from '../services/flashcardSetApi';
+import apiClient from '../services/apiClient';
 import styles from './SystemDeckList.module.css';
 
 const SystemDeckList = () => {
   const { serviceId } = useParams();
-  const { logout } = useAuthStore();
   const [decks, setDecks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [serviceTitle, setServiceTitle] = useState('');
 
   useEffect(() => {
-    loadSystemDecks();
+    const fetchServiceAndDecks = async () => {
+      try {
+        const servicesRes = await apiClient.get('/services');
+        const service = servicesRes.data.data.find(s => s.id == serviceId);
+        if (service) setServiceTitle(service.title);
+        
+        const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
+        setDecks(decksRes.data.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchServiceAndDecks();
   }, [serviceId]);
-
-  const loadSystemDecks = async () => {
-    try {
-      // Gọi API lấy bộ thẻ hệ thống, lọc theo service_id
-      const data = await getUserSets(serviceId);
-      setDecks(data);
-    } catch (error) {
-      console.error('Lỗi tải bộ thẻ hệ thống:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return <div className={styles.loading}>📚 Đang tải bộ thẻ...</div>;
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>📚 Bộ thẻ hệ thống</h2>
-        <button onClick={logout} className={styles.logoutBtn}>Đăng xuất</button>
+        <h2>📚 {serviceTitle} - Các bộ thẻ</h2>
+        <Link to="/dashboard" className={styles.backBtn}>← Về Dashboard</Link>
       </div>
       {decks.length === 0 ? (
         <p className={styles.empty}>Chưa có bộ thẻ nào trong danh mục này.</p>
@@ -50,7 +51,6 @@ const SystemDeckList = () => {
           ))}
         </div>
       )}
-      <Link to="/dashboard" className={styles.backBtn}>← Về Dashboard</Link>
     </div>
   );
 };

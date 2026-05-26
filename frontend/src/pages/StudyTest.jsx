@@ -14,7 +14,7 @@ const StudyTest = () => {
 
   useEffect(() => {
     const initTest = async () => {
-      const data = await createTest(id);
+      const data = await createTest(id, 10);
       setAttemptId(data.attempt_id);
       setQuestions(data.questions);
       setLoading(false);

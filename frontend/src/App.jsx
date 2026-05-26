@@ -20,7 +20,7 @@ import ProfilePage from "./features/profile/ProfilePage";
 import Quizzes from "./pages/Quizzes";
 import QuizDetail from "./pages/QuizDetail";
 import SRSDaily from "./pages/SRSDaily";
-import SystemDeckList from "./pages/SystemDeckList";
+import SystemDeckList from "./pages/SystemDeckList";   // ✅ import component
 
 // Cụm 2: Premium & Thanh toán
 import PremiumDashboard from "./pages/PremiumDashboard";
@@ -103,6 +103,8 @@ function App() {
           <Route path="/flashcards/service/:serviceId" element={<ProtectedRoute><Library /></ProtectedRoute>} />
           <Route path="/sets/create" element={<ProtectedRoute><CreateSetForm /></ProtectedRoute>} />
           <Route path="/sets/:id" element={<ProtectedRoute><SetDetail /></ProtectedRoute>} />
+          {/* ✅ Route mới: danh sách bộ thẻ theo service */}
+          <Route path="/sets/service/:serviceId" element={<ProtectedRoute><SystemDeckList /></ProtectedRoute>} />
           <Route path="/sets/:id/flashcard" element={<ProtectedRoute><FlashcardStudy /></ProtectedRoute>} />
           <Route path="/sets/:id/flashcard-basic" element={<ProtectedRoute><FlashcardStudyBasic /></ProtectedRoute>} />
           <Route path="/sets/:id/practice" element={<ProtectedRoute><StudyPractice /></ProtectedRoute>} />

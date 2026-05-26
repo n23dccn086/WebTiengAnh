@@ -1,8 +1,7 @@
-// backend/src/services/admin.service.js
 const bcrypt = require('bcryptjs');
+const XLSX = require('xlsx');
 const AdminModel = require('../models/admin.model');
 const UserModel = require('../models/user.model');
-const TransactionModel = require('../models/transaction.model'); // 👉 THÊM DÒNG NÀY
 const AppError = require('../utils/appError');
 
 // ==========================================
@@ -11,7 +10,6 @@ const AppError = require('../utils/appError');
 const getUsers = async (page = 1, limit = 20, search = '', status = '') => {
   const offset = (page - 1) * limit;
   const result = await AdminModel.getUsers(limit, offset, search, status);
-  
   return {
     users: result.users,
     pagination: {
@@ -64,6 +62,11 @@ const updateService = async (serviceId, title, description, status) => {
   return { id: serviceId, title, description, status };
 };
 
+const updateServiceStatus = async (serviceId, status) => {
+  await AdminModel.updateServiceStatus(serviceId, status);
+  return { id: serviceId, status };
+};
+
 const deleteService = async (serviceId) => {
   await AdminModel.deleteService(serviceId);
   return { message: 'Xóa service thành công' };
@@ -81,13 +84,11 @@ const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) =
 };
 
 // ==========================================
-// API 9: XEM DANH SÁCH GIAO DỊCH
+// API 9: XEM DANH SÁCH GIAO DỊCH & DOANH THU
 // ==========================================
 const getTransactions = async (page = 1, limit = 20, status = '') => {
   const offset = (page - 1) * limit;
-  // Trở lại dùng AdminModel
-  const result = await AdminModel.getTransactions(limit, offset, status); 
-  
+  const result = await AdminModel.getTransactions(limit, offset, status);
   return {
     transactions: result.transactions,
     total_revenue: result.total_revenue,
@@ -110,7 +111,6 @@ const createStaff = async (email, fullName, password) => {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const staffId = await AdminModel.createStaff(normalizedEmail, fullName, passwordHash);
-  
   return { id: staffId, email: normalizedEmail, full_name: fullName, role: 'ADMIN' };
 };
 
@@ -133,14 +133,73 @@ const resetStaffPassword = async (staffId, newPassword) => {
   return { message: 'Đã đặt lại mật khẩu cho Admin' };
 };
 
+// ==========================================
+// API MỚI: IMPORT BỘ THỂ HỆ THỐNG TỪ EXCEL/CSV
+// ==========================================
+const importSystemFlashcardSet = async (adminId, fileBuffer, title, serviceId) => {
+  try {
+    if (!fileBuffer || fileBuffer.length === 0) {
+      throw new AppError(400, 'File không có dữ liệu', 'EMPTY_FILE');
+    }
+
+    // Xóa BOM nếu có (UTF-8 BOM)
+    let buffer = fileBuffer;
+    if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+      buffer = buffer.slice(3);
+    }
+
+    let workbook;
+    try {
+      workbook = XLSX.read(buffer, { type: 'buffer' });
+    } catch (err) {
+      console.error('Lỗi đọc file Excel/CSV:', err.message);
+      throw new AppError(400, 'File không hợp lệ hoặc bị hỏng. Hãy dùng file CSV chuẩn (UTF-8) hoặc Excel (.xlsx)', 'INVALID_FILE');
+    }
+
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    let data = XLSX.utils.sheet_to_json(sheet);
+
+    if (!data || data.length === 0) {
+      throw new AppError(400, 'File không có dữ liệu', 'EMPTY_FILE');
+    }
+
+    // Chuẩn hóa dữ liệu (hỗ trợ nhiều cách viết hoa)
+    const flashcards = data.map(row => {
+      const word = row.word || row.Word || row.WORD || '';
+      const meaning = row.meaning || row.Meaning || row.MEANING || '';
+      return {
+        word: word.toString().trim(),
+        meaning: meaning.toString().trim(),
+        pronunciation: (row.pronunciation || row.Pronunciation || row.PRONUNCIATION || '').toString().trim() || null,
+        example_sentence: (row.example_sentence || row.Example || row.EXAMPLE || '').toString().trim() || null,
+        part_of_speech: (row.part_of_speech || row.PartOfSpeech || row.PART_OF_SPEECH || '').toString().trim() || null
+      };
+    }).filter(card => card.word && card.meaning);
+
+    if (flashcards.length === 0) {
+      throw new AppError(400, 'File không có từ vựng hợp lệ (cần ít nhất cột "word" và "meaning")', 'INVALID_DATA');
+    }
+
+    const setId = await AdminModel.createSystemFlashcardSet(adminId, serviceId, title, flashcards);
+    return { setId, title, is_system: true, total_cards: flashcards.length };
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    console.error('Import error:', error);
+    throw new AppError(500, 'Lỗi xử lý file, vui lòng thử lại', 'IMPORT_ERROR');
+  }
+};
+
 module.exports = {
   getUsers,
   changeUserStatus,
   changeUserRole,
   createService,
   updateService,
+  updateServiceStatus,
   deleteService,
   createSystemFlashcardSet,
+  importSystemFlashcardSet,
   getTransactions,
   createStaff,
   deleteStaff,
