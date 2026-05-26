@@ -1,6 +1,8 @@
 const PaymentService = require('../services/payment.service');
 const catchAsync = require('../utils/catchAsync');
 const { successResponse } = require('../utils/response.helper');
+const AppError = require('../utils/appError'); // ← THÊM DÒNG NÀY
+
 
 const createPayment = catchAsync(async (req, res) => {
   const data = await PaymentService.createMoMoPayment(req.user.id);
