@@ -2,7 +2,6 @@ import apiClient from './apiClient';
 
 export const getTodayReviews = async () => {
   const res = await apiClient.get('/srs/today');
-  // Backend trả về: { status, message, data: { total_due, flashcards } }
   return res.data.data.flashcards || [];
 };
 
@@ -16,7 +15,7 @@ export const startLearning = async (setId) => {
   return res.data;
 };
 
-export const learnNewCards = async (setId, count = 20) => {
-  const res = await apiClient.post('/srs/learn-new', { set_id: setId, count });
-  return res.data;
+export const learnNewCards = async (count = 20) => {
+  const res = await apiClient.post('/srs/learn-new', { limit: count });
+  return res.data.data;
 };

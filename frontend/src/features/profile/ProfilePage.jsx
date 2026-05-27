@@ -19,19 +19,16 @@ const ProfilePage = () => {
   const [reminderEnabled, setReminderEnabled] = useState(user?.is_reminder_enabled || true);
   const [loadingReminder, setLoadingReminder] = useState(false);
 
-  // States cho ẩn/hiện mật khẩu
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Style cho wrapper của input + nút mắt
   const inputWrapperStyle = {
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
     width: '100%'
   };
-
   const eyeButtonStyle = {
     position: 'absolute',
     right: '12px',
@@ -52,7 +49,16 @@ const ProfilePage = () => {
   useEffect(() => {
     if (user?.id) {
       setFullName(user.full_name || '');
-      setDob(user.dob || '');
+      if (user.dob) {
+        const dateObj = new Date(user.dob);
+        if (!isNaN(dateObj.getTime())) {
+          setDob(dateObj.toISOString().split('T')[0]);
+        } else {
+          setDob('');
+        }
+      } else {
+        setDob('');
+      }
       setPhone(user.phone || '');
       setReminderEnabled(user.is_reminder_enabled || true);
     } else {
@@ -65,7 +71,16 @@ const ProfilePage = () => {
     setError('');
     setMessage('');
     setLoading(true);
-    const result = await updateProfile({ full_name: fullName, dob, phone });
+    const payload = {};
+    if (fullName !== user?.full_name) payload.full_name = fullName;
+    if (dob !== (user?.dob ? new Date(user.dob).toISOString().split('T')[0] : '')) payload.dob = dob || null;
+    if (phone !== (user?.phone || '')) payload.phone = phone || null;
+    if (Object.keys(payload).length === 0) {
+      setMessage('Không có thay đổi nào.');
+      setLoading(false);
+      return;
+    }
+    const result = await updateProfile(payload);
     if (result.success) setMessage(result.message);
     else setError(result.message);
     setLoading(false);
@@ -121,10 +136,22 @@ const ProfilePage = () => {
         {error && <div className={styles.error}>{error}</div>}
         {activeTab === 'profile' && (
           <form onSubmit={handleUpdateProfile} className={styles.form}>
-            <div className={styles.field}><label>Email</label><input type="email" value={user?.email || ''} disabled className={styles.disabledInput} /></div>
-            <div className={styles.field}><label>Họ và tên</label><input type="text" value={fullName} onChange={e => setFullName(e.target.value)} required className={styles.input} /></div>
-            <div className={styles.field}><label>Ngày sinh (YYYY-MM-DD)</label><input type="text" placeholder="2000-01-01" value={dob} onChange={e => setDob(e.target.value)} className={styles.input} /></div>
-            <div className={styles.field}><label>Số điện thoại</label><input type="text" value={phone} onChange={e => setPhone(e.target.value)} className={styles.input} /></div>
+            <div className={styles.field}>
+              <label>Email</label>
+              <input type="email" value={user?.email || ''} disabled className={styles.disabledInput} />
+            </div>
+            <div className={styles.field}>
+              <label>Họ và tên</label>
+              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className={styles.input} />
+            </div>
+            <div className={styles.field}>
+              <label>Ngày sinh</label>
+              <input type="date" value={dob} onChange={e => setDob(e.target.value)} className={styles.input} />
+            </div>
+            <div className={styles.field}>
+              <label>Số điện thoại</label>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={styles.input} />
+            </div>
             <button type="submit" disabled={loading} className={styles.button}>{loading ? 'Đang lưu...' : 'Cập nhật'}</button>
           </form>
         )}

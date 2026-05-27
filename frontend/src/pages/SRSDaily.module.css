@@ -124,17 +124,6 @@
   color: white;
 }
 
-.btn {
-  background: #ff9a9e;
-  border: none;
-  padding: 8px 24px;
-  border-radius: 40px;
-  color: #2c3e66;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 1rem;
-}
-
 .logoutBtn {
   background: rgba(255,80,80,0.8);
   border: none;
@@ -142,4 +131,67 @@
   border-radius: 40px;
   color: white;
   cursor: pointer;
+}
+
+/* ========== CÁC STYLE MỚI / ĐÃ GỘP ========== */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.learnMoreBtn {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.2s;
+  margin: 0.5rem auto;
+  display: inline-block;
+}
+
+.learnMoreBtn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.learnMoreBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn {
+  background: #ff9a9e;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #2c3e66;
+  transition: 0.2s;
+  margin: 0.5rem auto;
+  display: inline-block;
+}
+
+.btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.error {
+  background: rgba(255,80,80,0.9);
+  padding: 1rem;
+  border-radius: 40px;
+  text-align: center;
+  margin: 2rem auto;
+  max-width: 500px;
+  color: white;
 }

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { generatePractice } from '../services/studyApi';
-import PracticeBoard from "../features/study/PracticeBoard";
 import styles from './StudyPractice.module.css';
 
 const StudyPractice = () => {
@@ -46,7 +45,20 @@ const StudyPractice = () => {
   };
 
   if (loading) return <div className={styles.loading}>🧠 AI đang tạo câu hỏi...</div>;
-  if (error) return <div className={styles.error}>❌ {error}</div>;
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorBox}>
+          <div className={styles.errorIcon}>❌</div>
+          <h3>Hết lượt AI</h3>
+          <p>{error}</p>
+          <Link to={`/sets/${id}`} className={styles.errorBackBtn}>
+            Quay lại bộ thẻ
+          </Link>
+        </div>
+      </div>
+    );
+  }
   if (!questions.length) return <div className={styles.empty}>Không có câu hỏi nào.</div>;
 
   const q = questions[currentIndex];
@@ -54,7 +66,7 @@ const StudyPractice = () => {
     <div className={styles.container}>
       <Link to={`/sets/${id}`} className={styles.backBtn}>← Quay lại</Link>
       <div className={styles.questionCard}>
-        <h3>Câu {currentIndex + 1}/{questions.length}</h3>
+        <h3>Câu {currentIndex+1}/{questions.length}</h3>
         <p className={styles.question}>{q.content}</p>
         <div className={styles.options}>
           {q.options.map((opt) => (

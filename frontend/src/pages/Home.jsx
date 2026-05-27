@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getServicesApi } from "../services/serviceApi";
 import useAuthStore from "../store/authStore";
+import apiClient from "../services/apiClient";
 import styles from "./Home.module.css";
 
 const Home = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user, logout } = useAuthStore();
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
 
   useEffect(() => {
     loadServices();
@@ -18,6 +22,30 @@ const Home = () => {
     setServices(data);
     setLoading(false);
   };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setContactLoading(true);
+    setContactMessage('');
+    try {
+      const res = await apiClient.post('/contact/send', contactForm);
+      setContactMessage(res.data.message);
+      setContactForm({ name: '', email: '', message: '' });
+    } catch (err) {
+      setContactMessage(err.response?.data?.message || 'Gửi thất bại, vui lòng thử lại.');
+    } finally {
+      setContactLoading(false);
+      setTimeout(() => setContactMessage(''), 5000);
+    }
+  };
+
+  const members = [
+    { id: 'vo-van-hoang', name: 'Võ Văn Hoàng', role: 'DevOps & Database' },
+    { id: 'nguyen-le-nhut-hao', name: 'Nguyễn Lê Nhựt Hào', role: 'Frontend' },
+    { id: 'dinh-viet-hoang', name: 'Đinh Việt Hoàng', role: 'Backend' },
+    { id: 'nguyen-le-huy-thai', name: 'Nguyễn Lê Huy Thái', role: 'Frontend' },
+    { id: 'tran-minh-duc', name: 'Trần Minh Đức', role: 'Backend' }
+  ];
 
   if (loading) return <div className={styles.loading}>📖 Đang tải...</div>;
 
@@ -78,7 +106,6 @@ const Home = () => {
                 <Link to={`/sets/service/${svc.id}`} className={styles.btnLearn}>
                   📖 Học từ vựng
                 </Link>
-                {/* Đã xóa nút "Làm bài kiểm tra" */}
               </div>
             </div>
           ))}
@@ -88,31 +115,26 @@ const Home = () => {
       <section id="team" className={styles.teamSection}>
         <h2>👥 Đội ngũ phát triển</h2>
         <div className={styles.teamGrid}>
-          <div className={styles.member}>
-            <div className={styles.avatar}>👨‍💻</div>
-            <h3>Nguyễn Văn A</h3>
-            <p>Fullstack Developer</p>
-          </div>
-          <div className={styles.member}>
-            <div className={styles.avatar}>👩‍🎨</div>
-            <h3>Trần Thị B</h3>
-            <p>UI/UX Designer</p>
-          </div>
-          <div className={styles.member}>
-            <div className={styles.avatar}>🧠</div>
-            <h3>Lê Văn C</h3>
-            <p>AI Engineer</p>
-          </div>
+          {members.map(member => (
+            <Link to={`/team/${member.id}`} key={member.id} className={styles.memberCardLink}>
+              <div className={styles.member}>
+                <div className={styles.avatar}>👨‍💻</div>
+                <h3>{member.name}</h3>
+                <p>{member.role}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
       <section id="contact" className={styles.contactSection}>
         <h2>📬 Liên hệ</h2>
-        <form className={styles.contactForm} onSubmit={(e) => e.preventDefault()}>
-          <input type="text" placeholder="Họ tên" required />
-          <input type="email" placeholder="Email" required />
-          <textarea rows="3" placeholder="Nội dung"></textarea>
-          <button type="submit">Gửi tin nhắn</button>
+        <form className={styles.contactForm} onSubmit={handleContactSubmit}>
+          <input type="text" placeholder="Họ tên" value={contactForm.name} onChange={e => setContactForm({...contactForm, name: e.target.value})} required />
+          <input type="email" placeholder="Email" value={contactForm.email} onChange={e => setContactForm({...contactForm, email: e.target.value})} required />
+          <textarea rows="3" placeholder="Nội dung" value={contactForm.message} onChange={e => setContactForm({...contactForm, message: e.target.value})} required></textarea>
+          <button type="submit" disabled={contactLoading}>{contactLoading ? 'Đang gửi...' : 'Gửi tin nhắn'}</button>
+          {contactMessage && <div className={styles.contactMessage}>{contactMessage}</div>}
         </form>
         <div className={styles.social}>
           <a href="#">Facebook</a>

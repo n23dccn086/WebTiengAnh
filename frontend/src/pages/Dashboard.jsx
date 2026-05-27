@@ -1,8 +1,8 @@
-// frontend/src/pages/Dashboard.jsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { getServicesApi } from "../services/serviceApi";
+import apiClient from "../services/apiClient";
 import LogoutButton from "../components/ui/LogoutButton";
 import styles from "./Dashboard.module.css";
 
@@ -10,10 +10,12 @@ const Dashboard = () => {
   const { user, fetchProfile, logout } = useAuthStore();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ totalLearned: 0, totalQuizzes: 0, averageScore: 0 });
 
   useEffect(() => {
     if (!user?.id) fetchProfile();
     loadServices();
+    fetchStats();
   }, []);
 
   const loadServices = async () => {
@@ -27,8 +29,16 @@ const Dashboard = () => {
     }
   };
 
-  if (loading)
-    return <div className={styles.loading}>📖 Đang tải dữ liệu...</div>;
+  const fetchStats = async () => {
+    try {
+      const res = await apiClient.get('/users/dashboard-stats');
+      setStats(res.data.data);
+    } catch (err) {
+      console.error('Lỗi tải thống kê:', err);
+    }
+  };
+
+  if (loading) return <div className={styles.loading}>📖 Đang tải dữ liệu...</div>;
 
   return (
     <div className={styles.container}>
@@ -38,26 +48,24 @@ const Dashboard = () => {
 
       <div className={styles.welcome}>
         <h1>👋 Chào mừng, {user?.full_name || "bạn"}!</h1>
-        <p>
-          Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.
-        </p>
+        <p>Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.</p>
       </div>
 
       <div className={styles.stats}>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>📚</div>
           <h3>Từ vựng đã học</h3>
-          <p>{user?.total_words_learned || 42}</p>
+          <p>{stats.totalLearned}</p>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>📝</div>
           <h3>Quiz đã làm</h3>
-          <p>{user?.total_quizzes_done || 7}</p>
+          <p>{stats.totalQuizzes}</p>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>⭐</div>
           <h3>Điểm trung bình</h3>
-          <p>{user?.avg_score || 85}%</p>
+          <p>{stats.averageScore}%</p>
         </div>
       </div>
 

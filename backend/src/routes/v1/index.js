@@ -13,6 +13,7 @@ const dictionaryRoutes = require("./dictionary.route"); // Import dictionary
 const paymentRoutes = require('./payment.route');
 const adminRoute = require('./admin.route');
 const statisticsRoutes = require('./statistics.route');
+const contactRoutes = require('./contact.route');
 
 // Gắn route vào hệ thống
 router.use('/auth', authRoutes);
@@ -27,5 +28,6 @@ router.use('/payments', paymentRoutes);
 router.use('/admin', adminRoute.adminRouter);
 router.use('/super-admin', adminRoute.superAdminRouter);
 router.use('/statistics', statisticsRoutes);
+router.use('/contact', contactRoutes);
 
 module.exports = router;

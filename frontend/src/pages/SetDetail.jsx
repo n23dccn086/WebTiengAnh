@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getSetDetail } from "../services/flashcardSetApi";
+import { getSetDetail, toggleSrs } from "../services/flashcardSetApi";
 import AddFlashcardForm from "../features/flashcards/AddFlashcardForm";
+import SRSConfig from "../features/srs/SRSConfig";
+import TestHistory from "../components/TestHistory";
 import styles from "./SetDetail.module.css";
 
 const SetDetail = () => {
@@ -20,6 +22,11 @@ const SetDetail = () => {
     setLoading(false);
   };
 
+  const handleToggleSrs = async (isEnabled) => {
+    await toggleSrs(id, isEnabled);
+    setRefresh(prev => !prev);
+  };
+
   if (loading) return <div className={styles.loading}>📖 Đang tải...</div>;
 
   return (
@@ -35,6 +42,14 @@ const SetDetail = () => {
         <Link to={`/sets/${id}/practice`} className={styles.btn}>✍️ Practice (ABCD)</Link>
         <Link to={`/sets/${id}/test`} className={styles.btn}>📝 Test (có lưu)</Link>
       </div>
+      
+      {/* Cài đặt SRS */}
+      {set.is_srs_enabled !== undefined && (
+        <div className={styles.srsSection}>
+          <SRSConfig isEnabled={set.is_srs_enabled} onToggle={handleToggleSrs} />
+        </div>
+      )}
+
       <div className={styles.flashcardList}>
         <h3>Danh sách từ vựng</h3>
         {set.flashcards && set.flashcards.map(fc => (
@@ -44,7 +59,11 @@ const SetDetail = () => {
           </div>
         ))}
       </div>
+
       <AddFlashcardForm setId={id} onAdded={() => setRefresh(prev => !prev)} />
+      
+      {/* Lịch sử test */}
+      <TestHistory setId={id} />
     </div>
   );
 };

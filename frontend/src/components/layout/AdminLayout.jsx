@@ -11,7 +11,6 @@ const AdminLayout = () => {
     navigate('/login');
   };
 
-  // Kiểm tra role: chỉ ADMIN hoặc SUPER_ADMIN mới được vào
   if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
     return <div className={styles.error}>Bạn không có quyền truy cập trang này.</div>;
   }

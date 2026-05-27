@@ -5,6 +5,12 @@ import styles from './StaffManager.module.css';
 
 const StaffManager = () => {
   const { user } = useAuthStore();
+  
+  // Chỉ SUPER_ADMIN mới được xem
+  if (user?.role !== 'SUPER_ADMIN') {
+    return <div className={styles.container}><div className={styles.error}>Bạn không có quyền truy cập trang này.</div></div>;
+  }
+
   const [staffs, setStaffs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,7 +25,7 @@ const StaffManager = () => {
   const fetchStaffs = async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get('/admin/users'); // Lấy tất cả user, lọc role ADMIN
+      const res = await apiClient.get('/admin/users');
       const admins = res.data.data.users.filter(u => u.role === 'ADMIN');
       setStaffs(admins);
     } catch (err) {

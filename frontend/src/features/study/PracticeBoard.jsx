@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useAuthStore from "../../store/authStore";
 import styles from "./PracticeBoard.module.css";
 
 export default function PracticeBoard({ questions }) {
@@ -6,18 +7,19 @@ export default function PracticeBoard({ questions }) {
     const [selectedOptIdx, setSelectedOptIdx] = useState(null);
     const [isAnswered, setIsAnswered] = useState(false);
     const [score, setScore] = useState(0);
+    const { user } = useAuthStore();
 
     if (!questions || questions.length === 0) {
         return <div className={styles.empty}>Không có câu hỏi luyện tập nào được tìm thấy.</div>;
     }
 
     const currentQuestion = questions[currentIdx];
+    const isPremium = user?.role === "PREMIUM";
 
     const handleOptionClick = (optIdx) => {
-        if (isAnswered) return; // Đã trả lời rồi thì khóa không cho chọn lại
+        if (isAnswered) return;
         setSelectedOptIdx(optIdx);
         setIsAnswered(true);
-
         if (currentQuestion.options[optIdx].is_correct) {
             setScore((prev) => prev + 1);
         }
@@ -80,6 +82,11 @@ export default function PracticeBoard({ questions }) {
                 <div className={styles.explanationBox}>
                     <h4>💡 Giải thích đáp án:</h4>
                     <p>{currentQuestion.explanation || "Không có giải thích cho câu hỏi này."}</p>
+                    {!isPremium && !currentQuestion.options[selectedOptIdx]?.is_correct && (
+                        <div className={styles.upgradeHint}>
+                            🌟 <a href="/upgrade">Nâng cấp Premium</a> để xem giải thích cho tất cả câu hỏi!
+                        </div>
+                    )}
                 </div>
             )}
 

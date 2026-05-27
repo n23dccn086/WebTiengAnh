@@ -9,7 +9,6 @@ const StudyTest = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Bóc tách chuẩn xác theo các state/action đang có trong Zustand Store của bạn
   const {
     initTestSession,
     attemptId,
@@ -17,22 +16,20 @@ const StudyTest = () => {
     testResult,
     setTestResult,
     clearTestSession,
-    answers,             // Mảng [{ question_id, selected_option_id }]
-    markSavedSuccess,     // Hàm cập nhật trạng thái đã lưu xong
-    setSavingStatus       // Hàm cập nhật trạng thái đang lưu
+    answers,
+    markSavedSuccess,
+    setSavingStatus
   } = useTestStore();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // 1. KHỞI TẠO PHÒNG THI
   useEffect(() => {
     const initTest = async () => {
       try {
         setLoading(true);
         setError('');
         const data = await createTest(id, 10);
-
         if (data && data.questions) {
           initTestSession(data.attempt_id, data.questions);
         } else {
@@ -46,38 +43,27 @@ const StudyTest = () => {
         setLoading(false);
       }
     };
-
     initTest();
     return () => clearTestSession();
   }, [id, initTestSession, clearTestSession]);
 
-  // 2. VÒNG LẶP AUTO-SAVE TỰ ĐỘNG (Dùng mảng Array trực tiếp từ Zustand Store)
   useEffect(() => {
     if (!attemptId) return;
-
     const interval = setInterval(async () => {
-      // Vì answers trong store của bạn ĐÃ LÀ MẢNG [{ question_id, selected_option_id }] rồi
-      // Nên ta kiểm tra trực tiếp độ dài của mảng, không cần ép kiểu nữa!
       if (answers && answers.length > 0) {
         try {
-          setSavingStatus(true); // Bật trạng thái "Đang lưu..." trên giao diện
-
-          // Bắn thẳng mảng answers chuẩn chỉnh lên MySQL
+          setSavingStatus(true);
           await autoSave(attemptId, answers);
-
-          markSavedSuccess(); // Lưu xong -> Cập nhật lastSavedAt hiển thị giờ lưu nháp thành công
-          console.log("🚀 [Auto-Save]: Đã đồng bộ mảng đáp án thành công vào DB!");
+          markSavedSuccess();
         } catch (err) {
-          console.error("❌ Lỗi lưu nháp tự động:", err);
+          console.error("Auto-save failed", err);
           setSavingStatus(false);
         }
       }
-    }, 15000); // 15 giây lưu nháp một lần
-
+    }, 15000);
     return () => clearInterval(interval);
   }, [attemptId, answers, setSavingStatus, markSavedSuccess]);
 
-  // 3. XỬ LÝ NỘP BÀI THI
   const handleSubmit = async () => {
     if (!window.confirm("Bạn có chắc chắn muốn nộp bài kiểm tra này không?")) return;
     try {
@@ -88,16 +74,19 @@ const StudyTest = () => {
     }
   };
 
-  // --- RENDERING INTERFACE ---
   if (loading) return <div className={styles.loading}>📝 Đang tạo đề thi...</div>;
 
   if (error) {
     return (
-      <div className={styles.errorContainer}>
-        <div className={styles.errorBanner}>❌ {error}</div>
-        <button className={styles.backBtnCenter} onClick={() => navigate(-1)}>
-          Quay lại bộ thẻ
-        </button>
+      <div className={styles.container}>
+        <div className={styles.errorBox}>
+          <div className={styles.errorIcon}>❌</div>
+          <h3>Hết lượt AI</h3>
+          <p>{error}</p>
+          <Link to={`/sets/${id}`} className={styles.errorBackBtn}>
+            Quay lại bộ thẻ
+          </Link>
+        </div>
       </div>
     );
   }

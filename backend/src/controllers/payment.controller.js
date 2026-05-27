@@ -10,10 +10,10 @@ const createPayment = catchAsync(async (req, res) => {
 
 const momoWebhook = catchAsync(async (req, res) => {
   console.log('=== CONTROLLER WEBHOOK HIT ===');
-  console.log('Body:', JSON.stringify(req.body));
+  console.log('Headers:', req.headers);
+  console.log('Body:', JSON.stringify(req.body, null, 2));
 
   const isSuccess = await PaymentService.handleMoMoWebhook(req.body);
-
   if (isSuccess) {
     return res.status(200).json({ status: 0, message: "success" });
   } else {

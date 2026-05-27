@@ -110,7 +110,9 @@ const useAuthStore = create(
       fetchProfile: async () => {
         try {
           const res = await apiClient.get('/users/profile');
-          set({ user: res.data.data });
+          const userData = res.data.data;
+          set({ user: userData, isAuthenticated: true });
+          localStorage.setItem('user', JSON.stringify(userData));
           return { success: true };
         } catch (error) {
           return { success: false, message: error.response?.data?.message };
@@ -121,6 +123,7 @@ const useAuthStore = create(
         try {
           const res = await apiClient.put('/users/profile', data);
           set((state) => ({ user: { ...state.user, ...res.data.data } }));
+          localStorage.setItem('user', JSON.stringify({ ...get().user, ...res.data.data }));
           return { success: true, message: res.data.message };
         } catch (error) {
           return { success: false, message: error.response?.data?.message };
@@ -136,11 +139,11 @@ const useAuthStore = create(
         }
       },
 
-      // 🆕 UPDATE REMINDER SETTING
       updateReminder: async (isEnabled) => {
         try {
           const res = await apiClient.put('/users/reminder', { is_enabled: isEnabled });
           set((state) => ({ user: { ...state.user, is_reminder_enabled: isEnabled } }));
+          localStorage.setItem('user', JSON.stringify({ ...get().user, is_reminder_enabled: isEnabled }));
           return { success: true, message: res.data.message };
         } catch (error) {
           return { success: false, message: error.response?.data?.message };

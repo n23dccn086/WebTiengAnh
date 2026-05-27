@@ -174,3 +174,13 @@
     color: #94a3b8;
     padding: 3rem;
 }
+
+.upgradeHint {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #fbbf24;
+}
+.upgradeHint a {
+    color: #fbbf24;
+    text-decoration: underline;
+}

@@ -93,3 +93,10 @@
   color: #f0f0f0;
   font-style: italic;
 }
+
+.srsSection {
+  margin: 1.5rem 0;
+  background: rgba(0,0,0,0.2);
+  border-radius: 20px;
+  padding: 0.5rem;
+}

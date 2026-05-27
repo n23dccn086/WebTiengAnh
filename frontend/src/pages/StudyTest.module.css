@@ -80,15 +80,6 @@
   margin-top: 2rem;
 }
 
-.backBtn {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  border-radius: 40px;
-  text-decoration: none;
-  color: white;
-  display: inline-block;
-}
-
 .loading {
   text-align: center;
   padding: 4rem;
@@ -105,4 +96,59 @@
   max-width: 600px;
   color: white;
   font-weight: bold;
+}
+
+.btnLearnNew {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  margin-right: 1rem;
+}
+.btnLearnNew:hover {
+  background: #059669;
+}
+
+/* Error box style */
+.errorBox {
+  background: linear-gradient(135deg, rgba(255,80,80,0.95), rgba(200,50,50,0.95));
+  backdrop-filter: blur(12px);
+  padding: 2rem;
+  border-radius: 32px;
+  text-align: center;
+  margin: 2rem auto;
+  max-width: 450px;
+  color: white;
+  box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.errorIcon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+.errorBox h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.errorBox p {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.errorBackBtn {
+  display: inline-block;
+  background: rgba(255,255,255,0.25);
+  padding: 10px 24px;
+  border-radius: 40px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: 0.2s;
+}
+.errorBackBtn:hover {
+  background: rgba(255,255,255,0.4);
 }

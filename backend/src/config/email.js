@@ -243,9 +243,27 @@ ${studyLink}
   }
 }
 
+const sendContactEmail = async (name, email, message) => {
+  const subject = `Liên hệ từ ${name} (${email})`;
+  const htmlContent = `<div style="font-family: Arial, sans-serif;">
+    <h2>Thông tin liên hệ</h2>
+    <p><strong>Họ tên:</strong> ${name}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Nội dung:</strong><br/>${message}</p>
+  </div>`;
+  const textContent = `Họ tên: ${name}\nEmail: ${email}\nNội dung: ${message}`;
+  await sendBrevoEmail({
+    to: process.env.EMAIL_FROM,
+    subject,
+    htmlContent,
+    textContent
+  });
+};
+
 // Đừng quên export hàm mới này ra nhé
 module.exports = {
   sendVerificationEmail,
   sendResetPasswordEmail,
+  sendContactEmail,
   sendSrsReminderEmail // <--- THÊM VÀO ĐÂY
 };
