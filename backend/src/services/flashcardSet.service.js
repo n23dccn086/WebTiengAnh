@@ -14,11 +14,13 @@ const getUserSets = async (userId, page, limit, serviceId) => {
   return { sets, pagination: { current_page: page, total_pages: totalPages, total_items: totalItems, limit } };
 };
 
+// ========== SỬA HÀM NÀY: THÊM is_srs_enabled ==========
 const getSystemSets = async (userId, serviceId = null) => {
   let query = `
     SELECT fs.id, fs.title, fs.description, s.title AS service_title,
            COUNT(DISTINCT f.id) AS total_cards,
-           IF(MAX(uss.set_id) IS NOT NULL, TRUE, FALSE) AS is_saved
+           IF(MAX(uss.set_id) IS NOT NULL, TRUE, FALSE) AS is_saved,
+           COALESCE(MAX(uss.is_srs_enabled), FALSE) AS is_srs_enabled
     FROM flashcard_sets fs
     LEFT JOIN services s ON fs.service_id = s.id
     LEFT JOIN flashcards f ON fs.id = f.set_id
@@ -93,12 +95,9 @@ const deleteSet = async (setId, userId) => {
   await FlashcardSetModel.deleteSet(setId);
 };
 
-// ===== SỬA HÀM NÀY =====
+// ===== toggleSrs đã đúng =====
 const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
-  // 1. Cập nhật cài đặt SRS trong bảng user_saved_sets
   await FlashcardSetModel.toggleSrs(userId, setId, isSrsEnabled, dailyNewWords);
-
-  // 2. Nếu bật SRS, đồng bộ tất cả flashcard của bộ này vào user_flashcards
   if (isSrsEnabled) {
     const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
     for (const card of flashcards) {
@@ -118,7 +117,7 @@ const saveSystemSet = async (userId, setId, action) => {
 const createSetFromPdf = async (user, fileBuffer, fileName, title, description, serviceId) => {
   console.log("📄 Bắt đầu xử lý PDF:", fileName);
   if (user.ai_quota <= 0) {
-    throw new AppError(403, 'Bạn đã hết lượt sử dụng AI hôm nay.', 'QUOTA_AI_EXCEEDED');
+    throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay.', 'QUOTA_AI_EXCEEDED');
   }
   if (user.role === 'USER') {
     const docsThisMonth = await DocumentModel.countDocsInCurrentMonth(user.id);

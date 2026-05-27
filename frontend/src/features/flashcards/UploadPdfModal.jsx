@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import apiClient from '../../services/apiClient';
 import styles from './UploadPdfModal.module.css';
 
@@ -8,17 +8,25 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const fileInputRef = useRef(null); // Tham chiếu đến input file
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type !== 'application/pdf') {
       setError('Chỉ chấp nhận file PDF. Vui lòng chọn file có đuôi .pdf');
       setFile(null);
-      e.target.value = '';
+      // Reset input để có thể chọn lại file khác
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } else {
       setError('');
       setFile(selectedFile);
     }
+  };
+
+  const handleResetFile = () => {
+    setFile(null);
+    setError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e) => {
@@ -45,6 +53,7 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
       console.error('Upload error:', err);
       const msg = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi xử lý PDF';
       setError(msg);
+      // Nếu upload thất bại, không reset file để user có thể thử lại
     } finally {
       setLoading(false);
     }
@@ -81,11 +90,20 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
               type="file"
               accept="application/pdf"
               onChange={handleFileChange}
+              ref={fileInputRef}
               required
             />
             {file && (
               <div className={styles.fileName}>
                 📄 {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                <button
+                  type="button"
+                  onClick={handleResetFile}
+                  className={styles.resetFileBtn}
+                  title="Chọn file khác"
+                >
+                  ❌
+                </button>
               </div>
             )}
           </div>
