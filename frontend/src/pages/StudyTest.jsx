@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { createTest, submitTest, autoSave } from '../services/studyApi';
 import useTestStore from '../store/testStore';
 import TestBoard from "../features/study/TestBoard";
+import confetti from 'canvas-confetti';
 import styles from './StudyTest.module.css';
 
 const StudyTest = () => {
@@ -69,6 +70,11 @@ const StudyTest = () => {
     try {
       const res = await submitTest(attemptId);
       setTestResult(res.score, res.results);
+      if (res.score >= 80) {
+        confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 } });
+      } else {
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+      }
     } catch (err) {
       alert(err.response?.data?.message || 'Nộp bài thất bại');
     }
@@ -83,9 +89,7 @@ const StudyTest = () => {
           <div className={styles.errorIcon}>❌</div>
           <h3>Hết lượt AI</h3>
           <p>{error}</p>
-          <Link to={`/sets/${id}`} className={styles.errorBackBtn}>
-            Quay lại bộ thẻ
-          </Link>
+          <Link to={`/sets/${id}`} className={styles.errorBackBtn}>Quay lại bộ thẻ</Link>
         </div>
       </div>
     );

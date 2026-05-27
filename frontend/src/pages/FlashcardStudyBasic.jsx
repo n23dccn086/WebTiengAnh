@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
 import useSpeech from '../hooks/useSpeech';
 import { getFlashcardsBySetApi } from '../services/flashcardApi';
 import styles from './FlashcardStudyBasic.module.css';
@@ -8,7 +7,6 @@ import styles from './FlashcardStudyBasic.module.css';
 const FlashcardStudyBasic = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
   const { speak } = useSpeech();
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,9 +24,7 @@ const FlashcardStudyBasic = () => {
   };
 
   const playPronunciation = () => {
-    if (cards[currentIndex]?.word) {
-      speak(cards[currentIndex].word);
-    }
+    if (cards[currentIndex]?.word) speak(cards[currentIndex].word);
   };
 
   const nextCard = () => {
@@ -56,9 +52,8 @@ const FlashcardStudyBasic = () => {
 
   return (
     <div className={styles.container}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
         <Link to={`/sets/${id}`} className={styles.backBtn}>← Thoát</Link>
-        <button onClick={logout} className={styles.logoutBtn}>🚪 Đăng xuất</button>
       </div>
       <div className={styles.topBar}>
         <div className={styles.progressBar}>

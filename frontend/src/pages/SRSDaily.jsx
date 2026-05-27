@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import useSpeech from '../hooks/useSpeech';
 import { getTodayReviews, submitReview, learnNewCards } from '../services/srsApi';
+import confetti from 'canvas-confetti';
 import styles from './SRSDaily.module.css';
 import FlipCard from "../features/srs/FlipCard";
 import RatingButtons from "../features/srs/RatingButtons";
@@ -50,6 +51,7 @@ const SRSDaily = () => {
         setFlipped(false);
       } else {
         setFinished(true);
+        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
       }
     } catch (err) {
       console.error(err);

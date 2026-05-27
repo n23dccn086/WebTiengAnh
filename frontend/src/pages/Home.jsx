@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getServicesApi } from "../services/serviceApi";
 import useAuthStore from "../store/authStore";
 import apiClient from "../services/apiClient";
+import TipOfTheDay from "../components/TipOfTheDay";
 import styles from "./Home.module.css";
 
 const Home = () => {
@@ -41,10 +42,10 @@ const Home = () => {
 
   const members = [
     { id: 'vo-van-hoang', name: 'Võ Văn Hoàng', role: 'DevOps & Database' },
-    { id: 'nguyen-le-nhut-hao', name: 'Nguyễn Lê Nhựt Hào', role: 'Frontend' },
-    { id: 'dinh-viet-hoang', name: 'Đinh Việt Hoàng', role: 'Backend' },
-    { id: 'nguyen-le-huy-thai', name: 'Nguyễn Lê Huy Thái', role: 'Frontend' },
-    { id: 'tran-minh-duc', name: 'Trần Minh Đức', role: 'Backend' }
+    { id: 'nguyen-le-nhut-hao', name: 'Nguyễn Lê Nhựt Hào', role: 'Frontend Developer' },
+    { id: 'dinh-viet-hoang', name: 'Đinh Việt Hoàng', role: 'Backend Developer' },
+    { id: 'nguyen-le-huy-thai', name: 'Nguyễn Lê Huy Thái', role: 'Frontend Developer' },
+    { id: 'tran-minh-duc', name: 'Trần Minh Đức', role: 'Backend Developer' }
   ];
 
   if (loading) return <div className={styles.loading}>📖 Đang tải...</div>;
@@ -145,6 +146,7 @@ const Home = () => {
 
       <footer className={styles.footer}>
         <p>© 2026 EngVocab – Học tiếng Anh dễ dàng hơn.</p>
+        <TipOfTheDay />
       </footer>
     </div>
   );

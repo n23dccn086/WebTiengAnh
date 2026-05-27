@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
 import useSpeech from '../hooks/useSpeech';
 import { getFlashcardsBySetApi } from '../services/flashcardApi';
 import { submitReview } from '../services/srsApi';
 import styles from './FlashcardStudy.module.css';
 
 const FlashcardStudy = () => {
-  const { id } = useParams(); // Lấy set_id từ URL
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
   const { speak } = useSpeech();
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -33,9 +31,7 @@ const FlashcardStudy = () => {
   };
 
   const playPronunciation = () => {
-    if (cards[currentIndex]?.word) {
-      speak(cards[currentIndex].word);
-    }
+    if (cards[currentIndex]?.word) speak(cards[currentIndex].word);
   };
 
   const handleReview = async (rating) => {
@@ -46,8 +42,15 @@ const FlashcardStudy = () => {
       setFlipped(false);
       setShowHint(false);
     } else {
-      alert('🎉 Xuất sắc! Bạn đã học xong bộ thẻ này.');
-      navigate(`/sets/${id}`);
+      // Dynamic import confetti
+      import('canvas-confetti').then(module => {
+        const confetti = module.default;
+        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+        setTimeout(() => {
+          alert('🎉 Xuất sắc! Bạn đã học xong bộ thẻ này.');
+          navigate(`/sets/${id}`);
+        }, 200);
+      }).catch(err => console.error('Lỗi load confetti:', err));
     }
   };
 
@@ -59,10 +62,6 @@ const FlashcardStudy = () => {
 
   return (
     <div className={styles.container}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-        <button onClick={logout} className={styles.logoutBtn}>🚪 Đăng xuất</button>
-      </div>
-
       <div className={styles.topBar}>
         <Link to={`/sets/${id}`} className={styles.backBtn}>← Thoát</Link>
         <div className={styles.progressBar}>

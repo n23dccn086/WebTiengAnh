@@ -1,0 +1,31 @@
+.container {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+.title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ffd966;
+}
+.word {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0.2rem 0;
+}
+.meaning {
+  font-size: 0.9rem;
+}
+.pronounce {
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+.example {
+  font-size: 0.8rem;
+  font-style: italic;
+  margin-top: 0.3rem;
+}
