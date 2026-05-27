@@ -4,6 +4,8 @@ import useAuthStore from '../store/authStore';
 import useSpeech from '../hooks/useSpeech';
 import { getTodayReviews, submitReview } from '../services/srsApi';
 import styles from './SRSDaily.module.css';
+import FlipCard from "../features/srs/FlipCard";
+import RatingButtons from "../features/srs/RatingButtons";
 
 const SRSDaily = () => {
   const navigate = useNavigate();
@@ -76,7 +78,7 @@ const SRSDaily = () => {
         <div className={styles.progressBar}>
           <div className={styles.progressFill} style={{ width: `${progress}%` }}></div>
         </div>
-        <div className={styles.counter}>{currentIndex+1} / {cards.length}</div>
+        <div className={styles.counter}>{currentIndex + 1} / {cards.length}</div>
       </div>
 
       <div className={styles.cardWrapper} onClick={() => setFlipped(!flipped)}>

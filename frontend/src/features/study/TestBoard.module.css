@@ -1,0 +1,247 @@
+.testContainer {
+    display: flex;
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.mainExam {
+    flex: 3;
+}
+
+.topStatus {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.examTitle {
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.syncStatus {
+    font-size: 0.85rem;
+}
+
+.savingText {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.savedText {
+    color: #10b981;
+    font-weight: 500;
+}
+
+.idleText {
+    color: #64748b;
+}
+
+.questionCard {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 2rem;
+    min-height: 320px;
+}
+
+.questionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.qIndexBadge {
+    background: #3b82f6;
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.qType {
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.qContent {
+    color: #f8fafc;
+    font-size: 1.3rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+}
+
+.optionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.optionItem {
+    display: flex;
+    align-items: center;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.optionItem:hover {
+    border-color: #475569;
+    background: #161e2e;
+}
+
+.checkedItem {
+    border-color: #6366f1 !important;
+    background: rgba(99, 102, 241, 0.08) !important;
+    color: #818cf8;
+}
+
+.hiddenRadio {
+    display: none;
+}
+
+.radioCustom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #475569;
+    border-radius: 50%;
+    margin-right: 1rem;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.checkedItem .radioCustom {
+    border-color: #6366f1;
+}
+
+.checkedItem .radioCustom::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #6366f1;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.optText {
+    font-size: 1rem;
+}
+
+.navControls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+}
+
+.prevBtn,
+.nextBtn {
+    background: #334155;
+    color: #f1f5f9;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.prevBtn:hover:not(:disabled),
+.nextBtn:hover:not(:disabled) {
+    background: #475569;
+}
+
+.prevBtn:disabled,
+.nextBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* SIDE PANEL LƯỚI */
+.sidePanel {
+    flex: 1;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+}
+
+.panelTitle {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.questionsGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.gridItem {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 0.6rem 0;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.activeGrid {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: #fff !important;
+}
+
+.doneGrid {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.summaryStats {
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.submitBtn {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    transition: opacity 0.2s;
+}
+
+.submitBtn:hover {
+    opacity: 0.9;
+}

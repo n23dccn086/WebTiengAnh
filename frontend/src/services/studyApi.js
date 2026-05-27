@@ -12,6 +12,7 @@ export const createTest = async (setId, numQuestions = 10) => {
 
 export const autoSave = async (attemptId, answers) => {
   await apiClient.patch(`/study/tests/${attemptId}/auto-save`, { answers });
+  return res.data.data;
 };
 
 export const submitTest = async (attemptId) => {

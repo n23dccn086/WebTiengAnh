@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { generatePractice } from '../services/studyApi';
+import PracticeBoard from "../features/study/PracticeBoard";
 import styles from './StudyPractice.module.css';
 
 const StudyPractice = () => {
@@ -53,7 +54,7 @@ const StudyPractice = () => {
     <div className={styles.container}>
       <Link to={`/sets/${id}`} className={styles.backBtn}>← Quay lại</Link>
       <div className={styles.questionCard}>
-        <h3>Câu {currentIndex+1}/{questions.length}</h3>
+        <h3>Câu {currentIndex + 1}/{questions.length}</h3>
         <p className={styles.question}>{q.content}</p>
         <div className={styles.options}>
           {q.options.map((opt) => (

@@ -60,7 +60,7 @@ async function checkConnection() {
 
     console.log("✅ MySQL Connected successfully!");
     console.log(`   Host: ${process.env.DB_HOST || "localhost"}`);
-    console.log(`   Port: ${process.env.DB_PORT || 3306}`);
+    console.log(`   Port: ${process.env.DB_PORT || 3307}`);
     console.log(`   Database: ${process.env.DB_NAME || "edtech_db"}`);
   } catch (error) {
     console.error("❌ Kết nối MySQL thất bại:", error.message);

@@ -1,0 +1,10 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: edtech-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: edtech_db
+    ports:
+      - "3307:3306" # Đổi số đầu tiên thành 3307
