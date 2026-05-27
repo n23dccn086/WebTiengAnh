@@ -1,7 +1,6 @@
 const db = require('../config/database');
 
-// Lấy bộ thẻ của User (API 2)
-// Lấy bộ thẻ của User (API 2)
+// ========== HÀM LẤY DANH SÁCH BỘ THẺ CỦA USER (GỒM TỰ TẠO + HỆ THỐNG ĐÃ LƯU) ==========
 const getSetsByUser = async (userId, limit, offset) => {
   const query = `
     SELECT 
@@ -32,7 +31,7 @@ const getSetsByUser = async (userId, limit, offset) => {
   return { sets: rows, totalItems: total || 0 };
 };
 
-// Lấy bộ thẻ Hệ thống (API 3)
+// ========== LẤY DANH SÁCH BỘ THẺ HỆ THỐNG (API 3) ==========
 const getSystemSets = async (userId) => {
   const query = `
     SELECT 
@@ -52,10 +51,9 @@ const getSystemSets = async (userId) => {
   return rows;
 };
 
-// Tạo bộ thẻ mới (API 4) - Dùng Transaction với hàm wrapper của team bạn
+// ========== TẠO BỘ THẺ MỚI (API 4) ==========
 const createSet = async (userId, title, description, serviceId) => {
   const connection = await db.getConnection();
-  
   const execTx = (sql, params) => new Promise((res, rej) => connection.execute(sql, params, (err, results) => err ? rej(err) : res(results)));
   const beginTx = () => new Promise((res, rej) => connection.beginTransaction(err => err ? rej(err) : res()));
   const commitTx = () => new Promise((res, rej) => connection.commit(err => err ? rej(err) : res()));
@@ -85,7 +83,7 @@ const createSet = async (userId, title, description, serviceId) => {
   }
 };
 
-// Lấy 1 bộ thẻ (API 5)
+// ========== LẤY THÔNG TIN CHI TIẾT MỘT BỘ THẺ (API 5) ==========
 const getSetById = async (setId, userId) => {
   const query = `
     SELECT fs.id, fs.title, fs.description, fs.user_id, fs.is_system,
@@ -99,7 +97,7 @@ const getSetById = async (setId, userId) => {
   return rows[0] || null;
 };
 
-// Cập nhật bộ thẻ (API 6)
+// ========== CẬP NHẬT BỘ THẺ (API 6) ==========
 const updateSet = async (setId, title, description) => {
   await db.execute(
     `UPDATE flashcard_sets SET title = COALESCE(?, title), description = COALESCE(?, description) WHERE id = ?`,
@@ -107,12 +105,12 @@ const updateSet = async (setId, title, description) => {
   );
 };
 
-// Xóa bộ thẻ (API 7)
+// ========== XÓA BỘ THẺ (API 7) ==========
 const deleteSet = async (setId) => {
   await db.execute(`DELETE FROM flashcard_sets WHERE id = ?`, [setId]);
 };
 
-// Bật/Tắt SRS (API 8)
+// ========== BẬT/TẮT SRS (API 8) ==========
 const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
   await db.execute(
     `INSERT INTO user_saved_sets (user_id, set_id, is_srs_enabled, daily_new_words) 
@@ -122,7 +120,7 @@ const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
   );
 };
 
-// Lưu/Bỏ lưu bộ hệ thống (API 9, 10)
+// ========== LƯU/BỎ LƯU BỘ HỆ THỐNG (API 9, 10) ==========
 const saveSystemSet = async (userId, setId, action) => {
   if (action === 'SAVE') {
     await db.execute(

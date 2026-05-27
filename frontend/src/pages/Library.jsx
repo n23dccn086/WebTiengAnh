@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
-import { getPersonalSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
+import { getUserSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
 import UploadPdfModal from "../features/flashcards/UploadPdfModal";
 import DocumentsButton from "../components/ui/DocumentsButton";
 import PerspectiveButton from "../components/ui/PerspectiveButton";
@@ -25,8 +25,9 @@ const Library = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getPersonalSets();
-      setSets(data);
+      // getUserSets trả về mảng sets (theo code hiện tại của bạn)
+      const data = await getUserSets();
+      setSets(data || []);
     } catch (error) {
       console.error("Lỗi tải thư viện:", error);
       setSets([]);
@@ -104,10 +105,14 @@ const Library = () => {
               </div>
               <div className={styles.actions}>
                 <Link to={`/sets/${set.id}`} className={styles.btn}>Xem chi tiết</Link>
+                {/* Nút bật/tắt SRS cho tất cả bộ thẻ (kể cả hệ thống đã lưu) */}
                 <button type="button" onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)} className={styles.srsBtn}>
                   {set.is_srs_enabled ? "🔁 Đang bật SRS" : "⏸️ Bật SRS"}
                 </button>
-                <button type="button" onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>Xóa</button>
+                {/* Chỉ hiển thị nút xóa nếu bộ thẻ không phải hệ thống */}
+                {!set.is_system && (
+                  <button type="button" onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>Xóa</button>
+                )}
               </div>
             </div>
           ))}

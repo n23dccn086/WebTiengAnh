@@ -73,6 +73,15 @@ const createSetFromPdf = catchAsync(async (req, res) => {
 });
 
 module.exports = {
-  getUserSets, getSystemSets, getPersonalSets, createSet, getSetDetail,
-  updateSet, deleteSet, toggleSrs, saveSystemSet, unsaveSystemSet, createSetFromPdf
+  getUserSets,
+  getSystemSets,
+  getPersonalSets,
+  createSet,
+  getSetDetail,
+  updateSet,
+  deleteSet,
+  toggleSrs,
+  saveSystemSet,
+  unsaveSystemSet,
+  createSetFromPdf
 };

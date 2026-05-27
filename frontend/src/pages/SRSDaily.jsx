@@ -20,9 +20,14 @@ const SRSDaily = () => {
   }, []);
 
   const loadCards = async () => {
-    const data = await getTodayReviews();
-    setCards(data);
-    setLoading(false);
+    try {
+      const data = await getTodayReviews();
+      setCards(data);
+    } catch (error) {
+      console.error("Lỗi tải thẻ ôn tập:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const playPronunciation = () => {
@@ -41,6 +46,7 @@ const SRSDaily = () => {
   };
 
   if (loading) return <div className={styles.loading}>📚 Đang tải thẻ ôn tập...</div>;
+
   if (finished) {
     return (
       <div className={styles.finished}>
@@ -50,6 +56,7 @@ const SRSDaily = () => {
       </div>
     );
   }
+
   if (cards.length === 0) {
     return (
       <div className={styles.empty}>

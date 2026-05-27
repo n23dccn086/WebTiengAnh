@@ -10,12 +10,20 @@ const StudyPractice = () => {
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const load = async () => {
-      const data = await generatePractice(id, 10);
-      setQuestions(data.questions || data);
-      setLoading(false);
+      try {
+        const data = await generatePractice(id, 10);
+        setQuestions(data.questions || data);
+      } catch (err) {
+        console.error(err);
+        const msg = err.response?.data?.message || 'Không thể tạo câu hỏi, vui lòng thử lại sau.';
+        setError(msg);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [id]);
@@ -37,6 +45,7 @@ const StudyPractice = () => {
   };
 
   if (loading) return <div className={styles.loading}>🧠 AI đang tạo câu hỏi...</div>;
+  if (error) return <div className={styles.error}>❌ {error}</div>;
   if (!questions.length) return <div className={styles.empty}>Không có câu hỏi nào.</div>;
 
   const q = questions[currentIndex];

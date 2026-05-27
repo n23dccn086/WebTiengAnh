@@ -35,7 +35,6 @@ const getSystemSets = async (userId, serviceId = null) => {
   return rows;
 };
 
-// ========== SỬA LỖI GROUP BY ==========
 const getPersonalSets = async (userId, page, limit) => {
   const offset = (page - 1) * limit;
   const [sets] = await db.query(
@@ -61,7 +60,6 @@ const getPersonalSets = async (userId, page, limit) => {
   const totalPages = Math.ceil(totalItems / limit);
   return { sets, pagination: { current_page: page, total_pages: totalPages, total_items: totalItems, limit } };
 };
-// =====================================
 
 const createSet = async (userId, title, description, serviceId) => {
   return await FlashcardSetModel.createSet(userId, title, description, serviceId);
@@ -95,10 +93,12 @@ const deleteSet = async (setId, userId) => {
   await FlashcardSetModel.deleteSet(setId);
 };
 
+// ===== SỬA HÀM NÀY =====
 const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
-  const setDetail = await FlashcardSetModel.getSetById(setId, userId);
-  if (!setDetail) throw new AppError(404, 'Không tìm thấy bộ thẻ.', 'SET_NOT_FOUND');
+  // 1. Cập nhật cài đặt SRS trong bảng user_saved_sets
   await FlashcardSetModel.toggleSrs(userId, setId, isSrsEnabled, dailyNewWords);
+
+  // 2. Nếu bật SRS, đồng bộ tất cả flashcard của bộ này vào user_flashcards
   if (isSrsEnabled) {
     const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
     for (const card of flashcards) {
@@ -181,6 +181,14 @@ const createSetFromPdf = async (user, fileBuffer, fileName, title, description, 
 };
 
 module.exports = {
-  getUserSets, getSystemSets, getPersonalSets, createSet, getSetDetail,
-  updateSet, deleteSet, toggleSrs, saveSystemSet, createSetFromPdf
+  getUserSets,
+  getSystemSets,
+  getPersonalSets,
+  createSet,
+  getSetDetail,
+  updateSet,
+  deleteSet,
+  toggleSrs,
+  saveSystemSet,
+  createSetFromPdf
 };

@@ -16,19 +16,19 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: xử lý token hết hạn, nhưng không can thiệp vào API login
+// Response interceptor: xử lý token hết hạn, nhưng không can thiệp vào lỗi 429
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
 
-    // ✅ Nếu là request login thì không xử lý gì cả, để component tự xử lý lỗi
+    // ✅ Nếu là request login thì không xử lý gì cả
     if (originalRequest.url?.includes('/auth/login')) {
       return Promise.reject(error);
     }
 
-    // Xử lý refresh token cho các request khác
+    // ✅ Xử lý refresh token cho lỗi 401 (hết hạn access token)
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem("refreshToken");
@@ -44,6 +44,7 @@ apiClient.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return apiClient(originalRequest);
         } catch (refreshError) {
+          // Refresh token hết hạn hoặc không hợp lệ → logout
           useAuthStore.getState().logout();
           window.location.href = "/login";
           return Promise.reject(refreshError);
@@ -54,11 +55,13 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // ✅ Xử lý lỗi 403 (bị cấm) → logout
     if (status === 403) {
       useAuthStore.getState().logout();
       window.location.href = "/login";
     }
 
+    // ✅ CÁC LỖI KHÁC (400, 404, 429, 500,...) KHÔNG LOGOUT, chỉ reject để component xử lý
     return Promise.reject(error);
   }
 );

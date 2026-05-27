@@ -31,8 +31,7 @@ const getTestQuestionsWithOptions = async (attemptId) => {
 // --- TẠO BÀI TEST MỚI (BỌC TRANSACTION) ---
 const saveFullTestTransaction = async (userId, setId, questionsData) => {
   const connection = await db.getConnection();
-  
-  // Tái sử dụng "Bảo bối" bọc Promise đã hoạt động hoàn hảo ở API 1
+
   const execTx = (sql, params) => new Promise((res, rej) => connection.execute(sql, params, (err, results) => err ? rej(err) : res(results)));
   const beginTx = () => new Promise((res, rej) => connection.beginTransaction(err => err ? rej(err) : res()));
   const commitTx = () => new Promise((res, rej) => connection.commit(err => err ? rej(err) : res()));
@@ -41,7 +40,6 @@ const saveFullTestTransaction = async (userId, setId, questionsData) => {
   try {
     await beginTx();
 
-    // Dùng execTx và KHÔNG dùng mảng [] (vì execTx trả về trực tiếp Object)
     const attemptResult = await execTx(
       `INSERT INTO test_attempts (user_id, set_id, total_questions, status) VALUES (?, ?, ?, 'IN_PROGRESS')`,
       [userId, setId, questionsData.length]
@@ -95,15 +93,18 @@ const saveTestAnswer = async (attemptId, questionId, selectedOptionId) => {
      ON DUPLICATE KEY UPDATE selected_option_id = VALUES(selected_option_id), answered_at = NOW()`,
     [attemptId, questionId, selectedOptionId]
   );
-  
+
   await db.execute(`UPDATE test_attempts SET last_saved_at = NOW() WHERE id = ?`, [attemptId]);
 };
 
+// ===== SỬA HÀM NÀY =====
 const getQuestionsForGrading = async (attemptId) => {
   const [rows] = await db.execute(
-    `SELECT tq.id, tq.explanation, 
-            ta.selected_option_id, 
-            (SELECT id FROM test_options WHERE question_id = tq.id AND is_correct = TRUE LIMIT 1) AS correct_option_id
+    `SELECT 
+        tq.id, 
+        tq.explanation, 
+        ta.selected_option_id,
+        (SELECT id FROM test_options WHERE question_id = tq.id AND is_correct = TRUE LIMIT 1) AS correct_option_id
      FROM test_questions tq
      LEFT JOIN test_answers ta ON tq.id = ta.question_id AND ta.attempt_id = ?
      WHERE tq.attempt_id = ?`,
