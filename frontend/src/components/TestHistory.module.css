@@ -42,3 +42,26 @@
   padding: 1rem;
   color: #ccc;
 }
+
+.continueBtn, .resetBtn {
+  padding: 4px 12px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  margin: 5px;
+  margin-right: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.continueBtn {
+  background: #3b82f6;
+  color: white;
+}
+.resetBtn {
+  background: #ef4444;
+  color: white;
+}
+.continueBtn:hover, .resetBtn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}

@@ -1,17 +1,29 @@
-const FlashcardSetModel = require('../models/flashcardSet.model');
-const FlashcardModel = require('../models/flashcard.model');
-const UserModel = require('../models/user.model');
-const DocumentModel = require('../models/document.model');
-const GeminiService = require('./gemini.service');
-const extractTextFromPDF = require('../utils/pdfExtract');
-const AppError = require('../utils/appError');
-const db = require('../config/database');
+const FlashcardSetModel = require("../models/flashcardSet.model");
+const FlashcardModel = require("../models/flashcard.model");
+const UserModel = require("../models/user.model");
+const DocumentModel = require("../models/document.model");
+const GeminiService = require("./gemini.service");
+const extractTextFromPDF = require("../utils/pdfExtract");
+const AppError = require("../utils/appError");
+const db = require("../config/database");
 
 const getUserSets = async (userId, page, limit, serviceId) => {
   const offset = (page - 1) * limit;
-  const { sets, totalItems } = await FlashcardSetModel.getSetsByUser(userId, limit, offset);
+  const { sets, totalItems } = await FlashcardSetModel.getSetsByUser(
+    userId,
+    limit,
+    offset,
+  );
   const totalPages = Math.ceil(totalItems / limit);
-  return { sets, pagination: { current_page: page, total_pages: totalPages, total_items: totalItems, limit } };
+  return {
+    sets,
+    pagination: {
+      current_page: page,
+      total_pages: totalPages,
+      total_items: totalItems,
+      limit,
+    },
+  };
 };
 
 // ========== SỬA HÀM NÀY: THÊM is_srs_enabled ==========
@@ -52,26 +64,48 @@ const getPersonalSets = async (userId, page, limit) => {
      GROUP BY fs.id, fs.title, fs.description, fs.is_system, fs.created_at, s.title
      ORDER BY fs.created_at DESC
      LIMIT ? OFFSET ?`,
-    [userId, userId, limit, offset]
+    [userId, userId, limit, offset],
   );
   const [countResult] = await db.query(
     `SELECT COUNT(*) as total FROM flashcard_sets WHERE user_id = ? AND is_system = FALSE`,
-    [userId]
+    [userId],
   );
   const totalItems = countResult[0]?.total || 0;
   const totalPages = Math.ceil(totalItems / limit);
-  return { sets, pagination: { current_page: page, total_pages: totalPages, total_items: totalItems, limit } };
+  return {
+    sets,
+    pagination: {
+      current_page: page,
+      total_pages: totalPages,
+      total_items: totalItems,
+      limit,
+    },
+  };
 };
 
 const createSet = async (userId, title, description, serviceId) => {
-  return await FlashcardSetModel.createSet(userId, title, description, serviceId);
+  return await FlashcardSetModel.createSet(
+    userId,
+    title,
+    description,
+    serviceId,
+  );
 };
 
 const getSetDetail = async (setId, userId) => {
   const setDetail = await FlashcardSetModel.getSetById(setId, userId);
-  if (!setDetail) throw new AppError(404, 'Không tìm thấy bộ thẻ hoặc không có quyền truy cập.', 'SET_NOT_FOUND');
+  if (!setDetail)
+    throw new AppError(
+      404,
+      "Không tìm thấy bộ thẻ hoặc không có quyền truy cập.",
+      "SET_NOT_FOUND",
+    );
   if (!setDetail.is_system && setDetail.user_id !== userId) {
-    throw new AppError(403, 'Bạn không có quyền xem bộ thẻ này.', 'AUTH_FORBIDDEN');
+    throw new AppError(
+      403,
+      "Bạn không có quyền xem bộ thẻ này.",
+      "AUTH_FORBIDDEN",
+    );
   }
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
   setDetail.total_cards = flashcards.length;
@@ -81,17 +115,31 @@ const getSetDetail = async (setId, userId) => {
 
 const updateSet = async (setId, userId, title, description) => {
   const setDetail = await FlashcardSetModel.getSetById(setId, userId);
-  if (!setDetail) throw new AppError(404, 'Không tìm thấy bộ thẻ.', 'SET_NOT_FOUND');
-  if (setDetail.is_system) throw new AppError(403, 'Không thể sửa bộ thẻ hệ thống.', 'CANNOT_EDIT_SYSTEM_SET');
-  if (setDetail.user_id !== userId) throw new AppError(403, 'Không có quyền sửa bộ thẻ này.', 'AUTH_FORBIDDEN');
+  if (!setDetail)
+    throw new AppError(404, "Không tìm thấy bộ thẻ.", "SET_NOT_FOUND");
+  if (setDetail.is_system)
+    throw new AppError(
+      403,
+      "Không thể sửa bộ thẻ hệ thống.",
+      "CANNOT_EDIT_SYSTEM_SET",
+    );
+  if (setDetail.user_id !== userId)
+    throw new AppError(403, "Không có quyền sửa bộ thẻ này.", "AUTH_FORBIDDEN");
   await FlashcardSetModel.updateSet(setId, title, description);
 };
 
 const deleteSet = async (setId, userId) => {
   const setDetail = await FlashcardSetModel.getSetById(setId, userId);
-  if (!setDetail) throw new AppError(404, 'Không tìm thấy bộ thẻ.', 'SET_NOT_FOUND');
-  if (setDetail.is_system) throw new AppError(403, 'Không thể xóa bộ thẻ hệ thống.', 'CANNOT_DELETE_SYSTEM_SET');
-  if (setDetail.user_id !== userId) throw new AppError(403, 'Không có quyền xóa.', 'AUTH_FORBIDDEN');
+  if (!setDetail)
+    throw new AppError(404, "Không tìm thấy bộ thẻ.", "SET_NOT_FOUND");
+  if (setDetail.is_system)
+    throw new AppError(
+      403,
+      "Không thể xóa bộ thẻ hệ thống.",
+      "CANNOT_DELETE_SYSTEM_SET",
+    );
+  if (setDetail.user_id !== userId)
+    throw new AppError(403, "Không có quyền xóa.", "AUTH_FORBIDDEN");
   await FlashcardSetModel.deleteSet(setId);
 };
 
@@ -109,51 +157,208 @@ const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
 const saveSystemSet = async (userId, setId, action) => {
   const setDetail = await FlashcardSetModel.getSetById(setId, userId);
   if (!setDetail || !setDetail.is_system) {
-    throw new AppError(404, 'Không tìm thấy bộ thẻ hệ thống.', 'SYSTEM_SET_NOT_FOUND');
+    throw new AppError(
+      404,
+      "Không tìm thấy bộ thẻ hệ thống.",
+      "SYSTEM_SET_NOT_FOUND",
+    );
   }
   await FlashcardSetModel.saveSystemSet(userId, setId, action);
 };
 
-const createSetFromPdf = async (user, fileBuffer, fileName, title, description, serviceId) => {
+const createSetFromPdf = async (
+  user,
+  fileBuffer,
+  fileName,
+  title,
+  description,
+  serviceId,
+) => {
   console.log("📄 Bắt đầu xử lý PDF:", fileName);
 
-  // Admin/Super Admin không bị kiểm tra quota và giới hạn
-  const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+  let numPages = 0;
+
+  try {
+    const pdfInfo = await extractTextFromPDF(fileBuffer);
+    numPages = pdfInfo.numPages;
+    console.log(`📄 Số trang PDF: ${numPages}`);
+  } catch (err) {
+    throw new AppError(
+      400,
+      err.message || "Không thể đọc file PDF. Vui lòng kiểm tra file.",
+      "PDF_READ_ERROR",
+    );
+  }
 
   if (!isAdmin) {
-    // 1. Kiểm tra AI quota
     if (user.ai_quota <= 0) {
-      throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại sau 24 giờ hoặc nâng cấp Premium.', 'QUOTA_AI_EXCEEDED');
+      throw new AppError(
+        429,
+        "Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại sau 24 giờ hoặc nâng cấp Premium.",
+        "QUOTA_AI_EXCEEDED",
+      );
     }
-    // 2. Kiểm tra giới hạn PDF cho free user
-    if (user.role === 'USER') {
+    if (user.role === "USER") {
       const docsThisMonth = await DocumentModel.countDocsInCurrentMonth(user.id);
       if (docsThisMonth >= 2) {
-        throw new AppError(403, 'Tài khoản miễn phí chỉ được upload tối đa 2 file PDF/tháng. Hãy nâng cấp Premium để không giới hạn.', 'QUOTA_PDF_EXCEEDED');
+        throw new AppError(
+          403,
+          "Tài khoản miễn phí chỉ được upload tối đa 2 file PDF/tháng. Hãy nâng cấp Premium để không giới hạn.",
+          "QUOTA_PDF_EXCEEDED",
+        );
       }
     }
-    // 3. Kiểm tra số trang PDF
-    const { numPages } = await extractTextFromPDF(fileBuffer);
-    if (user.role === 'USER' && numPages > 5) {
-      throw new AppError(403, 'Tài khoản miễn phí chỉ được upload PDF tối đa 5 trang.', 'PDF_PAGE_LIMIT_EXCEEDED');
+    if (user.role === "USER" && numPages > 5) {
+      throw new AppError(
+        403,
+        "Tài khoản miễn phí chỉ được upload PDF tối đa 5 trang.",
+        "PDF_PAGE_LIMIT_EXCEEDED",
+      );
     }
   }
 
-  // Lưu document (cho tất cả)
   const documentId = await DocumentModel.createDocument(user.id, fileName, numPages);
 
-  // Gọi Gemini (vẫn dùng AI)
   let extractedFlashcards = [];
   try {
     extractedFlashcards = await GeminiService.extractVocabFromPdf(fileBuffer);
-    if (!Array.isArray(extractedFlashcards)) extractedFlashcards = extractedFlashcards.flashcards || [];
+    if (!Array.isArray(extractedFlashcards))
+      extractedFlashcards = extractedFlashcards.flashcards || [];
   } catch (aiError) {
     console.error("❌ Lỗi Gemini:", aiError.message);
   }
 
-  // Transaction lưu bộ thẻ và flashcards (giữ nguyên code cũ phía dưới)
   const connection = await db.getConnection();
-  // ... (phần còn lại giữ nguyên)
+  const execTx = (sql, params) =>
+    new Promise((res, rej) =>
+      connection.execute(sql, params, (err, results) => {
+        if (err) return rej(err);
+        // results thường là [rows, fields], nếu chỉ có rows thì trả về rows
+        if (Array.isArray(results) && results.length > 0 && results[0] !== undefined) {
+          // Nếu results[0] là mảng (rows), trả về rows
+          if (Array.isArray(results[0])) return res(results[0]);
+        }
+        return res(results);
+      })
+    );
+
+  const beginTx = () =>
+    new Promise((res, rej) => connection.beginTransaction((err) => (err ? rej(err) : res())));
+  const commitTx = () =>
+    new Promise((res, rej) => connection.commit((err) => (err ? rej(err) : res())));
+  const rollbackTx = () =>
+    new Promise((res) => connection.rollback(() => res()));
+
+  let setId,
+    totalExtracted = extractedFlashcards.length,
+    totalSkipped = 0,
+    finalCards = [];
+
+  try {
+    await beginTx();
+
+    const setResult = await execTx(
+      `INSERT INTO flashcard_sets (user_id, service_id, document_id, title, description, is_system) VALUES (?, ?, ?, ?, ?, FALSE)`,
+      [user.id, serviceId, documentId, title, description || null]
+    );
+    setId = setResult.insertId;
+
+    await execTx(
+      `INSERT INTO user_saved_sets (user_id, set_id, is_srs_enabled, daily_new_words) VALUES (?, ?, FALSE, 20)`,
+      [user.id, setId]
+    );
+
+    // Lấy danh sách từ đã có của user
+    const existingRows = await execTx(
+      `SELECT LOWER(f.word) AS word FROM flashcards f JOIN flashcard_sets fs ON f.set_id = fs.id WHERE fs.user_id = ?`,
+      [user.id]
+    );
+    // Đảm bảo existingRows là mảng
+    const wordsArray = Array.isArray(existingRows) ? existingRows : [];
+    const userVocabSet = new Set(wordsArray.map((row) => row.word));
+
+    for (const card of extractedFlashcards) {
+      if (!card.word) continue;
+      const cleanWord = card.word.trim().toLowerCase();
+      if (userVocabSet.has(cleanWord)) {
+        totalSkipped++;
+        continue;
+      }
+      const insertCard = await execTx(
+        `INSERT INTO flashcards (set_id, word, meaning, pronunciation, example_sentence, part_of_speech) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          setId,
+          card.word,
+          card.meaning,
+          card.pronunciation || null,
+          card.example_sentence || null,
+          card.part_of_speech || null,
+        ]
+      );
+      card.id = insertCard.insertId;
+      finalCards.push(card);
+      userVocabSet.add(cleanWord);
+    }
+
+    if (!isAdmin) {
+      await execTx(`UPDATE users SET ai_quota = ai_quota - 1 WHERE id = ?`, [user.id]);
+    }
+
+    await commitTx();
+  } catch (error) {
+    await rollbackTx();
+    throw error;
+  } finally {
+    connection.release();
+  }
+
+  return {
+    set_id: setId,
+    set_title: title,
+    total_extracted: totalExtracted,
+    total_skipped_duplicate: totalSkipped,
+    flashcards: finalCards,
+  };
+};
+
+const XLSX = require('xlsx');
+
+const exportSetToFile = async (setId, userId, format) => {
+  const setDetail = await FlashcardSetModel.getSetById(setId, userId);
+  if (!setDetail) throw new AppError(404, 'Bộ thẻ không tồn tại', 'SET_NOT_FOUND');
+  if (!setDetail.is_system && setDetail.user_id !== userId) {
+    throw new AppError(403, 'Không có quyền truy cập bộ thẻ này', 'FORBIDDEN');
+  }
+  
+  const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
+  if (flashcards.length === 0) throw new AppError(400, 'Bộ thẻ không có từ vựng nào', 'EMPTY_SET');
+
+  const sheetData = flashcards.map(card => ({
+    word: card.word,
+    meaning: card.meaning,
+    pronunciation: card.pronunciation || '',
+    example_sentence: card.example_sentence || '',
+    part_of_speech: card.part_of_speech || ''
+  }));
+
+  if (format === 'xlsx') {
+    const worksheet = XLSX.utils.json_to_sheet(sheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Flashcards');
+    return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  } else {
+    const csvRows = [
+      ['word', 'meaning', 'pronunciation', 'example_sentence', 'part_of_speech'],
+      ...sheetData.map(row => [
+        row.word, row.meaning, row.pronunciation, row.example_sentence, row.part_of_speech
+      ])
+    ];
+    const csvContent = csvRows.map(row => 
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    return Buffer.from('\uFEFF' + csvContent, 'utf-8');
+  }
 };
 
 module.exports = {
@@ -166,5 +371,6 @@ module.exports = {
   deleteSet,
   toggleSrs,
   saveSystemSet,
-  createSetFromPdf
+  exportSetToFile,
+  createSetFromPdf,
 };

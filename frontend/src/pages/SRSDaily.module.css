@@ -154,3 +154,18 @@
   font-size: 1.5rem;
   color: #1f2937;
 }
+
+.backBtn {
+  background: rgba(166, 226, 16, 0.2);
+  padding: 6px 12px;
+  border-radius: 40px;
+  text-decoration: none;
+  color: rgba(28, 170, 64, 0.811);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}

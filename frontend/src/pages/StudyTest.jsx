@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { createTest, submitTest } from "../services/studyApi";
 import useTestStore from "../store/testStore";
 import TestBoard from "../features/study/TestBoard";
@@ -10,6 +10,8 @@ import styles from "./StudyTest.module.css";
 
 const StudyTest = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const { resumeAttemptId, forceNew } = location.state || {};
   const TIME_LIMIT = 30 * 60;
 
   const {
@@ -25,6 +27,7 @@ const StudyTest = () => {
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const hasCleanedUp = useRef(false);
+  const initCalled = useRef(false); // 🔐 chống gọi lại
 
   const { seconds, reset } = useCountdown(TIME_LIMIT, () => {
     if (!submitted && attemptId) {
@@ -42,11 +45,16 @@ const StudyTest = () => {
   }, [clearTestSession]);
 
   useEffect(() => {
+    if (initCalled.current) return;
+    initCalled.current = true;
+
     const initTest = async () => {
       try {
         setLoading(true);
         setError("");
-        const data = await createTest(id, 10);
+        const effectiveResumeId = forceNew ? null : resumeAttemptId;
+        const data = await createTest(id, 10, effectiveResumeId);
+        console.log("🔍 Resume attemptId:", data.attempt_id, "Questions count:", data.questions?.length);
         if (data && data.questions) {
           initTestSession(data.attempt_id, data.questions);
           reset(TIME_LIMIT);
@@ -72,7 +80,7 @@ const StudyTest = () => {
     };
     initTest();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, resumeAttemptId, forceNew]);
 
   const handleSubmit = async (isTimeout = false) => {
     if (submitted) return;

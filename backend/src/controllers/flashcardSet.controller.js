@@ -73,6 +73,21 @@ const createSetFromPdf = catchAsync(async (req, res) => {
   return res.status(201).json({ status: "success", message: "Trích xuất từ vựng từ PDF thành công", data: result });
 });
 
+const exportSet = catchAsync(async (req, res) => {
+  const setId = parseInt(req.params.id, 10);
+  const { format = 'csv' } = req.query;
+  const data = await FlashcardSetService.exportSetToFile(setId, req.user.id, format);
+  
+  const filename = `flashcard_set_${setId}.${format === 'xlsx' ? 'xlsx' : 'csv'}`;
+  const contentType = format === 'xlsx' 
+    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    : 'text/csv; charset=utf-8';
+  
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Type', contentType);
+  res.send(data);
+});
+
 module.exports = {
   getUserSets,
   getSystemSets,
@@ -83,6 +98,7 @@ module.exports = {
   deleteSet,
   toggleSrs,
   saveSystemSet,
+  exportSet,
   unsaveSystemSet,
   createSetFromPdf
 };

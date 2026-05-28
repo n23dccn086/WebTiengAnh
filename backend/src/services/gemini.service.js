@@ -5,6 +5,18 @@ const generationConfig = {
   responseMimeType: "application/json",
 };
 
+// Hàm làm sạch JSON từ response có thể bị nhiễm markdown hoặc text thừa
+const cleanJsonResponse = (text) => {
+  // Loại bỏ markdown code blocks
+  let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  // Tìm phần JSON đầu tiên (từ { hoặc [ đến } hoặc ] cuối cùng)
+  const match = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+  if (match) {
+    return match[0];
+  }
+  return cleaned;
+};
+
 const extractVocabFromPdf = async (fileBuffer) => {
   try {
     const model = genAI.getGenerativeModel({
@@ -22,10 +34,7 @@ TUYỆT ĐỐI KHÔNG SỬ DỤNG MARKDOWN. CHỈ TRẢ VỀ JSON.`;
     };
     const result = await model.generateContent([prompt, filePart]);
     const rawText = result.response.text();
-    const cleanText = rawText
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+    const cleanText = cleanJsonResponse(rawText);
     return JSON.parse(cleanText);
   } catch (error) {
     console.error("🔥 Lỗi Gemini API (PDF):", error.message);
@@ -61,10 +70,7 @@ Quy tắc: Trộn lẫn 3 loại câu hỏi (WORD_TO_MEANING, MEANING_TO_WORD, F
 TUYỆT ĐỐI KHÔNG DÙNG MARKDOWN. CHỈ TRẢ VỀ JSON ARRAY THUẦN.`;
     const result = await model.generateContent(prompt);
     const rawText = result.response.text();
-    const cleanText = rawText
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+    const cleanText = cleanJsonResponse(rawText);
     return JSON.parse(cleanText);
   } catch (error) {
     console.error("🔥 Lỗi Gemini API (Questions):", error.message);
@@ -77,7 +83,7 @@ TUYỆT ĐỐI KHÔNG DÙNG MARKDOWN. CHỈ TRẢ VỀ JSON ARRAY THUẦN.`;
     }
     throw new AppError(
       500,
-      "AI đang quá tải, không thể sinh câu hỏi lúc này.",
+      "AI không sinh được câu hỏi. Vui lòng thử lại.",
       "GEMINI_API_ERROR",
     );
   }

@@ -32,7 +32,6 @@ const PremiumDashboard = () => {
     <div className={styles.container}>
       <h2>📊 Premium Dashboard</h2>
       
-      {/* Sử dụng StreakFlame thay cho card cũ */}
       <div className={styles.streakWrapper}>
         <StreakFlame streak={stats.current_streak} />
       </div>
@@ -68,7 +67,9 @@ const PremiumDashboard = () => {
           {stats.hardest_words.map(word => (
             <li key={word.word}>
               <strong>{word.word}</strong> – {word.meaning}
-              <span className={styles.difficulty}>Độ khó: {word.ease_factor}</span>
+              <span className={styles.difficulty}>
+                Độ khó: {word.ease_factor ? parseFloat(word.ease_factor).toFixed(2) : '—'}
+              </span>
             </li>
           ))}
           {stats.hardest_words.length === 0 && <li>Chưa có dữ liệu</li>}

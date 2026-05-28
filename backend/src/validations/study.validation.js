@@ -20,7 +20,14 @@ const autoSaveSchema = Joi.object({
   }),
 });
 
+// ✅ Thêm schema riêng cho createTest (cho phép resume_attempt_id)
+const createTestSchema = Joi.object({
+  num_questions: Joi.number().integer().min(5).max(50).required(),
+  resume_attempt_id: Joi.number().integer().optional().allow(null), // cho phép
+});
+
 module.exports = {
   generateQuestionsSchema,
   autoSaveSchema,
+  createTestSchema, // export thêm
 };

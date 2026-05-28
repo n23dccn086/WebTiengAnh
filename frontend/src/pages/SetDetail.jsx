@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getSetDetail, toggleSrs } from "../services/flashcardSetApi";
+import { getSetDetail, toggleSrs, deleteSet } from "../services/flashcardSetApi";
+import { deleteFlashcard } from "../services/flashcardApi";
 import AddFlashcardForm from "../features/flashcards/AddFlashcardForm";
 import SRSConfig from "../features/srs/SRSConfig";
 import TestHistory from "../components/TestHistory";
 import styles from "./SetDetail.module.css";
+import apiClient from '../services/apiClient';
 
 const SetDetail = () => {
   const { id } = useParams();
@@ -27,6 +29,46 @@ const SetDetail = () => {
     setRefresh(prev => !prev);
   };
 
+  const handleDeleteSet = async () => {
+    if (!window.confirm('Xóa toàn bộ bộ thẻ này? Hành động không thể hoàn tác.')) return;
+    try {
+      await deleteSet(id);
+      window.location.href = '/library';
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xóa thất bại');
+    }
+  };
+
+  const handleDeleteFlashcard = async (flashcardId) => {
+    if (!window.confirm('Xóa từ vựng này khỏi bộ thẻ?')) return;
+    try {
+      await deleteFlashcard(flashcardId);
+      setRefresh(prev => !prev);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Xóa thất bại');
+    }
+  };
+
+  const handleExport = async (format) => {
+    try {
+      const response = await apiClient.get(`/flashcard-sets/${id}/export?format=${format}`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `flashcard_set_${id}.${format === 'xlsx' ? 'xlsx' : 'csv'}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Xuất file thất bại');
+    }
+  };
+
   if (loading) return <div className={styles.loading}>📖 Đang tải...</div>;
 
   return (
@@ -36,14 +78,20 @@ const SetDetail = () => {
         <h2>{set.title}</h2>
         <p>{set.description}</p>
         <div className={styles.meta}>📦 {set.total_cards} từ vựng</div>
+        {!set.is_system && (
+          <button onClick={handleDeleteSet} className={styles.deleteSetBtn}>🗑️ Xóa bộ thẻ</button>
+        )}
       </div>
       <div className={styles.actions}>
         <Link to={`/sets/${id}/flashcard-basic`} className={styles.btn}>📇 Học lật thẻ</Link>
         <Link to={`/sets/${id}/practice`} className={styles.btn}>✍️ Practice (ABCD)</Link>
         <Link to={`/sets/${id}/test`} className={styles.btn}>📝 Test (có lưu)</Link>
+        <div className={styles.exportButtons}>
+          <button onClick={() => handleExport('csv')} className={styles.exportBtn}>📥 CSV</button>
+          <button onClick={() => handleExport('xlsx')} className={styles.exportBtn}>📥 Excel</button>
+        </div>
       </div>
       
-      {/* Cài đặt SRS */}
       {set.is_srs_enabled !== undefined && (
         <div className={styles.srsSection}>
           <SRSConfig isEnabled={set.is_srs_enabled} onToggle={handleToggleSrs} />
@@ -54,15 +102,23 @@ const SetDetail = () => {
         <h3>Danh sách từ vựng</h3>
         {set.flashcards && set.flashcards.map(fc => (
           <div key={fc.id} className={styles.fcItem}>
-            <span className={styles.fcWord}>{fc.word}</span>
-            <span className={styles.fcMeaning}>{fc.meaning}</span>
+            <div className={styles.fcInfo}>
+              <span className={styles.fcWord}>{fc.word}</span>
+              <span className={styles.fcMeaning}> – {fc.meaning}</span>
+              {fc.pronunciation && <span className={styles.fcPronounce}> /{fc.pronunciation}/</span>}
+            </div>
+            {!set.is_system && (
+              <button onClick={() => handleDeleteFlashcard(fc.id)} className={styles.deleteCardBtn} title="Xóa từ">
+                🗑️
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-      <AddFlashcardForm setId={id} onAdded={() => setRefresh(prev => !prev)} />
+      {/* Chỉ hiển thị form thêm từ nếu không phải bộ thẻ hệ thống */}
+      {!set.is_system && <AddFlashcardForm setId={id} onAdded={() => setRefresh(prev => !prev)} />}
       
-      {/* Lịch sử test */}
       <TestHistory setId={id} />
     </div>
   );

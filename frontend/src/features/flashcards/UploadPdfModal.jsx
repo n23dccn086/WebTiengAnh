@@ -13,8 +13,19 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile && selectedFile.type !== 'application/pdf') {
-      setError('Chỉ chấp nhận file PDF. Vui lòng chọn file có đuôi .pdf');
+    if (!selectedFile) return;
+
+    // Kiểm tra kích thước file (giới hạn 10MB)
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    if (selectedFile.size > MAX_SIZE) {
+      setError('❌ File quá lớn. Vui lòng chọn file PDF có kích thước dưới 10MB.');
+      setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (selectedFile.type !== 'application/pdf') {
+      setError('❌ Chỉ chấp nhận file PDF. Vui lòng chọn file có đuôi .pdf');
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } else {
@@ -60,10 +71,17 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
         } else if (status === 403) {
           errorMsg = data.message || 'Bạn đã đạt giới hạn upload PDF (2 file/tháng) hoặc vượt quá số trang cho phép.';
         } else if (status === 400) {
-          errorMsg = data.message || 'Dữ liệu gửi lên không hợp lệ.';
+          // Kiểm tra message lỗi từ backend (có thể "File too large" từ multer)
+          if (data.message && data.message.toLowerCase().includes('file too large')) {
+            errorMsg = '❌ File quá lớn. Kích thước tối đa cho phép là 10MB.';
+          } else {
+            errorMsg = data.message || 'Dữ liệu gửi lên không hợp lệ.';
+          }
         } else {
           errorMsg = data.message || errorMsg;
         }
+      } else if (err.message && err.message.toLowerCase().includes('file too large')) {
+        errorMsg = '❌ File quá lớn. Kích thước tối đa cho phép là 10MB.';
       } else if (err.message) {
         errorMsg = err.message;
       }

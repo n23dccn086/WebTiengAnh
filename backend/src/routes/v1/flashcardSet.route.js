@@ -15,6 +15,9 @@ router.get('/personal', flashcardSetController.getPersonalSets);
 router.post('/pdf-extract', upload.single('file'), flashcardSetController.createSetFromPdf);
 router.post('/', validate(createSetSchema), flashcardSetController.createSet);
 
+// Export bộ thẻ
+router.get('/:id/export', flashcardSetController.exportSet);
+
 router.get('/:id', flashcardSetController.getSetDetail);
 router.put('/:id', validate(updateSetSchema), flashcardSetController.updateSet);
 router.delete('/:id', flashcardSetController.deleteSet);

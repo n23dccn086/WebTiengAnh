@@ -3,7 +3,10 @@ const db = require('../config/database');
 // --- TÍNH NĂNG RESUME TEST ---
 const getInProgressAttempt = async (userId, setId) => {
   const [rows] = await db.execute(
-    `SELECT id FROM test_attempts WHERE user_id = ? AND set_id = ? AND status = 'IN_PROGRESS' LIMIT 1`,
+    `SELECT id FROM test_attempts 
+     WHERE user_id = ? AND set_id = ? AND status = 'IN_PROGRESS' 
+     ORDER BY last_saved_at DESC, started_at DESC 
+     LIMIT 1`,
     [userId, setId]
   );
   return rows[0] || null;
@@ -97,7 +100,6 @@ const saveTestAnswer = async (attemptId, questionId, selectedOptionId) => {
   await db.execute(`UPDATE test_attempts SET last_saved_at = NOW() WHERE id = ?`, [attemptId]);
 };
 
-// ===== SỬA HÀM NÀY =====
 const getQuestionsForGrading = async (attemptId) => {
   const [rows] = await db.execute(
     `SELECT 
@@ -125,7 +127,8 @@ const updateTestScore = async (attemptId, correctCount, score) => {
 // --- LỊCH SỬ ---
 const getTestHistory = async (userId, setId) => {
   const [rows] = await db.execute(
-    `SELECT id, score, total_questions, correct_count, started_at, completed_at, status 
+    `SELECT id AS attempt_id, score, total_questions, correct_count, 
+            started_at, completed_at, status 
      FROM test_attempts 
      WHERE user_id = ? AND set_id = ? 
      ORDER BY started_at DESC`,

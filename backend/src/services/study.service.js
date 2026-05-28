@@ -3,6 +3,7 @@ const FlashcardModel = require('../models/flashcard.model');
 const UserModel = require('../models/user.model');
 const StudyModel = require('../models/study.model');
 const AppError = require('../utils/appError');
+const db = require('../config/database');
 
 // Helper: kiểm tra nếu không phải admin/super admin thì mới kiểm tra quota
 const checkQuota = (user) => {
@@ -14,7 +15,7 @@ const checkQuota = (user) => {
 };
 
 const generatePractice = async (user, setId, numQuestions) => {
-  checkQuota(user); // Kiểm tra quota
+  checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
   if (flashcards.length === 0) throw new AppError(400, 'Bộ thẻ này chưa có từ vựng nào để học.', 'EMPTY_SET');
@@ -31,10 +32,22 @@ const generatePractice = async (user, setId, numQuestions) => {
   }
 };
 
-const createTest = async (user, setId, numQuestions) => {
+const createTest = async (user, setId, numQuestions, resumeAttemptId = null) => {
+  // 1. Nếu có resumeAttemptId, ưu tiên lấy bài đó
+  if (resumeAttemptId) {
+    const [attempt] = await db.execute(
+      `SELECT id FROM test_attempts WHERE id = ? AND user_id = ? AND status = 'IN_PROGRESS'`,
+      [resumeAttemptId, user.id]
+    );
+    if (attempt.length > 0) {
+      const questions = await StudyModel.getTestQuestionsWithOptions(resumeAttemptId);
+      return { attempt_id: resumeAttemptId, message: "Tiếp tục bài thi", questions };
+    }
+  }
+
+  // 2. Tìm bài IN_PROGRESS bất kỳ (mới nhất)
   const inProgress = await StudyModel.getInProgressAttempt(user.id, setId);
   if (inProgress) {
-    // Admin/super admin không cần kiểm tra quota khi tiếp tục
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       if (user.ai_quota <= 0) {
         throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay, không thể tiếp tục bài thi cũ.', 'QUOTA_AI_EXCEEDED');
@@ -44,6 +57,7 @@ const createTest = async (user, setId, numQuestions) => {
     return { attempt_id: inProgress.id, message: "Tiếp tục bài thi đang dang dở", questions };
   }
 
+  // 3. Không có bài nào -> tạo mới
   checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
@@ -107,10 +121,22 @@ const getHistory = async (userId, setId) => {
   return await StudyModel.getTestHistory(userId, setId);
 };
 
+const deleteTestAttempt = async (userId, attemptId) => {
+  const [attempt] = await db.execute(
+    `SELECT id FROM test_attempts WHERE id = ? AND user_id = ?`,
+    [attemptId, userId]
+  );
+  if (attempt.length === 0) {
+    throw new AppError(404, 'Không tìm thấy bài test', 'NOT_FOUND');
+  }
+  await db.execute(`DELETE FROM test_attempts WHERE id = ?`, [attemptId]);
+};
+
 module.exports = {
   generatePractice,
   createTest,
   saveProgress,
   submitTest,
-  getHistory
+  getHistory,
+  deleteTestAttempt
 };

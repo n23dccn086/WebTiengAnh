@@ -6,6 +6,7 @@ const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Request interceptor: gắn token
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
@@ -15,6 +16,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Response interceptor: xử lý 401, refresh token
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -22,12 +24,12 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const errorCode = error.response?.data?.error_code;
 
-    // Không xử lý nếu là request login
-    if (originalRequest.url?.includes('/auth/login')) {
+    // Không xử lý nếu là request login/refresh
+    if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh-token')) {
       return Promise.reject(error);
     }
 
-    // Xử lý refresh token cho 401
+    // Nếu 401 và chưa thử refresh
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem("refreshToken");
@@ -42,6 +44,7 @@ apiClient.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return apiClient(originalRequest);
         } catch (refreshError) {
+          // Refresh token hết hạn -> logout
           useAuthStore.getState().logout();
           window.location.href = "/login";
           return Promise.reject(refreshError);
@@ -52,8 +55,13 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Chỉ logout khi 403 do thiếu quyền (AUTH_FORBIDDEN), không logout khi QUOTA_PDF_EXCEEDED
-    if (status === 403 && errorCode !== 'QUOTA_PDF_EXCEEDED' && errorCode !== 'QUOTA_AI_EXCEEDED') {
+    // Không logout với lỗi 403 do quota (QUOTA_AI_EXCEEDED, QUOTA_PDF_EXCEEDED)
+    if (status === 403 && (errorCode === 'QUOTA_AI_EXCEEDED' || errorCode === 'QUOTA_PDF_EXCEEDED')) {
+      return Promise.reject(error);
+    }
+
+    // Các lỗi 403 khác mới logout
+    if (status === 403) {
       useAuthStore.getState().logout();
       window.location.href = "/login";
     }
