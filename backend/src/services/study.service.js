@@ -4,18 +4,29 @@ const UserModel = require('../models/user.model');
 const StudyModel = require('../models/study.model');
 const AppError = require('../utils/appError');
 
+// Helper: kiểm tra nếu không phải admin/super admin thì mới kiểm tra quota
+const checkQuota = (user) => {
+  if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (user.ai_quota <= 0) {
+      throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại sau 24 giờ hoặc nâng cấp Premium.', 'QUOTA_AI_EXCEEDED');
+    }
+  }
+};
+
 const generatePractice = async (user, setId, numQuestions) => {
-  if (user.ai_quota <= 0) throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay.', 'QUOTA_AI_EXCEEDED');
+  checkQuota(user); // Kiểm tra quota
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
   if (flashcards.length === 0) throw new AppError(400, 'Bộ thẻ này chưa có từ vựng nào để học.', 'EMPTY_SET');
 
   try {
     const questions = await GeminiService.generateQuestions(flashcards, numQuestions);
-    await UserModel.decrementAiQuota(user.id);
+    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      await UserModel.decrementAiQuota(user.id);
+    }
     return { questions };
   } catch (error) {
-    if (error.statusCode === 429) throw error; // quota exceeded, không trừ quota
+    if (error.statusCode === 429) throw error;
     throw new AppError(500, 'Không thể sinh câu hỏi do lỗi AI, vui lòng thử lại.', 'AI_SERVICE_ERROR');
   }
 };
@@ -23,11 +34,17 @@ const generatePractice = async (user, setId, numQuestions) => {
 const createTest = async (user, setId, numQuestions) => {
   const inProgress = await StudyModel.getInProgressAttempt(user.id, setId);
   if (inProgress) {
+    // Admin/super admin không cần kiểm tra quota khi tiếp tục
+    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      if (user.ai_quota <= 0) {
+        throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay, không thể tiếp tục bài thi cũ.', 'QUOTA_AI_EXCEEDED');
+      }
+    }
     const questions = await StudyModel.getTestQuestionsWithOptions(inProgress.id);
     return { attempt_id: inProgress.id, message: "Tiếp tục bài thi đang dang dở", questions };
   }
 
-  if (user.ai_quota <= 0) throw new AppError(429, 'Hết lượt AI hôm nay.', 'QUOTA_AI_EXCEEDED');
+  checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
   if (flashcards.length === 0) throw new AppError(400, 'Bộ thẻ trống.', 'EMPTY_SET');
@@ -35,7 +52,9 @@ const createTest = async (user, setId, numQuestions) => {
   let questionsData;
   try {
     questionsData = await GeminiService.generateQuestions(flashcards, numQuestions);
-    await UserModel.decrementAiQuota(user.id);
+    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      await UserModel.decrementAiQuota(user.id);
+    }
   } catch (error) {
     if (error.statusCode === 429) throw error;
     throw new AppError(500, 'AI không sinh được câu hỏi. Vui lòng thử lại.', 'AI_GENERATE_FAILED');

@@ -3,15 +3,15 @@ import styles from "./RatingButtons.module.css";
 
 export default function RatingButtons({ onRate }) {
     const ratingLevels = [
-        { key: "AGAIN", label: "Quên rồi 😭", desc: "Học lại ngay", class: styles.againBtn },
-        { key: "HARD", label: "Khó 😮‍💨", desc: "Nhớ mang máng", class: styles.hardBtn },
-        { key: "GOOD", label: "Nhớ tốt 🙂", desc: "Chuẩn múi giờ", class: styles.goodBtn },
-        { key: "EASY", label: "Quá dễ 😎", desc: "Thuộc làu làu", class: styles.easyBtn },
+        { key: "AGAIN", label: "Again", desc: "Chưa nhớ", class: styles.againBtn },
+        { key: "HARD", label: "Hard", desc: "Khó nhớ", class: styles.hardBtn },
+        { key: "GOOD", label: "Good", desc: "Nhớ tốt", class: styles.goodBtn },
+        { key: "EASY", label: "Easy", desc: "Rất dễ", class: styles.easyBtn },
     ];
 
     return (
         <div className={styles.ratingContainer}>
-            <h4 className={styles.title}>Độ nhớ của bạn đối với từ này thế nào?</h4>
+            <h4 className={styles.title}>Bạn nhớ từ này mức độ nào?</h4>
             <div className={styles.btnGrid}>
                 {ratingLevels.map((level) => (
                     <button

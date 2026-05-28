@@ -54,3 +54,26 @@
   display: inline-block;
   margin-top: 1rem;
 }
+
+/* thêm vào cuối file QuizDetail.module.css */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.timer {
+  background: rgba(0,0,0,0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 40px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #ffd966;
+}
+.loading, .error {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+}

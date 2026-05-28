@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import apiClient from '../../services/apiClient';
+import ShortWarthogFileInput from '../../components/ui/ShortWarthogFileInput';
 import styles from './UploadPdfModal.module.css';
 
 const UploadPdfModal = ({ onClose, onSuccess }) => {
@@ -8,14 +9,13 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const fileInputRef = useRef(null); // Tham chiếu đến input file
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type !== 'application/pdf') {
       setError('Chỉ chấp nhận file PDF. Vui lòng chọn file có đuôi .pdf');
       setFile(null);
-      // Reset input để có thể chọn lại file khác
       if (fileInputRef.current) fileInputRef.current.value = '';
     } else {
       setError('');
@@ -51,9 +51,23 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
       onClose();
     } catch (err) {
       console.error('Upload error:', err);
-      const msg = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi xử lý PDF';
-      setError(msg);
-      // Nếu upload thất bại, không reset file để user có thể thử lại
+      let errorMsg = 'Có lỗi xảy ra khi xử lý PDF.';
+      if (err.response) {
+        const status = err.response.status;
+        const data = err.response.data;
+        if (status === 429) {
+          errorMsg = data.message || 'Bạn đã hết lượt AI hôm nay. Vui lòng thử lại sau 24 giờ hoặc nâng cấp Premium.';
+        } else if (status === 403) {
+          errorMsg = data.message || 'Bạn đã đạt giới hạn upload PDF (2 file/tháng) hoặc vượt quá số trang cho phép.';
+        } else if (status === 400) {
+          errorMsg = data.message || 'Dữ liệu gửi lên không hợp lệ.';
+        } else {
+          errorMsg = data.message || errorMsg;
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -86,12 +100,10 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
           </div>
           <div className={styles.field}>
             <label>File PDF *</label>
-            <input
-              type="file"
+            <ShortWarthogFileInput
               accept="application/pdf"
               onChange={handleFileChange}
-              ref={fileInputRef}
-              required
+              label="Chọn file PDF"
             />
             {file && (
               <div className={styles.fileName}>

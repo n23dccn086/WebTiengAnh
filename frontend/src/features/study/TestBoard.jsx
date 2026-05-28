@@ -1,22 +1,39 @@
 import { useState } from "react";
 import useTestStore from "../../store/testStore";
-import useAutoSave from "../../hooks/useAutoSave";
+import { autoSave } from "../../services/studyApi";
 import styles from "./TestBoard.module.css";
 
 export default function TestBoard({ onSubmitTest }) {
     const {
+        attemptId,
         questions,
         answers,
         selectOption,
         isSaving,
         lastSavedAt,
-        getSelectedOption
+        getSelectedOption,
+        markSavedSuccess,
+        setSavingStatus
     } = useTestStore();
 
     const [activeIdx, setActiveIdx] = useState(0);
 
-    // Kích hoạt cơ chế Auto-save chạy ngầm 15 giây một lần
-    // useAutoSave(15000);
+    // ✅ Lưu ngay khi chọn đáp án
+    const handleSelectOption = async (questionId, optionId) => {
+        // Cập nhật store
+        selectOption(questionId, optionId);
+        
+        if (attemptId) {
+            try {
+                setSavingStatus(true);
+                await autoSave(attemptId, [{ question_id: questionId, selected_option_id: optionId }]);
+                markSavedSuccess();
+            } catch (err) {
+                console.error("Lỗi lưu đáp án:", err);
+                setSavingStatus(false);
+            }
+        }
+    };
 
     if (!questions || questions.length === 0) return null;
 
@@ -25,17 +42,16 @@ export default function TestBoard({ onSubmitTest }) {
 
     return (
         <div className={styles.testContainer}>
-            {/* KHỐI LÀM BÀI BÊN TRÁI */}
             <div className={styles.mainExam}>
                 <div className={styles.topStatus}>
                     <div className={styles.examTitle}>📝 Bài Kiểm Tra Khảo Sát Năng Lực</div>
                     <div className={styles.syncStatus}>
                         {isSaving ? (
-                            <span className={styles.savingText}>🔄 Đang tự động lưu nháp...</span>
+                            <span className={styles.savingText}>🔄 Đang lưu...</span>
                         ) : lastSavedAt ? (
-                            <span className={styles.savedText}>✓ Đã lưu nháp lúc {lastSavedAt}</span>
+                            <span className={styles.savedText}>✓ Đã lưu lúc {lastSavedAt}</span>
                         ) : (
-                            <span className={styles.idleText}>● Hệ thống Auto-save đã bật</span>
+                            <span className={styles.idleText}>● Sẵn sàng</span>
                         )}
                     </div>
                 </div>
@@ -57,7 +73,7 @@ export default function TestBoard({ onSubmitTest }) {
                                     type="radio"
                                     name={`question-${currentQ.id}`}
                                     checked={selectedOptionId === opt.id}
-                                    onChange={() => selectOption(currentQ.id, opt.id)}
+                                    onChange={() => handleSelectOption(currentQ.id, opt.id)}
                                     className={styles.hiddenRadio}
                                 />
                                 <span className={styles.radioCustom}></span>
@@ -85,7 +101,6 @@ export default function TestBoard({ onSubmitTest }) {
                 </div>
             </div>
 
-            {/* KHAY ĐIỀU HƯỚNG LƯỚI BÊN PHẢI */}
             <div className={styles.sidePanel}>
                 <h4 className={styles.panelTitle}>Bảng Lộ Trình Câu Hỏi</h4>
                 <div className={styles.questionsGrid}>

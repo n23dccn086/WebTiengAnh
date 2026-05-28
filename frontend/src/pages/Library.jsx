@@ -4,8 +4,9 @@ import useAuthStore from "../store/authStore";
 import { getUserSets, deleteSet, toggleSrs } from "../services/flashcardSetApi";
 import UploadPdfModal from "../features/flashcards/UploadPdfModal";
 import DocumentsButton from "../components/ui/DocumentsButton";
-import PerspectiveButton from "../components/ui/PerspectiveButton";
 import LogoutButton from "../components/ui/LogoutButton";
+import PlasticGooseButton from "../components/ui/PlasticGooseButton";
+import MightyMooseButton from "../components/ui/MightyMooseButton";
 import styles from "./Library.module.css";
 
 const Library = () => {
@@ -25,7 +26,6 @@ const Library = () => {
     try {
       setLoading(true);
       setError("");
-      // getUserSets trả về mảng sets (theo code hiện tại của bạn)
       const data = await getUserSets();
       setSets(data || []);
     } catch (error) {
@@ -78,7 +78,9 @@ const Library = () => {
       <div className={styles.header}>
         <h2>📚 Thư viện của tôi</h2>
         <DocumentsButton onClick={() => setShowUploadModal(true)} />
-        <PerspectiveButton onClick={() => navigate('/sets/create')}>+ Tạo bộ thẻ</PerspectiveButton>
+        <PlasticGooseButton onClick={() => navigate('/sets/create')}>
+          + Tạo bộ thẻ
+        </PlasticGooseButton>
         <LogoutButton onClick={handleLogout} />
       </div>
 
@@ -104,14 +106,20 @@ const Library = () => {
                 <span>📂 {set.service_title || "Chưa phân loại"}</span>
               </div>
               <div className={styles.actions}>
-                <Link to={`/sets/${set.id}`} className={styles.btn}>Xem chi tiết</Link>
-                {/* Nút bật/tắt SRS cho tất cả bộ thẻ (kể cả hệ thống đã lưu) */}
-                <button type="button" onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)} className={styles.srsBtn}>
+                <MightyMooseButton onClick={() => navigate(`/sets/${set.id}`)}>
+                  Xem chi tiết
+                </MightyMooseButton>
+                <button
+                  type="button"
+                  onClick={() => handleToggleSrs(set.id, set.is_srs_enabled)}
+                  className={styles.srsBtn}
+                >
                   {set.is_srs_enabled ? "🔁 Đang bật SRS" : "⏸️ Bật SRS"}
                 </button>
-                {/* Chỉ hiển thị nút xóa nếu bộ thẻ không phải hệ thống */}
                 {!set.is_system && (
-                  <button type="button" onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>Xóa</button>
+                  <button type="button" onClick={() => handleDelete(set.id)} className={styles.deleteBtn}>
+                    Xóa
+                  </button>
                 )}
               </div>
             </div>

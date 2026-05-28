@@ -1,6 +1,8 @@
+// frontend/src/pages/admin/SystemDeckManager.jsx
 import { useState, useEffect } from 'react';
 import apiClient from '../../services/apiClient';
-import ImportExcelModal from '../../features/admin/ImportExcelModal'; // Import modal
+import ImportExcelModal from '../../features/admin/ImportExcelModal';
+import ShortWarthogFileInput from '../../components/ui/ShortWarthogFileInput'; // ✅ import
 import styles from './SystemDeckManager.module.css';
 
 const SystemDeckManager = () => {
@@ -18,7 +20,7 @@ const SystemDeckManager = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [autoFillLoading, setAutoFillLoading] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false); // State cho modal import
+  const [showImportModal, setShowImportModal] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -113,6 +115,9 @@ const SystemDeckManager = () => {
     setMessage('Import bộ thẻ thành công!');
     setTimeout(() => setMessage(''), 3000);
   };
+
+  // Dùng ref để reset nếu cần (tương tự modal)
+  // Tuy nhiên ShortWarthogFileInput sẽ tự xử lý file chọn, ta không cần reset phức tạp
 
   return (
     <div className={styles.container}>

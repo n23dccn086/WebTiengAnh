@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../services/apiClient';
+import StreakFlame from '../features/premium/StreakFlame';
 import styles from './PremiumDashboard.module.css';
 
 const PremiumDashboard = () => {
@@ -30,11 +31,13 @@ const PremiumDashboard = () => {
   return (
     <div className={styles.container}>
       <h2>📊 Premium Dashboard</h2>
+      
+      {/* Sử dụng StreakFlame thay cho card cũ */}
+      <div className={styles.streakWrapper}>
+        <StreakFlame streak={stats.current_streak} />
+      </div>
+
       <div className={styles.statsGrid}>
-        <div className={styles.card}>
-          <h3>🔥 Chuỗi ngày học</h3>
-          <p className={styles.large}>{stats.current_streak}</p>
-        </div>
         <div className={styles.card}>
           <h3>📚 Tổng từ đã học</h3>
           <p className={styles.large}>{stats.total_learned}</p>

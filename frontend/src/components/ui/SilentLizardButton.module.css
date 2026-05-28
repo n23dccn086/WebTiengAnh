@@ -1,0 +1,40 @@
+.button {
+  position: relative;
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+  border: none;
+  border-radius: 50px;
+  color: #2c3e66;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+  z-index: -1;
+}
+
+.button:hover::before {
+  left: 100%;
+}
+
+.button:hover {
+  transform: scale(1.02);
+  background: linear-gradient(90deg, #ff7e85, #fbc2b0);
+}
+
+.button:active {
+  transform: scale(0.98);
+}

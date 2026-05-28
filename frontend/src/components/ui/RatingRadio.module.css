@@ -1,0 +1,46 @@
+.radioLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 40px;
+  transition: all 0.2s;
+}
+
+.radioInput {
+  display: none;
+}
+
+.radioCustom {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  display: inline-block;
+  position: relative;
+}
+
+.radioInput:checked + .radioCustom::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radioText {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Màu sắc cho từng rating (có thể tùy chỉnh khi dùng) */
+.again { background: rgba(220, 53, 69, 0.2); border-color: #dc3545; }
+.hard { background: rgba(253, 126, 20, 0.2); border-color: #fd7e14; }
+.good { background: rgba(40, 167, 69, 0.2); border-color: #28a745; }
+.easy { background: rgba(23, 162, 184, 0.2); border-color: #17a2b8; }

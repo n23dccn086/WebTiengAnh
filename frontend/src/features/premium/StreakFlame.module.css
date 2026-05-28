@@ -1,0 +1,28 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  border-radius: 60px;
+  padding: 8px 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.flameIcon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.streakCount {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.8rem;
+  color: #ffefb9;
+  font-weight: 500;
+}

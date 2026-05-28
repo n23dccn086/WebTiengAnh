@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import useSpeech from '../hooks/useSpeech';
 import { getFlashcardsBySetApi } from '../services/flashcardApi';
 import { submitReview } from '../services/srsApi';
+import RatingButtons from "../features/srs/RatingButtons";
 import styles from './FlashcardStudy.module.css';
 
 const FlashcardStudy = () => {
@@ -42,7 +43,6 @@ const FlashcardStudy = () => {
       setFlipped(false);
       setShowHint(false);
     } else {
-      // Dynamic import confetti
       import('canvas-confetti').then(module => {
         const confetti = module.default;
         confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
@@ -100,14 +100,7 @@ const FlashcardStudy = () => {
         </div>
       </div>
 
-      {flipped && (
-        <div className={styles.rating}>
-          <button onClick={() => handleReview('AGAIN')} className={styles.again}>😵 Again</button>
-          <button onClick={() => handleReview('HARD')} className={styles.hard}>🤔 Hard</button>
-          <button onClick={() => handleReview('GOOD')} className={styles.good}>😊 Good</button>
-          <button onClick={() => handleReview('EASY')} className={styles.easy}>😎 Easy</button>
-        </div>
-      )}
+      {flipped && <RatingButtons onRate={handleReview} />}
     </div>
   );
 };

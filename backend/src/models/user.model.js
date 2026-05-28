@@ -291,11 +291,14 @@ async function deleteUser(userId) {
 
 
 // Trừ 1 quota AI của User
+// Thay thế hàm decrementAiQuota nếu có, hoặc thêm điều kiện
 const decrementAiQuota = async (userId) => {
-  await db.execute(
-    `UPDATE users SET ai_quota = ai_quota - 1 WHERE id = ? AND ai_quota > 0`,
-    [userId]
-  );
+  // Lấy role của user trước
+  const [userRows] = await db.execute(`SELECT role FROM users JOIN roles ON users.role_id = roles.id WHERE users.id = ?`, [userId]);
+  if (userRows.length && (userRows[0].role === 'ADMIN' || userRows[0].role === 'SUPER_ADMIN')) {
+    return; // không trừ quota
+  }
+  await db.execute(`UPDATE users SET ai_quota = ai_quota - 1 WHERE id = ? AND ai_quota > 0`, [userId]);
 };
 
 // Cập nhật chuỗi ngày học liên tiếp (Streak)

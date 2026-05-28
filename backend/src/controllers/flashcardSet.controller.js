@@ -68,6 +68,7 @@ const createSetFromPdf = catchAsync(async (req, res) => {
   title = title.trim();
   const description = req.body.description ? req.body.description.trim() : null;
   let service_id = req.body.service_id ? parseInt(req.body.service_id, 10) : 6;
+  
   const result = await FlashcardSetService.createSetFromPdf(req.user, req.file.buffer, req.file.originalname, title, description, service_id);
   return res.status(201).json({ status: "success", message: "Trích xuất từ vựng từ PDF thành công", data: result });
 });

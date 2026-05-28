@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
+import SilentLizardButton from "../../components/ui/SilentLizardButton";
+import GrumpySwanInput from "../../components/ui/GrumpySwanInput";
 import styles from "./auth.module.css";
 
 const LoginForm = () => {
@@ -37,24 +39,22 @@ const LoginForm = () => {
       <form onSubmit={handleSubmit} className={styles.form}>
         <h2>Chào mừng</h2>
         {error && <div className={styles.error}>{error}</div>}
-        <div className={styles.inputGroup}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className={styles.input}
-          />
-        </div>
-        <div className={styles.inputGroup} style={{ position: "relative" }}>
-          <input
+
+        <GrumpySwanInput
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <div style={{ position: "relative" }}>
+          <GrumpySwanInput
             type={showPassword ? "text" : "password"}
             placeholder="Mật khẩu"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className={styles.input}
           />
           <button
             type="button"
@@ -69,14 +69,17 @@ const LoginForm = () => {
               cursor: "pointer",
               fontSize: "1.2rem",
               color: "white",
+              zIndex: 2,
             }}
           >
             {showPassword ? "🙈" : "👁️"}
           </button>
         </div>
-        <button type="submit" disabled={loading} className={styles.button}>
+
+        <SilentLizardButton type="submit" disabled={loading}>
           {loading ? "Đang xử lý..." : "Đăng nhập"}
-        </button>
+        </SilentLizardButton>
+
         <div className={styles.links}>
           <Link to="/forgot-password" className={styles.link}>
             Quên mật khẩu?

@@ -1,7 +1,9 @@
+// frontend/src/features/profile/ProfilePage.jsx
 import { useEffect, useState } from 'react';
 import useAuthStore from '../../store/authStore';
 import NeonToggle from '../../components/ui/NeonToggle';
 import LogoutButton from '../../components/ui/LogoutButton';
+import GrumpySwanInput from '../../components/ui/GrumpySwanInput'; // ✅ import
 import styles from './profile.module.css';
 
 const ProfilePage = () => {
@@ -140,18 +142,27 @@ const ProfilePage = () => {
               <label>Email</label>
               <input type="email" value={user?.email || ''} disabled className={styles.disabledInput} />
             </div>
-            <div className={styles.field}>
-              <label>Họ và tên</label>
-              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className={styles.input} />
-            </div>
-            <div className={styles.field}>
-              <label>Ngày sinh</label>
-              <input type="date" value={dob} onChange={e => setDob(e.target.value)} className={styles.input} />
-            </div>
-            <div className={styles.field}>
-              <label>Số điện thoại</label>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={styles.input} />
-            </div>
+            {/* Thay thế input họ tên bằng GrumpySwanInput */}
+            <GrumpySwanInput
+              label="Họ và tên"
+              type="text"
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+            />
+            {/* Thay thế input ngày sinh bằng GrumpySwanInput */}
+            <GrumpySwanInput
+              label="Ngày sinh"
+              type="date"
+              value={dob}
+              onChange={e => setDob(e.target.value)}
+            />
+            {/* Thay thế input số điện thoại bằng GrumpySwanInput */}
+            <GrumpySwanInput
+              label="Số điện thoại"
+              type="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+            />
             <button type="submit" disabled={loading} className={styles.button}>{loading ? 'Đang lưu...' : 'Cập nhật'}</button>
           </form>
         )}

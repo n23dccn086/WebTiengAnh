@@ -1,15 +1,25 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import apiClient from '../services/apiClient';
+import { useCountdown } from '../hooks/useCountdown';
+import { formatCountdown } from '../utils/formatTime';
 import styles from './QuizDetail.module.css';
 
 const QuizDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState(null);
+
+  // Đếm ngược 15 phút = 900 giây
+  const TIME_LIMIT = 15 * 60; // 900 giây
+  const { seconds, reset } = useCountdown(TIME_LIMIT, () => {
+    // Hết giờ -> tự động nộp bài
+    if (!submitted) handleSubmit(true);
+  });
 
   useEffect(() => {
     fetchQuiz();
@@ -30,7 +40,7 @@ const QuizDetail = () => {
     setAnswers(prev => ({ ...prev, [questionId]: optionId }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (isTimeout = false) => {
     let correctCount = 0;
     quiz.questions.forEach(q => {
       const selected = answers[q.id];
@@ -42,10 +52,11 @@ const QuizDetail = () => {
     const score = (correctCount / quiz.questions.length) * 100;
     setResult({ score, correctCount, total: quiz.questions.length });
     setSubmitted(true);
+    if (isTimeout) alert('⏰ Hết thời gian! Bài thi đã được tự động nộp.');
   };
 
-  if (loading) return <div className={styles.resultContainer}>Đang tải đề thi...</div>;
-  if (!quiz) return <div className={styles.resultContainer}>Không tìm thấy bộ đề</div>;
+  if (loading) return <div className={styles.loading}>Đang tải đề thi...</div>;
+  if (!quiz) return <div className={styles.error}>Không tìm thấy bộ đề</div>;
 
   if (submitted) {
     return (
@@ -60,9 +71,12 @@ const QuizDetail = () => {
 
   return (
     <div className={styles.container}>
-      <h2>{quiz.title}</h2>
+      <div className={styles.header}>
+        <h2>{quiz.title}</h2>
+        <div className={styles.timer}>⏱️ {formatCountdown(seconds)}</div>
+      </div>
       <p>{quiz.description}</p>
-      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(false); }}>
         {quiz.questions.map((q, idx) => (
           <div key={q.id} className={styles.question}>
             <p><strong>Câu {idx+1}:</strong> {q.content}</p>

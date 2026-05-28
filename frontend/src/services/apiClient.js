@@ -6,7 +6,6 @@ const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Request interceptor: gắn access token
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
@@ -16,23 +15,22 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: xử lý token hết hạn, nhưng không can thiệp vào lỗi 429
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
+    const errorCode = error.response?.data?.error_code;
 
-    // ✅ Nếu là request login thì không xử lý gì cả
+    // Không xử lý nếu là request login
     if (originalRequest.url?.includes('/auth/login')) {
       return Promise.reject(error);
     }
 
-    // ✅ Xử lý refresh token cho lỗi 401 (hết hạn access token)
+    // Xử lý refresh token cho 401
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem("refreshToken");
-
       if (refreshToken) {
         try {
           const res = await axios.post(
@@ -44,7 +42,6 @@ apiClient.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return apiClient(originalRequest);
         } catch (refreshError) {
-          // Refresh token hết hạn hoặc không hợp lệ → logout
           useAuthStore.getState().logout();
           window.location.href = "/login";
           return Promise.reject(refreshError);
@@ -55,13 +52,12 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // ✅ Xử lý lỗi 403 (bị cấm) → logout
-    if (status === 403) {
+    // Chỉ logout khi 403 do thiếu quyền (AUTH_FORBIDDEN), không logout khi QUOTA_PDF_EXCEEDED
+    if (status === 403 && errorCode !== 'QUOTA_PDF_EXCEEDED' && errorCode !== 'QUOTA_AI_EXCEEDED') {
       useAuthStore.getState().logout();
       window.location.href = "/login";
     }
 
-    // ✅ CÁC LỖI KHÁC (400, 404, 429, 500,...) KHÔNG LOGOUT, chỉ reject để component xử lý
     return Promise.reject(error);
   }
 );

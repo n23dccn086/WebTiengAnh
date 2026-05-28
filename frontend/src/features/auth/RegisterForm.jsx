@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
+import GrumpySwanInput from '../../components/ui/GrumpySwanInput';
+import PerspectiveButton from '../../components/ui/PerspectiveButton';
 import styles from './auth.module.css';
 
 const RegisterForm = () => {
@@ -43,34 +45,30 @@ const RegisterForm = () => {
         <h2>Đăng ký</h2>
         {error && <div className={styles.error}>{error}</div>}
         {success && <div className={styles.success}>{success}</div>}
-        <div className={styles.inputGroup}>
-          <input
-            type="text"
-            placeholder="Họ và tên"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            className={styles.input}
-          />
-        </div>
-        <div className={styles.inputGroup}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className={styles.input}
-          />
-        </div>
-        <div className={styles.inputGroup} style={{ position: 'relative' }}>
-          <input
+
+        <GrumpySwanInput
+          type="text"
+          placeholder="Họ và tên"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+        />
+
+        <GrumpySwanInput
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <div style={{ position: 'relative' }}>
+          <GrumpySwanInput
             type={showPassword ? 'text' : 'password'}
             placeholder="Mật khẩu (tối thiểu 6 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className={styles.input}
           />
           <button
             type="button"
@@ -84,20 +82,21 @@ const RegisterForm = () => {
               border: 'none',
               cursor: 'pointer',
               fontSize: '1.2rem',
-              color: 'white'
+              color: 'white',
+              zIndex: 2,
             }}
           >
             {showPassword ? '🙈' : '👁️'}
           </button>
         </div>
-        <div className={styles.inputGroup} style={{ position: 'relative' }}>
-          <input
+
+        <div style={{ position: 'relative' }}>
+          <GrumpySwanInput
             type={showConfirmPassword ? 'text' : 'password'}
             placeholder="Xác nhận mật khẩu"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className={styles.input}
           />
           <button
             type="button"
@@ -111,15 +110,23 @@ const RegisterForm = () => {
               border: 'none',
               cursor: 'pointer',
               fontSize: '1.2rem',
-              color: 'white'
+              color: 'white',
+              zIndex: 2,
             }}
           >
             {showConfirmPassword ? '🙈' : '👁️'}
           </button>
         </div>
-        <button type="submit" disabled={loading} className={styles.button}>
+
+        <PerspectiveButton 
+          type="submit" 
+          color="pink" 
+          disabled={loading}
+          style={{ width: '100%', padding: '14px', fontSize: '1.1rem', marginTop: '10px' }}
+        >
           {loading ? 'Đang xử lý...' : 'Đăng ký'}
-        </button>
+        </PerspectiveButton>
+
         <div className={styles.links}>
           <Link to="/login" className={styles.link}>Đã có tài khoản? Đăng nhập</Link>
         </div>

@@ -43,12 +43,11 @@
     color: #64748b;
 }
 
-/* Các trạng thái hover & Active màu sắc riêng biệt cho từng nút */
+/* Màu sắc hover riêng biệt */
 .againBtn:hover {
     background: rgba(239, 68, 68, 0.1);
     border-color: #ef4444;
 }
-
 .againBtn:hover .btnLabel {
     color: #ef4444;
 }
@@ -57,7 +56,6 @@
     background: rgba(245, 158, 11, 0.1);
     border-color: #f59e0b;
 }
-
 .hardBtn:hover .btnLabel {
     color: #f59e0b;
 }
@@ -66,7 +64,6 @@
     background: rgba(59, 130, 246, 0.1);
     border-color: #3b82f6;
 }
-
 .goodBtn:hover .btnLabel {
     color: #3b82f6;
 }
@@ -75,7 +72,6 @@
     background: rgba(16, 185, 129, 0.1);
     border-color: #10b981;
 }
-
 .easyBtn:hover .btnLabel {
     color: #10b981;
 }
@@ -85,14 +81,12 @@
         opacity: 0;
         transform: translateY(10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* Hỗ trợ responsive cho màn hình di động nhỏ */
 @media (max-width: 480px) {
     .btnGrid {
         grid-template-columns: repeat(2, 1fr);

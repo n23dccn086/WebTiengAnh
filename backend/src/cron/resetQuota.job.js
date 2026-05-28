@@ -5,18 +5,20 @@ const startResetQuotaJob = () => {
   cron.schedule('0 0 * * *', async () => {
     console.log('⏰ [CRON JOB - QUOTA]: Bắt đầu reset lượt dùng AI...');
     try {
-      // Reset AI quota
+      // Reset AI quota cho USER và PREMIUM, còn ADMIN/SUPER_ADMIN set = 9999 (không giới hạn)
       await db.query(`
         UPDATE users 
         SET ai_quota = CASE 
           WHEN role_id = (SELECT id FROM roles WHERE name = 'PREMIUM') THEN 200
-          WHEN role_id = (SELECT id FROM roles WHERE name = 'USER') THEN 20
-          ELSE 0
+          WHEN role_id = (SELECT id FROM roles WHERE name = 'USER') THEN 10
+          WHEN role_id IN (SELECT id FROM roles WHERE name IN ('ADMIN', 'SUPER_ADMIN')) THEN 9999
+          ELSE ai_quota
         END,
-        quota_reset_at = CURRENT_DATE
+        quota_reset_at = CURDATE()
+        WHERE quota_reset_at < CURDATE() OR quota_reset_at IS NULL
       `);
 
-      // Hạ cấp Premium khi hết hạn
+      // Hạ cấp Premium khi hết hạn (chỉ áp dụng cho role PREMIUM)
       const [result] = await db.query(`
         UPDATE users 
         SET role_id = (SELECT id FROM roles WHERE name = 'USER')
