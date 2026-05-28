@@ -16,7 +16,7 @@ const ServiceManager = () => {
 
   const fetchServices = async () => {
     try {
-      const res = await apiClient.get('/services');
+      const res = await apiClient.get('/admin/services');
       setServices(res.data.data);
     } catch (err) {
       console.error(err);

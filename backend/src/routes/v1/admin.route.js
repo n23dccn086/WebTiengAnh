@@ -19,9 +19,10 @@ adminRouter.patch('/users/:id/status', validate(adminValidation.changeUserStatus
 adminRouter.patch('/users/:id/role', validate(adminValidation.changeUserRoleSchema), adminController.changeUserRole);
 
 // Service management
+adminRouter.get('/services', adminController.getServices);  // <-- THÊM DÒNG NÀY
 adminRouter.post('/services', validate(adminValidation.serviceSchema), adminController.createService);
 adminRouter.put('/services/:id', validate(adminValidation.serviceSchema), adminController.updateService);
-adminRouter.patch('/services/:id/status', adminController.updateServiceStatus); // Thêm route mới
+adminRouter.patch('/services/:id/status', adminController.updateServiceStatus);
 adminRouter.delete('/services/:id', adminController.deleteService);
 
 // System flashcard sets

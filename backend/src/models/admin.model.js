@@ -76,6 +76,11 @@ const updateService = async (serviceId, title, description, status) => {
   );
 };
 
+// ✅ THÊM HÀM NÀY
+const updateServiceStatus = async (serviceId, status) => {
+  await db.execute(`UPDATE services SET status = ? WHERE id = ?`, [status, serviceId]);
+};
+
 const deleteService = async (serviceId) => {
   await db.execute(`DELETE FROM services WHERE id = ?`, [serviceId]);
 };
@@ -121,7 +126,6 @@ const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) =
 
 // ==========================================
 // API 9: XEM DANH SÁCH GIAO DỊCH & DOANH THU
-// Đã fix lỗi LIMIT / OFFSET
 // ==========================================
 const getTransactions = async (limit, offset, status) => {
   let queryStr = `
@@ -137,7 +141,6 @@ const getTransactions = async (limit, offset, status) => {
     params.push(status);
   }
 
-  // Ép kiểu số nguyên và nhét thẳng vào chuỗi
   const limitNum = Math.max(1, parseInt(limit, 10));
   const offsetNum = Math.max(0, parseInt(offset, 10));
 
@@ -145,7 +148,6 @@ const getTransactions = async (limit, offset, status) => {
   
   const [rows] = await db.execute(queryStr, params);
 
-  // Tính tổng doanh thu
   let revenueQuery = `SELECT SUM(amount) as total_revenue FROM transactions WHERE status = 'SUCCESS'`;
   let revenueParams = [];
   
@@ -182,17 +184,13 @@ const updateStaffPassword = async (staffId, passwordHash) => {
   await db.execute(`UPDATE users SET password_hash = ? WHERE id = ?`, [passwordHash, staffId]);
 };
 
-const updateServiceStatus = async (serviceId, status) => {
-  await db.execute(`UPDATE services SET status = ? WHERE id = ?`, [status, serviceId]);
-};
-
 module.exports = {
   getUsers,
   updateUserStatus,
   updateUserRole,
   createService,
   updateService,
-  updateServiceStatus,
+  updateServiceStatus, // ✅ export hàm
   deleteService,
   createSystemFlashcardSet,
   getTransactions,

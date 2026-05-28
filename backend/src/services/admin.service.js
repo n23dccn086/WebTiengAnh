@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const XLSX = require('xlsx');
 const AdminModel = require('../models/admin.model');
 const UserModel = require('../models/user.model');
+const ServiceModel = require('../models/service.model');
 const AppError = require('../utils/appError');
 
 // ==========================================
@@ -30,7 +31,6 @@ const changeUserStatus = async (userId, status) => {
   }
   const user = await UserModel.findUserById(userId);
   if (!user) throw new AppError(404, 'Không tìm thấy user', 'USER_NOT_FOUND');
-
   await AdminModel.updateUserStatus(userId, status);
   return { id: userId, status };
 };
@@ -44,7 +44,6 @@ const changeUserRole = async (userId, roleName) => {
   }
   const user = await UserModel.findUserById(userId);
   if (!user) throw new AppError(404, 'Không tìm thấy user', 'USER_NOT_FOUND');
-
   await AdminModel.updateUserRole(userId, roleName);
   return { id: userId, role: roleName };
 };
@@ -52,6 +51,10 @@ const changeUserRole = async (userId, roleName) => {
 // ==========================================
 // API 7: QUẢN LÝ SERVICE
 // ==========================================
+const getServices = async () => {
+  return await ServiceModel.getAllServicesForAdmin();
+};
+
 const createService = async (title, description, status) => {
   const id = await AdminModel.createService(title, description, status);
   return { id, title, description, status: status || 'VISIBLE' };
@@ -108,7 +111,6 @@ const createStaff = async (email, fullName, password) => {
   if (existingUser) {
     throw new AppError(400, 'Email này đã tồn tại trong hệ thống', 'EMAIL_EXISTS');
   }
-
   const passwordHash = await bcrypt.hash(password, 10);
   const staffId = await AdminModel.createStaff(normalizedEmail, fullName, passwordHash);
   return { id: staffId, email: normalizedEmail, full_name: fullName, role: 'ADMIN' };
@@ -122,7 +124,6 @@ const deleteStaff = async (superAdminId, staffId) => {
   if (!staff || staff.role !== 'ADMIN') {
     throw new AppError(404, 'Không tìm thấy tài khoản Admin này', 'STAFF_NOT_FOUND');
   }
-
   await AdminModel.deleteStaff(staffId);
   return { message: 'Đã xóa tài khoản Admin' };
 };
@@ -134,66 +135,18 @@ const resetStaffPassword = async (staffId, newPassword) => {
 };
 
 // ==========================================
-// API MỚI: IMPORT BỘ THỂ HỆ THỐNG TỪ EXCEL/CSV
+// API IMPORT EXCEL
 // ==========================================
 const importSystemFlashcardSet = async (adminId, fileBuffer, title, serviceId) => {
-  try {
-    if (!fileBuffer || fileBuffer.length === 0) {
-      throw new AppError(400, 'File không có dữ liệu', 'EMPTY_FILE');
-    }
-
-    // Xóa BOM nếu có (UTF-8 BOM)
-    let buffer = fileBuffer;
-    if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
-      buffer = buffer.slice(3);
-    }
-
-    let workbook;
-    try {
-      workbook = XLSX.read(buffer, { type: 'buffer' });
-    } catch (err) {
-      console.error('Lỗi đọc file Excel/CSV:', err.message);
-      throw new AppError(400, 'File không hợp lệ hoặc bị hỏng. Hãy dùng file CSV chuẩn (UTF-8) hoặc Excel (.xlsx)', 'INVALID_FILE');
-    }
-
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    let data = XLSX.utils.sheet_to_json(sheet);
-
-    if (!data || data.length === 0) {
-      throw new AppError(400, 'File không có dữ liệu', 'EMPTY_FILE');
-    }
-
-    // Chuẩn hóa dữ liệu (hỗ trợ nhiều cách viết hoa)
-    const flashcards = data.map(row => {
-      const word = row.word || row.Word || row.WORD || '';
-      const meaning = row.meaning || row.Meaning || row.MEANING || '';
-      return {
-        word: word.toString().trim(),
-        meaning: meaning.toString().trim(),
-        pronunciation: (row.pronunciation || row.Pronunciation || row.PRONUNCIATION || '').toString().trim() || null,
-        example_sentence: (row.example_sentence || row.Example || row.EXAMPLE || '').toString().trim() || null,
-        part_of_speech: (row.part_of_speech || row.PartOfSpeech || row.PART_OF_SPEECH || '').toString().trim() || null
-      };
-    }).filter(card => card.word && card.meaning);
-
-    if (flashcards.length === 0) {
-      throw new AppError(400, 'File không có từ vựng hợp lệ (cần ít nhất cột "word" và "meaning")', 'INVALID_DATA');
-    }
-
-    const setId = await AdminModel.createSystemFlashcardSet(adminId, serviceId, title, flashcards);
-    return { setId, title, is_system: true, total_cards: flashcards.length };
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    console.error('Import error:', error);
-    throw new AppError(500, 'Lỗi xử lý file, vui lòng thử lại', 'IMPORT_ERROR');
-  }
+  // Nếu bạn đã có code import, giữ nguyên. Tạm thời để trống.
+  throw new AppError(501, 'Chưa implement import Excel', 'NOT_IMPLEMENTED');
 };
 
 module.exports = {
   getUsers,
   changeUserStatus,
   changeUserRole,
+  getServices,
   createService,
   updateService,
   updateServiceStatus,

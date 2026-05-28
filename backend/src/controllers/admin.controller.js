@@ -27,6 +27,11 @@ const changeUserRole = catchAsync(async (req, res) => {
 });
 
 // Service
+const getServices = catchAsync(async (req, res) => {
+  const services = await AdminService.getServices();
+  return successResponse(res, 'Lấy danh sách danh mục thành công', services);
+});
+
 const createService = catchAsync(async (req, res) => {
   const { title, description, status } = req.body;
   const data = await AdminService.createService(title, description, status);
@@ -106,6 +111,7 @@ module.exports = {
   getUsers,
   changeUserStatus,
   changeUserRole,
+  getServices,
   createService,
   updateService,
   updateServiceStatus,
