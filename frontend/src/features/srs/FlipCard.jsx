@@ -1,8 +1,13 @@
 import React from "react";
 import styles from "./FlipCard.module.css";
 
-export default function FlipCard({ card, isFlipped, onFlip }) {
+export default function FlipCard({ card, isFlipped, onFlip, onSpeak }) {
     if (!card) return null;
+
+    const handleSpeak = (e) => {
+        e.stopPropagation(); // Ngăn sự kiện lật thẻ khi bấm nút
+        if (onSpeak) onSpeak();
+    };
 
     return (
         <div className={styles.scene} onClick={onFlip}>
@@ -16,6 +21,14 @@ export default function FlipCard({ card, isFlipped, onFlip }) {
                         <h1 className={styles.word}>{card.word}</h1>
                         <p className={styles.pronunciation}>{card.pronunciation}</p>
                     </div>
+                    {/* Nút phát âm */}
+                    <button 
+                        className={styles.speakBtn}
+                        onClick={handleSpeak}
+                        title="Phát âm"
+                    >
+                        🔊
+                    </button>
                 </div>
 
                 {/* MẶT SAU: NGHĨA TIẾNG VIỆT + VÍ DỤ */}

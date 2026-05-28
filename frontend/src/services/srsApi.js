@@ -2,7 +2,10 @@ import apiClient from './apiClient';
 
 export const getTodayReviews = async () => {
   const res = await apiClient.get('/srs/today');
-  return res.data.data.flashcards || [];
+  // ✅ Backend trả về { status, message, data: [...] } (mảng trực tiếp)
+  const flashcards = res.data?.data || [];
+  console.log('[srsApi] getTodayReviews - số lượng:', flashcards.length);
+  return flashcards;
 };
 
 export const submitReview = async (flashcardId, rating) => {
@@ -17,5 +20,6 @@ export const startLearning = async (setId) => {
 
 export const learnNewCards = async (count = 20) => {
   const res = await apiClient.post('/srs/learn-new', { limit: count });
-  return res.data.data;
+  // Backend trả về { status, message, data: { added_count, flashcards } }
+  return res.data.data || { added_count: 0, flashcards: [] };
 };

@@ -14,15 +14,14 @@ const reviewCard = catchAsync(async (req, res) => {
 });
 
 const startLearning = catchAsync(async (req, res) => {
-  // Mặc định kéo 20 từ mới khi nhấn Bắt đầu
   const data = await SrsService.learnNewCards(req.user.id, 20);
-  return successResponse(res, data.message, { added_count: data.added_count });
+  return successResponse(res, data.message, { added_count: data.added_count, flashcards: data.flashcards });
 });
 
 const learnMoreNewCards = catchAsync(async (req, res) => {
   const limit = req.body.limit || 20;
   const data = await SrsService.learnNewCards(req.user.id, limit);
-  return successResponse(res, data.message, { added_count: data.added_count });
+  return successResponse(res, data.message, { added_count: data.added_count, flashcards: data.flashcards });
 });
 
 module.exports = {
