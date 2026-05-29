@@ -11,11 +11,13 @@ const generatePractice = catchAsync(async (req, res) => {
 
 const createTest = catchAsync(async (req, res) => {
   const setId = parseInt(req.params.setId, 10);
+  // Giữ lại resume_attempt_id từ nhánh HEAD để hỗ trợ tính năng làm tiếp bài cũ
   const { num_questions, resume_attempt_id } = req.body;
   const data = await StudyService.createTest(req.user, setId, num_questions, resume_attempt_id);
+  
   return res.status(201).json({
     status: "success",
-    message: "Tạo bài kiểm tra thành công",
+    message: data.message || "Tạo bài kiểm tra thành công",
     data: data
   });
 });
@@ -36,20 +38,42 @@ const submitTest = catchAsync(async (req, res) => {
 const getHistory = catchAsync(async (req, res) => {
   const setId = parseInt(req.params.setId, 10);
   const data = await StudyService.getHistory(req.user.id, setId);
-  return successResponse(res, "Lấy lịch sử làm bài thành công", data);
+  return successResponse(res, "Lấy lịch sử thành công", data);
 });
 
+// THÊM MỚI TỪ NHÁNH CỦA BẠN: Controller lấy chi tiết bài test
+const getTestDetail = catchAsync(async (req, res) => {
+  const attemptId = parseInt(req.params.attemptId, 10);
+  const data = await StudyService.getTestDetail(req.user.id, attemptId);
+  return successResponse(res, "Lấy chi tiết bài test thành công", data);
+});
+
+// THÊM MỚI TỪ NHÁNH CỦA BẠN: Controller Chat AI
+const chatWithAI = catchAsync(async (req, res) => {
+  const setId = parseInt(req.params.setId, 10);
+  const { message, chat_history, current_question } = req.body;
+  
+  if (!message) return res.status(400).json({ status: 'fail', message: 'Trống tin nhắn.' });
+
+  const data = await StudyService.chatWithAI(req.user, setId, message, chat_history, current_question);
+  return successResponse(res, "Chat thành công", data);
+});
+
+// TỪ NHÁNH HEAD: Controller Xóa bài Test
 const deleteTestAttempt = catchAsync(async (req, res) => {
   const attemptId = parseInt(req.params.attemptId, 10);
   await StudyService.deleteTestAttempt(req.user.id, attemptId);
   return successResponse(res, "Đã xóa bài test thành công");
 });
 
+// GỘP CHUNG TẤT CẢ MODULE EXPORTS ĐỂ KHÔNG SÓT HÀM
 module.exports = {
   generatePractice,
   createTest,
   autoSaveProgress,
   submitTest,
   getHistory,
+  getTestDetail,
+  chatWithAI,
   deleteTestAttempt
 };

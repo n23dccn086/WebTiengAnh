@@ -5,6 +5,8 @@ const StudyModel = require('../models/study.model');
 const AppError = require('../utils/appError');
 const db = require('../config/database');
 
+const TEST_TIME_LIMIT_MS = 16 * 60 * 1000; // 15 phút + 1 phút buffer bù trừ mạng
+
 // Helper: kiểm tra nếu không phải admin/super admin thì mới kiểm tra quota
 const checkQuota = (user) => {
   if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
@@ -14,6 +16,9 @@ const checkQuota = (user) => {
   }
 };
 
+// ===================================
+// CHẾ ĐỘ PRACTICE (ÔN TẬP NHANH)
+// ===================================
 const generatePractice = async (user, setId, numQuestions) => {
   checkQuota(user);
 
@@ -32,32 +37,47 @@ const generatePractice = async (user, setId, numQuestions) => {
   }
 };
 
+// ===================================
+// CHẾ ĐỘ TEST (THI THỬ - CÓ LƯU ĐIỂM)
+// ===================================
 const createTest = async (user, setId, numQuestions, resumeAttemptId = null) => {
-  // 1. Nếu có resumeAttemptId, ưu tiên lấy bài đó
+  // 1. Check bài thi cũ
+  let inProgress = null;
+
   if (resumeAttemptId) {
     const [attempt] = await db.execute(
-      `SELECT id FROM test_attempts WHERE id = ? AND user_id = ? AND status = 'IN_PROGRESS'`,
+      `SELECT id, started_at FROM test_attempts WHERE id = ? AND user_id = ? AND status = 'IN_PROGRESS'`,
       [resumeAttemptId, user.id]
     );
-    if (attempt.length > 0) {
-      const questions = await StudyModel.getTestQuestionsWithOptions(resumeAttemptId);
-      return { attempt_id: resumeAttemptId, message: "Tiếp tục bài thi", questions };
-    }
+    if (attempt.length > 0) inProgress = attempt[0];
+  } else {
+    inProgress = await StudyModel.getInProgressAttempt(user.id, setId);
   }
 
-  // 2. Tìm bài IN_PROGRESS bất kỳ (mới nhất)
-  const inProgress = await StudyModel.getInProgressAttempt(user.id, setId);
   if (inProgress) {
-    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
-      if (user.ai_quota <= 0) {
-        throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay, không thể tiếp tục bài thi cũ.', 'QUOTA_AI_EXCEEDED');
+    const startTime = new Date(inProgress.started_at).getTime();
+    const timeElapsed = Date.now() - startTime;
+
+    // KHẮC PHỤC LỖ HỔNG: Nếu lố 16 phút, tự động nộp bài cũ
+    if (timeElapsed > TEST_TIME_LIMIT_MS) {
+      await submitTest(user.id, inProgress.id);
+      // Tiếp tục luồng bên dưới để tạo bài mới
+    } else {
+      // Trả về bài dở
+      if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+        if (user.ai_quota <= 0) throw new AppError(429, 'Bạn đã hết lượt sử dụng AI hôm nay, không thể tiếp tục bài thi cũ.', 'QUOTA_AI_EXCEEDED');
       }
+      const questions = await StudyModel.getTestQuestionsWithOptions(inProgress.id);
+      return { 
+        attempt_id: inProgress.id, 
+        message: "Tiếp tục bài thi đang dang dở", 
+        started_at: inProgress.started_at,
+        questions: questions 
+      };
     }
-    const questions = await StudyModel.getTestQuestionsWithOptions(inProgress.id);
-    return { attempt_id: inProgress.id, message: "Tiếp tục bài thi đang dang dở", questions };
   }
 
-  // 3. Không có bài nào -> tạo mới
+  // 2. Tạo bài mới
   checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
@@ -66,6 +86,11 @@ const createTest = async (user, setId, numQuestions, resumeAttemptId = null) => 
   let questionsData;
   try {
     questionsData = await GeminiService.generateQuestions(flashcards, numQuestions);
+    if (!questionsData || questionsData.length === 0) {
+      if (questionsData && questionsData.questions) questionsData = questionsData.questions;
+      else throw new AppError(500, 'Lỗi tạo câu hỏi.', 'AI_GENERATE_FAILED');
+    }
+    
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       await UserModel.decrementAiQuota(user.id);
     }
@@ -74,18 +99,18 @@ const createTest = async (user, setId, numQuestions, resumeAttemptId = null) => 
     throw new AppError(500, 'AI không sinh được câu hỏi. Vui lòng thử lại.', 'AI_GENERATE_FAILED');
   }
 
-  if (!questionsData || questionsData.length === 0) {
-    throw new AppError(500, 'AI không sinh được câu hỏi. Vui lòng thử lại.', 'AI_GENERATE_FAILED');
-  }
-
   const { attemptId, frontendQuestions } = await StudyModel.saveFullTestTransaction(user.id, setId, questionsData);
-  return { attempt_id: attemptId, message: "Tạo bài kiểm tra mới thành công", questions: frontendQuestions };
+  return { attempt_id: attemptId, message: "Tạo bài thi mới thành công", questions: frontendQuestions };
 };
 
+// ===================================
+// LƯU NHÁP VÀ NỘP BÀI
+// ===================================
 const saveProgress = async (userId, attemptId, answers) => {
-  for (const ans of answers) {
-    await StudyModel.saveTestAnswer(attemptId, ans.question_id, ans.selected_option_id);
-  }
+  await Promise.all(answers.map(ans => 
+    StudyModel.saveTestAnswer(attemptId, ans.question_id, ans.selected_option_id)
+  ));
+  await StudyModel.updateLastSaved(attemptId);
 };
 
 const submitTest = async (userId, attemptId) => {
@@ -100,12 +125,13 @@ const submitTest = async (userId, attemptId) => {
   for (const q of questions) {
     const isCorrect = q.selected_option_id === q.correct_option_id;
     if (isCorrect) correctCount++;
+    
     results.push({
       question_id: q.id,
       selected_option_id: q.selected_option_id,
       correct_option_id: q.correct_option_id,
       is_correct: isCorrect,
-      explanation: q.explanation
+      explanation: q.explanation 
     });
   }
 
@@ -132,11 +158,38 @@ const deleteTestAttempt = async (userId, attemptId) => {
   await db.execute(`DELETE FROM test_attempts WHERE id = ?`, [attemptId]);
 };
 
+// ===================================
+// REVIEW TEST & AI CHAT
+// ===================================
+const getTestDetail = async (userId, attemptId) => {
+  const attemptInfo = await StudyModel.getAttemptById(userId, attemptId);
+  if (!attemptInfo) throw new AppError(404, 'Không tìm thấy bài test', 'NOT_FOUND');
+
+  const questions = await StudyModel.getTestReviewDetail(attemptId);
+  
+  return {
+    ...attemptInfo,
+    questions: questions
+  };
+};
+
+const chatWithAI = async (user, setId, message, chatHistory, currentQuestion) => {
+  checkQuota(user);
+  if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    await UserModel.decrementAiQuota(user.id);
+  }
+  
+  const reply = await GeminiService.chatTutor(message, chatHistory, currentQuestion);
+  return { reply: reply, remaining_quota: Math.max(0, user.ai_quota - 1) };
+};
+
 module.exports = {
   generatePractice,
   createTest,
   saveProgress,
   submitTest,
   getHistory,
-  deleteTestAttempt
+  deleteTestAttempt,
+  getTestDetail,
+  chatWithAI
 };

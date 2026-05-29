@@ -13,6 +13,7 @@ router.get('/system', flashcardSetController.getSystemSets);
 router.get('/personal', flashcardSetController.getPersonalSets);
 
 router.post('/pdf-extract', upload.single('file'), flashcardSetController.createSetFromPdf);
+router.post('/pdf-extract/preview', upload.single('file'), flashcardSetController.uploadPdfPreview);
 router.post('/', validate(createSetSchema), flashcardSetController.createSet);
 
 // Export bộ thẻ

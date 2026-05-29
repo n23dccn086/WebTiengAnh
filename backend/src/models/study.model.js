@@ -2,8 +2,9 @@ const db = require('../config/database');
 
 // --- TÍNH NĂNG RESUME TEST ---
 const getInProgressAttempt = async (userId, setId) => {
+  // Lấy started_at để tính timeout 15 phút, đồng thời ORDER BY để lấy phiên làm việc gần nhất
   const [rows] = await db.execute(
-    `SELECT id FROM test_attempts 
+    `SELECT id, started_at FROM test_attempts 
      WHERE user_id = ? AND set_id = ? AND status = 'IN_PROGRESS' 
      ORDER BY last_saved_at DESC, started_at DESC 
      LIMIT 1`,
@@ -34,7 +35,7 @@ const getTestQuestionsWithOptions = async (attemptId) => {
 // --- TẠO BÀI TEST MỚI (BỌC TRANSACTION) ---
 const saveFullTestTransaction = async (userId, setId, questionsData) => {
   const connection = await db.getConnection();
-
+  
   const execTx = (sql, params) => new Promise((res, rej) => connection.execute(sql, params, (err, results) => err ? rej(err) : res(results)));
   const beginTx = () => new Promise((res, rej) => connection.beginTransaction(err => err ? rej(err) : res()));
   const commitTx = () => new Promise((res, rej) => connection.commit(err => err ? rej(err) : res()));
@@ -96,7 +97,10 @@ const saveTestAnswer = async (attemptId, questionId, selectedOptionId) => {
      ON DUPLICATE KEY UPDATE selected_option_id = VALUES(selected_option_id), answered_at = NOW()`,
     [attemptId, questionId, selectedOptionId]
   );
+};
 
+// Tách riêng hàm này ra để khi lưu nháp hàng loạt (Promise.all) không bị khóa database
+const updateLastSaved = async (attemptId) => {
   await db.execute(`UPDATE test_attempts SET last_saved_at = NOW() WHERE id = ?`, [attemptId]);
 };
 
@@ -124,7 +128,7 @@ const updateTestScore = async (attemptId, correctCount, score) => {
   );
 };
 
-// --- LỊCH SỬ ---
+// --- LỊCH SỬ & XEM LẠI BÀI (REVIEW) ---
 const getTestHistory = async (userId, setId) => {
   const [rows] = await db.execute(
     `SELECT id AS attempt_id, score, total_questions, correct_count, 
@@ -137,12 +141,50 @@ const getTestHistory = async (userId, setId) => {
   return rows;
 };
 
+// Lấy thông tin chung của 1 bài test cụ thể
+const getAttemptById = async (userId, attemptId) => {
+  const [rows] = await db.execute(
+    `SELECT id, score, total_questions, correct_count, started_at, completed_at, status 
+     FROM test_attempts WHERE id = ? AND user_id = ? LIMIT 1`,
+    [attemptId, userId]
+  );
+  return rows[0] || null;
+};
+
+// Lấy chi tiết toàn bộ câu hỏi, 4 đáp án và đáp án user đã chọn để review
+const getTestReviewDetail = async (attemptId) => {
+  const [questions] = await db.execute(
+    `SELECT tq.id, tq.question_type, tq.content, tq.explanation, ta.selected_option_id 
+     FROM test_questions tq
+     LEFT JOIN test_answers ta ON tq.id = ta.question_id AND ta.attempt_id = ?
+     WHERE tq.attempt_id = ? ORDER BY tq.order_index ASC`,
+    [attemptId, attemptId]
+  );
+
+  for (let q of questions) {
+    const [options] = await db.execute(
+      `SELECT id, content, is_correct FROM test_options WHERE question_id = ?`,
+      [q.id]
+    );
+    q.options = options;
+    
+    // Gắn thêm correct_option_id để Frontend dùng
+    const correctOpt = options.find(o => o.is_correct === 1);
+    q.correct_option_id = correctOpt ? correctOpt.id : null;
+    q.is_correct = q.selected_option_id === q.correct_option_id;
+  }
+  return questions;
+};
+
 module.exports = {
   getInProgressAttempt,
   getTestQuestionsWithOptions,
   saveFullTestTransaction,
   saveTestAnswer,
+  updateLastSaved,
   getQuestionsForGrading,
   updateTestScore,
-  getTestHistory
+  getTestHistory,
+  getAttemptById,
+  getTestReviewDetail
 };

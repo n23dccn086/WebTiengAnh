@@ -88,7 +88,15 @@ const exportSet = catchAsync(async (req, res) => {
   res.send(data);
 });
 
+const uploadPdfPreview = catchAsync(async (req, res) => {
+  const { title, description, service_id } = req.body;
+  if (!req.file) throw new AppError(400, 'Không tìm thấy file upload.', 'FILE_MISSING');
+  const data = await FlashcardSetService.createSetFromPdfPreview(req.user, req.file.buffer, req.file.originalname, title, description, service_id);
+  return res.status(200).json({ status: 'success', message: 'Trích xuất từ vựng thành công (Preview)', data });
+});
+
 module.exports = {
+  uploadPdfPreview,
   getUserSets,
   getSystemSets,
   getPersonalSets,
