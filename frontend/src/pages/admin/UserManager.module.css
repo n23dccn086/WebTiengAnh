@@ -88,3 +88,33 @@
 .error { background: rgba(255,80,80,0.9); }
 .success { background: rgba(76,175,80,0.9); }
 .loading { background: rgba(0,0,0,0.5); }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 2rem;
+}
+.pageBtn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 40px;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.pageBtn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.4);
+}
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pageInfo {
+  background: rgba(0,0,0,0.3);
+  padding: 6px 12px;
+  border-radius: 40px;
+  font-size: 0.9rem;
+}
