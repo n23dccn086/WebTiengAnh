@@ -1,0 +1,105 @@
+/* src/pages/StudyTest/StudyTest.css */
+.exam-layout { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* HEADER */
+.exam-header { height: 64px; background-color: var(--sidebar); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: relative; z-index: 10; }
+.exam-progress-line { position: absolute; top: 0; left: 0; height: 2px; width: 100%; background-color: var(--surface); }
+.exam-progress-fill { height: 100%; background-color: var(--success); box-shadow: 0 0 8px var(--success-border); transition: width 0.3s ease; }
+.exam-timer { display: flex; align-items: center; gap: 8px; background-color: var(--surface); padding: 6px 16px; border-radius: 8px; border: 1px solid var(--border-subtle); font-weight: 700; font-size: 18px;}
+.exam-timer.warning { border-color: var(--error); color: var(--error); box-shadow: 0 0 10px var(--error-bg); }
+
+.btn-home { display: flex; align-items: center; gap: 8px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 14px; transition: color 0.2s; }
+.btn-home:hover { color: var(--text-main); }
+
+/* MAIN EXAM - Kích thước to rõ ràng */
+.exam-main { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; align-items: center; position: relative; justify-content: center;}
+.exam-ambient-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; background-color: var(--accent-dim); border-radius: 50%; filter: blur(120px); pointer-events: none; }
+.exam-content-wrapper { width: 100%; max-width: 960px; position: relative; z-index: 10; display: flex; flex-direction: column; gap: 40px; }
+
+.question-badge { display: inline-flex; align-items: center; justify-content: center; background-color: var(--surface); padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border-subtle); font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;}
+.exam-question-card { background-color: var(--surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 48px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+/* LƯỚI ĐÁP ÁN TO RỘNG MỚI */
+.exam-options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.exam-option-btn { 
+  display: flex; align-items: center; 
+  padding: 20px 24px; 
+  background-color: var(--surface); border: 1px solid var(--border-subtle); border-radius: 10px; 
+  color: var(--text-main); font-size: 18px; 
+  cursor: pointer; transition: all 0.2s ease; text-align: left; font-weight: 600;
+  position: relative; overflow: hidden;
+}
+.exam-option-letter { 
+  width: 36px; height: 36px; 
+  border-radius: 6px; background-color: var(--sidebar); border: 1px solid var(--border-subtle); 
+  display: flex; align-items: center; justify-content: center; color: var(--accent-hover); 
+  font-weight: 700; font-size: 15px; margin-right: 16px; transition: all 0.2s; flex-shrink: 0;
+}
+
+.exam-option-btn:hover:not(:disabled) { border-color: var(--accent); background-color: var(--accent-dim); }
+.exam-option-btn:hover:not(:disabled) .exam-option-letter { background-color: var(--accent); color: white; border-color: var(--accent); }
+
+.exam-option-btn.selected { border-color: var(--accent); background-color: var(--accent-dim); }
+.exam-option-btn.selected .exam-option-letter { background-color: var(--accent); color: white; border-color: var(--accent); }
+
+.inline-next-btn {
+  margin-left: auto; background: var(--accent); color: white; border: none;
+  padding: 8px 14px; border-radius: 6px; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s;
+  box-shadow: 0 4px 10px rgba(79, 70, 255, 0.4);
+}
+.inline-next-btn:hover { filter: brightness(1.1); transform: translateX(2px); }
+
+/* TRẠNG THÁI REVIEW: ĐÚNG / SAI RÕ RÀNG THEO ẢNH */
+.exam-option-btn.correct { background-color: rgba(74, 222, 128, 0.1); border-color: var(--success); }
+.exam-option-btn.correct .exam-option-letter { background-color: var(--success); color: #002114; border-color: transparent;}
+.exam-option-btn.incorrect { background-color: rgba(248, 113, 113, 0.1); border-color: var(--error); opacity: 1;}
+.exam-option-btn.incorrect .exam-option-letter { background-color: var(--sidebar); color: var(--text-muted); border-color: var(--border-subtle);}
+
+.result-badge { font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 6px; margin-left: auto; text-transform: uppercase;}
+.result-badge.correct { background: var(--success); color: #002114; }
+.result-badge.incorrect { background: rgba(248, 113, 113, 0.8); color: white; }
+
+/* MÀN HÌNH SETUP */
+.setup-card { background-color: var(--surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 48px; width: 100%; max-width: 480px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.setup-icon { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: var(--accent-dim); color: var(--accent); border-radius: 50%; margin-bottom: 24px; }
+.setup-icon .material-symbols-outlined { font-size: 32px; }
+.setup-card h2 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+.setup-input-group { text-align: left; margin-bottom: 32px; }
+.setup-input-group label { display: block; color: var(--text-muted); font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+.setup-input { width: 100%; padding: 14px; background-color: var(--sidebar); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-main); font-size: 16px; font-weight: 700; transition: 0.2s;}
+.setup-input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-dim); }
+.btn-start-test { width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.2s; margin-bottom: 12px;}
+.btn-start-test:hover { filter: brightness(1.1); box-shadow: 0 4px 15px var(--accent-dim); }
+
+/* FOOTER */
+.exam-footer { background-color: var(--bg-main); border-top: 1px solid var(--border-subtle); padding: 20px 48px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; z-index: 20; }
+.exam-btn-secondary { padding: 12px 24px; border-radius: 8px; border: 1px solid var(--border-subtle); background-color: var(--sidebar); color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.2s; }
+.exam-btn-secondary:hover:not(:disabled) { background-color: var(--accent-dim); border-color: var(--accent); color: var(--accent-hover);}
+.exam-btn-primary { padding: 12px 32px; border-radius: 8px; background: var(--accent); border: none; color: white; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.exam-btn-primary:hover { box-shadow: 0 0 0 3px var(--accent-dim); }
+
+/* CHIA ĐÔI MÀN HÌNH REVIEW */
+.review-layout { display: flex; height: calc(100vh - 64px); overflow: hidden; width: 100%;}
+.review-left { flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-main); display: flex; flex-direction: column; align-items: center;}
+.review-right { width: 420px; background-color: var(--surface); border-left: 1px solid var(--border-subtle); display: flex; flex-direction: column; height: 100%; overflow: hidden;}
+.btn-ask-ai { background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-hover); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; margin-top: 16px;}
+.btn-ask-ai:hover { background: var(--accent); color: white; }
+
+/* HERO RESULT */
+.result-hero { display: flex; flex-direction: column; align-items: center; text-align: center; animation: slideUp 0.5s ease-out forwards; }
+.score-ring-container { position: relative; width: 220px; height: 220px; margin-bottom: 24px; }
+.score-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.score-ring-bg { stroke: var(--sidebar); }
+.score-ring-fill { stroke: var(--accent); filter: drop-shadow(0 0 8px var(--accent-dim)); transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.score-text-absolute { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: 800; color: white; }
+.history-modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(3, 0, 28, 0.85); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.history-modal-content { background-color: var(--surface); border: 1px solid var(--border-subtle); border-radius: 16px; width: 600px; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; }
+.history-item { background-color: var(--sidebar); padding: 16px; border-radius: 12px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; transition: 0.2s;}
+.history-item:hover { border-color: var(--accent); background-color: var(--accent-dim);}
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 6px; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.circular-spinner { width: 40px; height: 40px; border: 3px solid var(--accent-dim); border-left-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;}
+@keyframes spin { to { transform: rotate(360deg); } }
