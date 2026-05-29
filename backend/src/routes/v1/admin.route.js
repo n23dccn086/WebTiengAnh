@@ -68,6 +68,9 @@ superAdminRouter.put(
   adminController.resetStaffPassword,
 );
 
+superAdminRouter.get("/staff", adminController.getStaff);
+superAdminRouter.post("/staff", validate(adminValidation.createStaffSchema), adminController.createStaff);
+
 module.exports = {
   adminRouter,
   superAdminRouter,

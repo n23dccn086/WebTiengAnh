@@ -186,7 +186,47 @@ const updateStaffPassword = async (staffId, passwordHash) => {
   await db.execute(`UPDATE users SET password_hash = ? WHERE id = ?`, [passwordHash, staffId]);
 };
 
+// Truy vấn 1: Lấy tên dịch vụ
+const getServiceTitleById = async (serviceId) => {
+  const [rows] = await db.execute('SELECT title FROM services WHERE id = ?', [serviceId]);
+  return rows.length > 0 ? rows[0].title : null;
+};
+
+// Truy vấn 2: Lấy danh sách bộ thẻ thuộc dịch vụ đó
+const getSystemSetsByService = async (serviceId) => {
+  const query = `
+    SELECT 
+      fs.id, 
+      fs.title, 
+      fs.description, 
+      fs.is_system,
+      COUNT(f.id) AS total_cards
+    FROM flashcard_sets fs
+    LEFT JOIN flashcards f ON fs.id = f.set_id
+    WHERE fs.service_id = ? AND fs.is_system = TRUE
+    GROUP BY fs.id
+    ORDER BY fs.created_at DESC
+  `;
+  const [sets] = await db.execute(query, [serviceId]);
+  return sets;
+};
+
+const getStaffList = async () => {
+  const query = `
+    SELECT u.id, u.email, u.full_name, u.status, u.created_at, r.name as role 
+    FROM users u
+    JOIN roles r ON u.role_id = r.id
+    WHERE r.name IN ('ADMIN', 'SUPER_ADMIN')
+    ORDER BY u.created_at DESC
+  `;
+  const [rows] = await db.execute(query);
+  return rows;
+};
+
 module.exports = {
+  getStaffList,
+  getServiceTitleById,
+  getSystemSetsByService,
   getUsers,
   updateUserStatus,
   updateUserRole,

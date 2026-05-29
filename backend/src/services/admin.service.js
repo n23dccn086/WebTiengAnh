@@ -251,7 +251,33 @@ const importSystemFlashcardSet = async (
   }
 };
 
+
+const getSetsByServiceId = async (serviceId) => {
+  // 1. Lấy tên dịch vụ
+  const title = await AdminModel.getServiceTitleById(serviceId);
+  const serviceName = title ? title : `Dịch vụ #${serviceId}`;
+
+  // 2. Lấy danh sách bộ thẻ
+  const sets = await AdminModel.getSystemSetsByService(serviceId);
+
+  // 3. Đóng gói dữ liệu trả về
+  return {
+    service_id: serviceId,
+    service_name: serviceName,
+    sets: sets
+  };
+};
+
+
+const getStaff = async () => {
+  const staffList = await AdminModel.getStaffList();
+  return staffList;
+};
+
+
 module.exports = {
+  getStaff,
+  getSetsByServiceId,
   getUsers,
   changeUserStatus,
   changeUserRole,
