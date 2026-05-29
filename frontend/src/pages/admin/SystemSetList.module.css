@@ -1,0 +1,115 @@
+.container {
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.container h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.createBtn {
+  display: inline-block;
+  background: #10b981;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 40px;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  transition: 0.2s;
+}
+.createBtn:hover {
+  background: #059669;
+}
+
+.table {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  overflow-x: auto;
+}
+
+.table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.table th {
+  color: #ffd966;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editBtn, .deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  border-radius: 40px;
+  transition: 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.editBtn {
+  background: #3b82f6;
+  color: white;
+}
+.editBtn:hover {
+  background: #2563eb;
+}
+.deleteBtn {
+  background: #ef4444;
+  color: white;
+}
+.deleteBtn:hover {
+  background: #dc2626;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.pagination button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 40px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+.pagination button:hover:not(:disabled) {
+  background: rgba(255,255,255,0.4);
+}
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination span {
+  background: rgba(0,0,0,0.3);
+  padding: 4px 12px;
+  border-radius: 40px;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+}

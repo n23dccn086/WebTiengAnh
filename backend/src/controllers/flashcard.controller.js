@@ -11,7 +11,9 @@ const lookupWord = catchAsync(async (req, res) => {
 const addFlashcard = catchAsync(async (req, res) => {
   const { set_id, word, meaning, pronunciation, example_sentence, part_of_speech } = req.body;
   const newCard = await FlashcardService.addFlashcard(
-    req.user.id, set_id, word, meaning, pronunciation, example_sentence, part_of_speech
+    req.user.id,
+    req.user.role,          // thêm dòng này
+    set_id, word, meaning, pronunciation, example_sentence, part_of_speech
   );
   return res.status(201).json({ status: "success", message: "Thêm từ vựng thành công", data: newCard });
 });
@@ -19,13 +21,15 @@ const addFlashcard = catchAsync(async (req, res) => {
 const updateFlashcard = catchAsync(async (req, res) => {
   const { word, meaning, pronunciation, example_sentence, part_of_speech } = req.body;
   await FlashcardService.updateFlashcard(
-    req.user.id, parseInt(req.params.id, 10), word, meaning, pronunciation, example_sentence, part_of_speech
+    req.user.id,
+    req.user.role,
+    parseInt(req.params.id, 10), word, meaning, pronunciation, example_sentence, part_of_speech
   );
   return successResponse(res, "Cập nhật từ vựng thành công");
 });
 
 const deleteFlashcard = catchAsync(async (req, res) => {
-  await FlashcardService.deleteFlashcard(req.user.id, parseInt(req.params.id, 10));
+  await FlashcardService.deleteFlashcard(req.user.id, req.user.role, parseInt(req.params.id, 10));
   return successResponse(res, "Xóa từ vựng thành công");
 });
 

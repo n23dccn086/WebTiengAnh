@@ -20,7 +20,7 @@ import ProfilePage from "./features/profile/ProfilePage";
 import Quizzes from "./pages/Quizzes";
 import QuizDetail from "./pages/QuizDetail";
 import SRSDaily from "./pages/SRSDaily";
-import SystemDeckList from "./pages/SystemDeckList"; // ✅ import component
+import SystemDeckList from "./pages/SystemDeckList";
 import MemberDetail from "./pages/MemberDetail";
 import DictionarySearch from "./components/ui/DictionarySearch";
 import FloatingChat from "./components/ui/FloatingChat";
@@ -38,6 +38,8 @@ import ServiceManager from "./pages/admin/ServiceManager";
 import SystemDeckManager from "./pages/admin/SystemDeckManager";
 import TransactionManager from "./pages/admin/TransactionManager";
 import StaffManager from "./pages/admin/StaffManager";
+import SystemSetList from "./pages/admin/SystemSetList";
+import EditSystemSet from "./pages/admin/EditSystemSet";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthStore from "./store/authStore";
@@ -165,7 +167,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* ✅ Route mới: danh sách bộ thẻ theo service */}
           <Route
             path="/sets/service/:serviceId"
             element={
@@ -281,6 +282,7 @@ function App() {
             }
           />
 
+          {/* ========== ADMIN ROUTES ========== */}
           <Route
             path="/admin"
             element={
@@ -314,14 +316,6 @@ function App() {
             }
           />
           <Route
-            path="/admin/system-sets"
-            element={
-              <AdminRoute>
-                <SystemDeckManager />
-              </AdminRoute>
-            }
-          />
-          <Route
             path="/admin/transactions"
             element={
               <AdminRoute>
@@ -334,6 +328,32 @@ function App() {
             element={
               <AdminRoute>
                 <StaffManager />
+              </AdminRoute>
+            }
+          />
+
+          {/* Quản lý bộ thẻ hệ thống – ưu tiên route cụ thể trước */}
+          <Route
+            path="/admin/system-sets/create"
+            element={
+              <AdminRoute>
+                <SystemDeckManager />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/system-sets/edit/:id"
+            element={
+              <AdminRoute>
+                <EditSystemSet />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/system-sets"
+            element={
+              <AdminRoute>
+                <SystemSetList />
               </AdminRoute>
             }
           />
