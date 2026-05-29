@@ -8,7 +8,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       <div>
         {/* WRAPPER CHỨA LOGO VÀ NÚT THU GỌN */}
         <div className="sidebar-header-wrapper">
-          <Link to="/library" style={{ textDecoration: 'none', flexGrow: 1 }}>
+          {/* Sửa link Logo trỏ về /dashboard */}
+          <Link to="/dashboard" style={{ textDecoration: 'none', flexGrow: 1 }}>
             <div className="logo-container">
               <div className="logo-icon">
                 <span className="material-symbols-outlined logo-svg">psychology</span>
@@ -28,12 +29,21 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         </div>
         
         <ul className="nav-links">
+          {/* BỔ SUNG MENU HOME (DASHBOARD) */}
+          <li>
+            <NavLink to="/dashboard" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>home</span>
+              <span>Home</span>
+            </NavLink>
+          </li>
+          
           <li>
             <NavLink to="/library" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>folder</span>
               <span>Your library</span>
             </NavLink>
           </li>
+          
           <li>
             <NavLink to="/daily-review" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <span className="material-symbols-outlined">style</span>

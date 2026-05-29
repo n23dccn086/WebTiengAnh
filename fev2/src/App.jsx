@@ -38,6 +38,8 @@ import AdminStaff from './pages/Admin/Staff/AdminStaff';
 //thanh toan
 import PaymentResult from './pages/PaymentResult/PaymentResult';
 
+import Dashboard from './pages/Dashboard/Dashboard';
+
 // import AdminSystemSets from './pages/Admin/SystemSets/AdminSystemSets';
 
 // ==========================================
@@ -57,37 +59,32 @@ const PublicRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
   
   if (isAuthenticated) {
-    // Phân loại khách: Ai là Admin/Super Admin, ai là User thường
     const isAdmin = user?.role === 'ADMIN' || 
                     user?.role === 'SUPER_ADMIN' || 
                     user?.role_id === 4 || 
                     user?.role_id === 5;
                     
-    // Đá về đúng nhà của họ
-    return <Navigate to={isAdmin ? "/admin" : "/library"} replace />;
+    // 🟢 SỬA Ở ĐÂY: Đá user thường về /dashboard thay vì /library
+    return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
   }
   
   return children;
 };
 
 // 3. 🔒 CHẶN USER THƯỜNG VÀO TRANG ADMIN
-// 3. 🔒 CHẶN USER THƯỜNG VÀO TRANG ADMIN
 const AdminRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
   
-  // 🟢 BẠN HÃY BẤM F12 XEM DÒNG NÀY IN RA CÁI GÌ NHÉ
-  console.log("🔍 Kiểm tra quyền Admin - User hiện tại:", user);
-
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   
-  // Chấp nhận cả trường hợp BE trả về tên chuỗi ('SUPER_ADMIN') hoặc ID số (4, 5)
   const isAdmin = user?.role === 'ADMIN' || 
                   user?.role === 'SUPER_ADMIN' || 
                   user?.role_id === 4 || 
                   user?.role_id === 5;
 
   if (!isAdmin) {
-    return <Navigate to="/library" replace />;
+    // 🟢 SỬA Ở ĐÂY NỮA: Nếu không phải Admin thì đuổi về /dashboard
+    return <Navigate to="/dashboard" replace />;
   }
   
   return children;
@@ -113,6 +110,7 @@ function App() {
         {/* ==========================================
             LUỒNG NGƯỜI DÙNG (Private)
             ========================================== */}
+        <Route path="/dashboard" element={<ProtectedRoute><MainLayout title="Bảng điều khiển"><Dashboard /></MainLayout></ProtectedRoute>} />
         <Route path="/library" element={<ProtectedRoute><MainLayout title="Thư viện của bạn"><Library /></MainLayout></ProtectedRoute>} />
         <Route path="/create-deck" element={<ProtectedRoute><MainLayout title="Tạo bộ thẻ mới"><CreateDeck /></MainLayout></ProtectedRoute>} />
         <Route path="/edit-deck/:id" element={<ProtectedRoute><MainLayout title="Chỉnh sửa bộ thẻ"><EditDeck /></MainLayout></ProtectedRoute>} />

@@ -122,6 +122,14 @@ const StudyDeck = () => {
     setIsFlipped(false);
   };
 
+  // 🟢 THÊM HÀM NÀY VÀO NGAY DƯỚI HÀM handleRemembered
+  const handleRestart = () => {
+    setCurrentIdx(0);          // Quay về thẻ đầu tiên
+    setIsFlipped(false);       // Úp mặt thẻ lại
+    setIsDone(false);          // Tắt màn hình chúc mừng
+    setRememberedCount(0);     // Reset lại điểm số
+  };
+
   if (isLoading) return <div className="study-loading"><div className="circular-spinner" /></div>;
   if (!deck || cards.length === 0) return <div className="study-empty"><p>No cards available.</p></div>;
 
