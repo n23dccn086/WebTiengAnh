@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import apiClient from '../services/apiClient';
-import { saveSystemSet, toggleSrs } from '../services/flashcardSetApi';
+import { saveSystemSet, unsaveSystemSet, toggleSrs } from '../services/flashcardSetApi';
 import styles from './SystemDeckList.module.css';
 
 const SystemDeckList = () => {
@@ -33,20 +33,36 @@ const SystemDeckList = () => {
     const setId = deck.id;
     setActionLoading(prev => ({ ...prev, [setId]: true }));
     try {
-      // Nếu chưa lưu thì tự động lưu trước
+      // Nếu chưa lưu -> LƯU VÀ BẬT SRS (2 trong 1)
       if (!deck.is_saved) {
-        await saveSystemSet(setId);
+        await saveSystemSet(setId);      // lưu vào thư viện
+        await toggleSrs(setId, true);    // bật SRS
+        const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
+        setDecks(decksRes.data.data);
+        setActionLoading(prev => ({ ...prev, [setId]: false }));
+        return;
       }
-      // Bật/tắt SRS
-      await toggleSrs(setId, !deck.is_srs_enabled);
       
-      // Refresh danh sách
-      const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
-      setDecks(decksRes.data.data);
+      // Nếu đã lưu và đang bật SRS -> XÓA KHỎI THƯ VIỆN (unsave)
+      if (deck.is_saved && deck.is_srs_enabled) {
+        await unsaveSystemSet(setId);
+        const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
+        setDecks(decksRes.data.data);
+        setActionLoading(prev => ({ ...prev, [setId]: false }));
+        return;
+      }
+      
+      // Nếu đã lưu nhưng SRS đang tắt -> chỉ bật SRS
+      if (deck.is_saved && !deck.is_srs_enabled) {
+        await toggleSrs(setId, true);
+        const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
+        setDecks(decksRes.data.data);
+        setActionLoading(prev => ({ ...prev, [setId]: false }));
+        return;
+      }
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
-    } finally {
       setActionLoading(prev => ({ ...prev, [setId]: false }));
     }
   };
@@ -68,7 +84,6 @@ const SystemDeckList = () => {
               <h3>{deck.title}</h3>
               <p>{deck.description || 'Không có mô tả'}</p>
               <div className={styles.meta}>
-                {/* Sửa lỗi hiển thị: ép kiểu số và chỉ hiển thị */}
                 <span>📖 {Number(deck.total_cards) || 0} từ</span>
                 {deck.is_saved && <span className={styles.savedBadge}>✅ Đã lưu</span>}
               </div>

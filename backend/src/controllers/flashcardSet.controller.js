@@ -46,8 +46,14 @@ const deleteSet = catchAsync(async (req, res) => {
 });
 
 const toggleSrs = catchAsync(async (req, res) => {
-  const { is_srs_enabled, daily_new_words = 20 } = req.body;
-  await FlashcardSetService.toggleSrs(req.user.id, parseInt(req.params.id, 10), is_srs_enabled, daily_new_words);
+  const { is_srs_enabled, daily_new_words = 20, deleteFromLibrary = false } = req.body;
+  await FlashcardSetService.toggleSrs(
+    req.user.id,
+    parseInt(req.params.id, 10),
+    is_srs_enabled,
+    daily_new_words,
+    deleteFromLibrary
+  );
   return successResponse(res, `Đã ${is_srs_enabled ? 'bật' : 'tắt'} chế độ ôn tập SRS`);
 });
 

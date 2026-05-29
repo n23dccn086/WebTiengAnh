@@ -81,11 +81,22 @@ const deleteSet = async (setId, userId) => {
   await FlashcardSetModel.deleteSet(setId);
 };
 
-const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
+const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords, deleteFromLibrary = false) => {
+  // Nếu yêu cầu xóa khỏi thư viện (khi tắt SRS từ trang hệ thống)
+  if (deleteFromLibrary && !isSrsEnabled) {
+    // Xóa bản ghi khỏi user_saved_sets
+    await FlashcardSetModel.saveSystemSet(userId, setId, 'UNSAVE');
+    return;
+  }
+  
+  // Ngược lại, chỉ cập nhật trạng thái SRS
   await FlashcardSetModel.toggleSrs(userId, setId, isSrsEnabled, dailyNewWords);
+  
   if (isSrsEnabled) {
     const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
-    for (const card of flashcards) await FlashcardModel.addToUserFlashcards(userId, card.id);
+    for (const card of flashcards) {
+      await FlashcardModel.addToUserFlashcards(userId, card.id);
+    }
   }
 };
 
