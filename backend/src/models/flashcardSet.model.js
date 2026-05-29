@@ -10,18 +10,23 @@ const getSetsByUser = async (userId, limit, offset) => {
       fs.service_id,
       COALESCE(MAX(uss.is_srs_enabled), 0) AS is_srs_enabled,
       COALESCE(MAX(uss.daily_new_words), 20) AS daily_new_words,
+      COALESCE(ROUND((SUM(CASE WHEN uf.status = 'REVIEW' THEN 1 ELSE 0 END) / NULLIF(COUNT(DISTINCT f.id), 0)) * 100), 0) AS mastery_progress,
       COUNT(DISTINCT f.id) AS total_cards
     FROM flashcard_sets fs
     LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
     LEFT JOIN flashcards f ON fs.id = f.set_id
-    WHERE (fs.is_system = FALSE AND fs.user_id = ?) OR (fs.is_system = TRUE AND uss.user_id = ?)
+    LEFT JOIN user_flashcards uf ON f.id = uf.flashcard_id AND uf.user_id = ?
+    WHERE fs.user_id = ? OR uss.user_id = ?
     GROUP BY fs.id, fs.service_id
     ORDER BY fs.created_at DESC
     LIMIT ${safeLimit} OFFSET ${safeOffset}
   `;
   
   console.log('[DEBUG] getSetsByUser - userId:', userId);
-  const [rows] = await db.execute(query, [userId, userId, userId]);
+  
+  // 🟢 ĐÃ FIX: Truyền đủ 4 biến userId tương ứng với 4 dấu ?
+  const [rows] = await db.execute(query, [userId, userId, userId, userId]); 
+  
   console.log('[DEBUG] getSetsByUser - rows found:', rows.length);
   if (rows.length > 0) console.log('[DEBUG] First row:', rows[0]);
 
@@ -31,6 +36,8 @@ const getSetsByUser = async (userId, limit, offset) => {
     LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
     WHERE (fs.is_system = FALSE AND fs.user_id = ?) OR (fs.is_system = TRUE AND uss.user_id = ?)
   `;
+  
+  // Ở đây có 3 dấu ? nên truyền 3 userId là ĐÚNG RỒI
   const [[{ total }]] = await db.execute(countQuery, [userId, userId, userId]);
   console.log('[DEBUG] total items:', total);
   
