@@ -24,7 +24,11 @@ const getPersonalSets = catchAsync(async (req, res) => {
 });
 
 const createSet = catchAsync(async (req, res) => {
-  const { title, description, service_id } = req.body;
+  const { title, description } = req.body;
+  
+  // 🟢 FIX: Chuyển undefined thành null để MySQL không bị sập
+  const service_id = req.body.service_id ? parseInt(req.body.service_id, 10) : null;
+  
   const newSet = await FlashcardSetService.createSet(req.user.id, title, description, service_id);
   return res.status(201).json({ status: "success", message: "Tạo bộ thẻ thành công", data: newSet });
 });

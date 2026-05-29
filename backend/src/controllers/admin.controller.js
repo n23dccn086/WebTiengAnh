@@ -182,7 +182,33 @@ const deleteSystemSet = catchAsync(async (req, res) => {
   return successResponse(res, 'Xóa bộ thẻ thành công');
 });
 
+const getSetsByService = async (req, res, next) => {
+  try {
+    const serviceId = req.params.id;
+    
+    // TODO: Chỗ này bạn gọi tới Model để lấy dữ liệu từ database.
+    // Ví dụ: const sets = await flashcardSetModel.find({ service_id: serviceId });
+    // Dưới đây là code trả về mảng rỗng giả lập để Frontend hết báo lỗi 404 trước:
+    
+    res.status(200).json({
+      status: "success",
+      message: "Lấy danh sách bộ thẻ thành công",
+      data: {
+        service_id: serviceId,
+        service_name: `Dịch vụ #${serviceId}`, // Bạn có thể query thêm tên service để trả về
+        sets: [] // Thay bằng dữ liệu mảng các bộ thẻ lấy từ DB
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Đừng quên export nó ra ở cuối file admin.controller.js
+// getSetsByService,
+
 module.exports = {
+  getSetsByService,
   getUsers,
   changeUserStatus,
   changeUserRole,
