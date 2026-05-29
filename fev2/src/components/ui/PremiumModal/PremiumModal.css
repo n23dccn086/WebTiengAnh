@@ -1,30 +1,65 @@
-/* src/components/ui/PremiumModal.css */
+/* src/components/ui/PremiumModal/PremiumModal.css */
 .premium-overlay {
   position: fixed; inset: 0;
-  background-color: rgba(8, 8, 22, 0.85); backdrop-filter: blur(8px);
+  background-color: rgba(3, 0, 28, 0.85); /* Tệp nền Deep Space */
+  backdrop-filter: blur(12px);
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
+
 .premium-modal {
-  background-color: #151528; border: 1px solid #FFD15B;
-  border-radius: 20px; padding: 40px; width: 480px; max-width: 90%;
-  position: relative; box-shadow: 0 10px 40px rgba(255, 209, 91, 0.15);
-  text-align: center; color: white;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px; padding: 40px; width: 480px; max-width: 90%;
+  position: relative; 
+  box-shadow: 0 0 40px rgba(79, 70, 255, 0.2), inset 0 0 20px rgba(79, 70, 255, 0.05);
+  text-align: center; color: var(--text-main);
+  overflow: hidden;
 }
+
+/* Hiệu ứng ánh sáng hắt từ trên xuống */
+.premium-modal::before {
+  content: ''; position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+  width: 200px; height: 100px; background: var(--accent);
+  filter: blur(80px); opacity: 0.3; pointer-events: none;
+}
+
 .premium-close {
-  position: absolute; top: 16px; right: 16px;
-  background: none; border: none; color: #8A8A9D; cursor: pointer;
+  position: absolute; top: 20px; right: 20px;
+  background: rgba(255,255,255,0.05); border: none; color: var(--text-muted); 
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; z-index: 10;
 }
-.premium-close:hover { color: white; }
-.premium-title { font-size: 28px; font-weight: 800; color: #FFD15B; margin-bottom: 8px; }
-.premium-features { text-align: left; margin: 32px 0; display: flex; flex-direction: column; gap: 16px; }
-.feature-item { display: flex; align-items: center; gap: 12px; font-size: 15px; }
-.feature-item .material-symbols-outlined { color: #00e2a0; font-size: 20px; }
+.premium-close:hover { color: white; background: rgba(255,255,255,0.1); }
+
+.premium-title { 
+  font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; 
+}
+.premium-title span {
+  color: var(--accent-neon);
+  text-shadow: 0 0 15px var(--accent-dim);
+}
+
+.premium-features { 
+  text-align: left; margin: 32px 0; display: flex; flex-direction: column; gap: 16px; 
+}
+.feature-item { 
+  display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500;
+}
+.feature-item .material-symbols-outlined { 
+  color: var(--accent-neon); font-size: 20px; 
+  text-shadow: 0 0 10px var(--accent-dim);
+}
+
+/* Giữ màu Hồng MoMo nhưng làm mượt hơn */
 .btn-momo {
-  width: 100%; padding: 16px; border-radius: 12px; border: none;
-  background-color: #A50064; /* Màu hồng MoMo */
+  width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(165, 0, 100, 0.5);
+  background: linear-gradient(135deg, #A50064, #c8147d);
   color: white; font-size: 16px; font-weight: 700; cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 12px;
-  transition: transform 0.2s; box-shadow: 0 4px 15px rgba(165, 0, 100, 0.3);
+  transition: all 0.2s; box-shadow: 0 8px 25px rgba(165, 0, 100, 0.25);
 }
-.btn-momo:hover { transform: translateY(-2px); }
+.btn-momo:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(165, 0, 100, 0.4); }
+.btn-momo:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }

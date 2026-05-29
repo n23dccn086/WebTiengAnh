@@ -35,6 +35,9 @@ import AdminServiceSets from './pages/Admin/Services/AdminServiceSets';
 import AdminTransactions from './pages/Admin/Transactions/AdminTransactions';
 import AdminStaff from './pages/Admin/Staff/AdminStaff';
 
+//thanh toan
+import PaymentResult from './pages/PaymentResult/PaymentResult';
+
 // import AdminSystemSets from './pages/Admin/SystemSets/AdminSystemSets';
 
 // ==========================================
@@ -122,6 +125,9 @@ function App() {
         
         <Route path="/profile" element={<ProtectedRoute><MainLayout title="Hồ sơ cá nhân"><Profile /></MainLayout></ProtectedRoute>} />
         <Route path="/change-password" element={<ProtectedRoute><MainLayout title="Đổi mật khẩu"><ChangePassword /></MainLayout></ProtectedRoute>} />
+        
+        {/* thanh toan */}
+        <Route path="/payment/result" element={<ProtectedRoute><PaymentResult /></ProtectedRoute>} />
 
         {/* ==========================================
             LUỒNG QUẢN TRỊ VIÊN (Admin Only)
