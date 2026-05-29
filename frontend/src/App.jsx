@@ -151,6 +151,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* === CÁC ROUTE ĐẶC BIỆT CHO BỘ THẺ === */}
           <Route
             path="/sets/create"
             element={
@@ -159,14 +161,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/sets/:id"
-            element={
-              <ProtectedRoute>
-                <SetDetail />
-              </ProtectedRoute>
-            }
-          />
+          {/* ✅ Đặt route /sets/service/:serviceId lên TRƯỚC /sets/:id */}
           <Route
             path="/sets/service/:serviceId"
             element={
@@ -207,6 +202,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/sets/:id"
+            element={
+              <ProtectedRoute>
+                <SetDetail />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/profile"
             element={
@@ -282,7 +286,7 @@ function App() {
             }
           />
 
-          {/* ========== ADMIN ROUTES ========== */}
+          {/* ADMIN ROUTES */}
           <Route
             path="/admin"
             element={
@@ -331,8 +335,6 @@ function App() {
               </AdminRoute>
             }
           />
-
-          {/* Quản lý bộ thẻ hệ thống – ưu tiên route cụ thể trước */}
           <Route
             path="/admin/system-sets/create"
             element={

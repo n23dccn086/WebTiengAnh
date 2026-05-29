@@ -10,15 +10,12 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
     throw new AppError(403, 'Bạn cần nâng cấp Premium để xem thống kê chi tiết.', 'PREMIUM_REQUIRED');
   }
 
-  // 1. current_streak
   const [userRows] = await db.execute(`SELECT current_streak FROM users WHERE id = ?`, [userId]);
   const current_streak = userRows[0]?.current_streak || 0;
 
-  // 2. Tổng số thẻ đã học
   const [totalLearnedRows] = await db.execute(`SELECT COUNT(*) as total FROM user_flashcards WHERE user_id = ?`, [userId]);
   const total_learned = totalLearnedRows[0]?.total || 0;
 
-  // 3. Số thẻ đến hạn hôm nay
   const [dueTodayRows] = await db.execute(`
     SELECT COUNT(DISTINCT uf.id) as due_today
     FROM user_flashcards uf
@@ -29,7 +26,7 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
   `, [userId]);
   const due_today = dueTodayRows[0]?.due_today || 0;
 
-  // 4. Lấy dữ liệu các ngày có review (đã convert sang VN)
+  // Lấy dữ liệu các ngày có review (đã convert sang VN)
   const [rawProgress] = await db.execute(`
     SELECT 
       DATE(CONVERT_TZ(last_reviewed_at, '+00:00', '+07:00')) as date,
@@ -40,7 +37,6 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
     ORDER BY date ASC
   `, [userId]);
 
-  // Tạo map dữ liệu
   const reviewMap = {};
   rawProgress.forEach(row => {
     reviewMap[row.date] = parseInt(row.reviewed);
@@ -55,10 +51,8 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
     const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
     maxDate = vnTime;
   }
-  // Đặt về 0h để so sánh
   maxDate.setHours(0, 0, 0, 0);
 
-  // Tạo mảng 7 ngày, từ maxDate lùi 6 ngày
   const progress_chart = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(maxDate);
@@ -70,7 +64,6 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
     });
   }
 
-  // 5. Top từ khó nhất
   const [hardestRows] = await db.execute(`
     SELECT f.word, f.meaning, uf.ease_factor, uf.repetition_count
     FROM user_flashcards uf

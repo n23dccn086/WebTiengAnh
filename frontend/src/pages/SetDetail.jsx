@@ -71,9 +71,14 @@ const SetDetail = () => {
 
   if (loading) return <div className={styles.loading}>📖 Đang tải...</div>;
 
+  // Xác định link quay lại
+  const backLink = set?.is_system 
+    ? `/sets/service/${set.service_id}`  // quay về danh mục chứa bộ thẻ hệ thống
+    : '/library';                         // quay về thư viện cá nhân
+
   return (
     <div className={styles.container}>
-      <Link to="/library" className={styles.backBtn}>← Thư viện</Link>
+      <Link to={backLink} className={styles.backBtn}>← {set?.is_system ? 'Về danh mục' : 'Thư viện'}</Link>
       <div className={styles.header}>
         <h2>{set.title}</h2>
         <p>{set.description}</p>

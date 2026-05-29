@@ -7,17 +7,26 @@ const TestHistory = ({ setId }) => {
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!setId) {
+      console.warn('⚠️ TestHistory: setId is empty');
+      setLoading(false);
+      return;
+    }
     fetchHistory();
   }, [setId]);
 
   const fetchHistory = async () => {
     try {
+      console.log('🔍 [TestHistory] Fetching history for setId:', setId);
       const res = await apiClient.get(`/study/tests/history/${setId}`);
-      setHistory(res.data.data);
+      console.log('📊 [TestHistory] Response:', res.data);
+      setHistory(res.data.data || []);
     } catch (err) {
-      console.error(err);
+      console.error('❌ [TestHistory] Error:', err);
+      setError(err.response?.data?.message || 'Không thể tải lịch sử');
     } finally {
       setLoading(false);
     }
@@ -31,9 +40,8 @@ const TestHistory = ({ setId }) => {
     if (!window.confirm('Bạn có chắc muốn xóa bài test đang dở này và bắt đầu làm bài mới?')) return;
     try {
       await apiClient.delete(`/study/tests/${attemptId}`);
-      alert('Đã xóa bài test cũ. Bạn sẽ được chuyển sang làm bài mới.');
-      // Chuyển hướng đến trang test với flag forceNew
-      navigate(`/sets/${setId}/test`, { state: { forceNew: true } });
+      alert('Đã xóa bài test cũ.');
+      fetchHistory();
     } catch (err) {
       console.error(err);
       alert('Xóa thất bại');
@@ -41,7 +49,8 @@ const TestHistory = ({ setId }) => {
   };
 
   if (loading) return <div className={styles.loading}>📜 Đang tải lịch sử...</div>;
-  if (history.length === 0) return <div className={styles.empty}>Chưa có bài test nào.</div>;
+  if (error) return <div className={styles.error}>{error}</div>;
+  if (!history.length) return <div className={styles.empty}>Chưa có bài test nào.</div>;
 
   return (
     <div className={styles.container}>

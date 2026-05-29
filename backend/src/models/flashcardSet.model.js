@@ -85,7 +85,7 @@ const createSet = async (userId, title, description, serviceId) => {
 // Lấy chi tiết bộ thẻ
 const getSetById = async (setId, userId) => {
   const query = `
-    SELECT fs.id, fs.title, fs.description, fs.user_id, fs.is_system,
+    SELECT fs.id, fs.title, fs.description, fs.user_id, fs.is_system, fs.service_id,
            COALESCE(uss.is_srs_enabled, 0) AS is_srs_enabled, 
            COALESCE(uss.daily_new_words, 20) AS daily_new_words
     FROM flashcard_sets fs

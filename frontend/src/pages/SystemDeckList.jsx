@@ -18,6 +18,7 @@ const SystemDeckList = () => {
         const service = servicesRes.data.data.find(s => s.id == serviceId);
         if (service) setServiceTitle(service.title);
         
+        // Gọi API lấy bộ thẻ hệ thống theo service_id
         const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
         setDecks(decksRes.data.data);
       } catch (err) {
@@ -33,17 +34,16 @@ const SystemDeckList = () => {
     const setId = deck.id;
     setActionLoading(prev => ({ ...prev, [setId]: true }));
     try {
-      // Nếu chưa lưu -> LƯU VÀ BẬT SRS (2 trong 1)
+      // Nếu chưa lưu -> lưu và bật SRS
       if (!deck.is_saved) {
-        await saveSystemSet(setId);      // lưu vào thư viện
-        await toggleSrs(setId, true);    // bật SRS
+        await saveSystemSet(setId);
+        await toggleSrs(setId, true);
         const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
         setDecks(decksRes.data.data);
         setActionLoading(prev => ({ ...prev, [setId]: false }));
         return;
       }
-      
-      // Nếu đã lưu và đang bật SRS -> XÓA KHỎI THƯ VIỆN (unsave)
+      // Nếu đã lưu và đang bật SRS -> xóa khỏi thư viện
       if (deck.is_saved && deck.is_srs_enabled) {
         await unsaveSystemSet(setId);
         const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);
@@ -51,8 +51,7 @@ const SystemDeckList = () => {
         setActionLoading(prev => ({ ...prev, [setId]: false }));
         return;
       }
-      
-      // Nếu đã lưu nhưng SRS đang tắt -> chỉ bật SRS
+      // Nếu đã lưu nhưng SRS tắt -> bật SRS
       if (deck.is_saved && !deck.is_srs_enabled) {
         await toggleSrs(setId, true);
         const decksRes = await apiClient.get(`/flashcard-sets/system?service_id=${serviceId}`);

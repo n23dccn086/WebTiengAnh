@@ -7,11 +7,22 @@
   border: none;
   padding: 0px 15px;
   border-radius: 5px;
-  background-color: rgb(49, 49, 83);
+  background: linear-gradient(145deg, rgb(117, 62, 237), rgb(236, 72, 153));
   gap: 10px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Hover: đổi gradient (ví dụ xanh dương - tím) */
+.documentsBtn:hover {
+  background: linear-gradient(145deg, rgb(228, 165, 17), rgb(227, 49, 9));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Các phần khác giữ nguyên */
 .folderContainer {
   width: 40px;
   height: fit-content;
@@ -51,12 +62,29 @@
 .documentsBtn:hover .filePage {
   transform: translateY(-5px);
 }
-.documentsBtn:hover {
-  background-color: rgb(58, 58, 94);
-}
-.documentsBtn:active {
-  transform: scale(0.95);
-}
 .documentsBtn:hover .fileFront {
   transform: rotateX(30deg);
+}
+.documentsBtn:active {
+  transform: scale(0.96);
+}
+
+/* Ripple effect */
+.documentsBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transform: translate(-50%, -50%);
+  transition: width 0.5s ease-out, height 0.5s ease-out;
+  pointer-events: none;
+}
+.documentsBtn:active::after {
+  width: 200px;
+  height: 200px;
+  opacity: 0;
 }
