@@ -2,6 +2,7 @@ const db = require('../config/database');
 const catchAsync = require('../utils/catchAsync');
 const { successResponse } = require('../utils/response.helper');
 const AppError = require('../utils/appError');
+const StatisticsService = require('../services/statistics.service');
 
 exports.getPremiumDashboard = catchAsync(async (req, res) => {
   const userId = req.user.id;
@@ -87,4 +88,11 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
     progress_chart,
     hardest_words
   });
+});
+
+exports.getHomeOverview = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const data = await StatisticsService.getHomeStats(userId);
+  
+  return successResponse(res, 'Lấy thống kê tổng quan thành công', data);
 });
