@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import useSpeech from '../hooks/useSpeech';
-import { getTodayReviews, submitReview, learnNewCards } from '../services/srsApi';
+import { getTodayReviews, submitReview } from '../services/srsApi';
 import confetti from 'canvas-confetti';
 import styles from './SRSDaily.module.css';
 import FlipCard from "../features/srs/FlipCard";
@@ -16,7 +16,6 @@ const SRSDaily = () => {
   const [flipped, setFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
-  const [learningMore, setLearningMore] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -59,33 +58,6 @@ const SRSDaily = () => {
     }
   };
 
-  const handleLearnMore = async () => {
-    if (learningMore) return;
-    setLearningMore(true);
-    setError('');
-    try {
-      const result = await learnNewCards(20);
-      console.log('Kết quả learnNewCards:', result);
-      if (result && result.added_count > 0) {
-        alert(`✅ Đã thêm ${result.added_count} từ mới!`);
-        await loadCards();
-        setFinished(false);
-        setCurrentIndex(0);
-        setFlipped(false);
-      } else {
-        const msg = result?.message || 'Không có từ mới nào để thêm. Hãy bật SRS cho nhiều bộ thẻ hơn.';
-        alert(msg);
-      }
-    } catch (err) {
-      console.error('Lỗi khi học thêm:', err);
-      const msg = err.response?.data?.message || 'Không thể thêm từ mới. Vui lòng thử lại sau.';
-      setError(msg);
-      alert(msg);
-    } finally {
-      setLearningMore(false);
-    }
-  };
-
   if (loading) return <div className={styles.loading}>📚 Đang tải thẻ ôn tập...</div>;
   if (error) return <div className={styles.error}>{error}</div>;
 
@@ -93,13 +65,6 @@ const SRSDaily = () => {
     return (
       <div className={styles.empty}>
         <p>😊 Không có thẻ nào đến hạn. Bạn đã hoàn thành mục tiêu hôm nay!</p>
-        <button 
-          onClick={handleLearnMore} 
-          disabled={learningMore} 
-          className={styles.learnMoreBtn}
-        >
-          {learningMore ? '⏳ Đang xử lý...' : '📖 Học thêm từ mới'}
-        </button>
         <button onClick={() => navigate('/dashboard')} className={styles.btn}>
           Về Dashboard
         </button>

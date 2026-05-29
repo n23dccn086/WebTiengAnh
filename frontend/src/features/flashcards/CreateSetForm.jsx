@@ -20,8 +20,10 @@ const CreateSetForm = () => {
     const cleanTitle = title.trim();
     const cleanDescription = description.trim();
 
-    if (cleanTitle.length < 3) {
-      setError("Tên bộ thẻ phải có ít nhất 3 ký tự.");
+    // ✅ ĐÃ XÓA KIỂM TRA ĐỘ DÀI TỐI THIỂU 3 KÝ TỰ
+    // Bạn có thể nhập tên bất kỳ (kể cả 1 ký tự)
+    if (cleanTitle.length === 0) {
+      setError("Tên bộ thẻ không được để trống.");
       return;
     }
 

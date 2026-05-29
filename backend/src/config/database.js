@@ -10,6 +10,7 @@ const rawPool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  timezone: "+07:00",
 });
 
 // Wrapper query dùng Promise, KHÔNG dùng rawPool.promise()

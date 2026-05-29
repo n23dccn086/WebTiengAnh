@@ -22,7 +22,8 @@ import QuizDetail from "./pages/QuizDetail";
 import SRSDaily from "./pages/SRSDaily";
 import SystemDeckList from "./pages/SystemDeckList"; // ✅ import component
 import MemberDetail from "./pages/MemberDetail";
-import DictionarySearch from './components/ui/DictionarySearch';
+import DictionarySearch from "./components/ui/DictionarySearch";
+import FloatingChat from "./components/ui/FloatingChat";
 
 // Cụm 2: Premium & Thanh toán
 import PremiumDashboard from "./pages/PremiumDashboard";
@@ -70,7 +71,7 @@ function Navbar() {
             <Link to="/library" style={linkStyle}>
               Thư viện
             </Link>
-             <DictionarySearch />
+            <DictionarySearch />
             <Link to="/profile" style={linkStyle}>
               Hồ sơ
             </Link>
@@ -340,6 +341,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+      <FloatingChat />
     </BrowserRouter>
   );
 }

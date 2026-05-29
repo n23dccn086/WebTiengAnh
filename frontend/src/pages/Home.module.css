@@ -258,3 +258,12 @@
   text-align: center;
   color: white;
 }
+
+.contactError {
+  margin-top: 1rem;
+  padding: 10px;
+  background: rgba(255, 80, 80, 0.9);
+  border-radius: 40px;
+  text-align: center;
+  color: white;
+}

@@ -1,12 +1,12 @@
-// frontend/src/pages/admin/SystemDeckManager.jsx
 import { useState, useEffect } from 'react';
 import apiClient from '../../services/apiClient';
 import ImportExcelModal from '../../features/admin/ImportExcelModal';
-import ShortWarthogFileInput from '../../components/ui/ShortWarthogFileInput'; // ✅ import
+import ShortWarthogFileInput from '../../components/ui/ShortWarthogFileInput';
 import styles from './SystemDeckManager.module.css';
 
 const SystemDeckManager = () => {
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [serviceId, setServiceId] = useState('');
   const [services, setServices] = useState([]);
   const [flashcards, setFlashcards] = useState([]);
@@ -96,11 +96,13 @@ const SystemDeckManager = () => {
     try {
       await apiClient.post('/admin/system-sets', {
         title: title.trim(),
+        description: description.trim() || null,
         service_id: parseInt(serviceId),
         flashcards: flashcards.map(({ id, ...rest }) => rest)
       });
       setMessage('Tạo bộ thẻ hệ thống thành công!');
       setTitle('');
+      setDescription('');
       setServiceId('');
       setFlashcards([]);
       setTimeout(() => setMessage(''), 3000);
@@ -115,9 +117,6 @@ const SystemDeckManager = () => {
     setMessage('Import bộ thẻ thành công!');
     setTimeout(() => setMessage(''), 3000);
   };
-
-  // Dùng ref để reset nếu cần (tương tự modal)
-  // Tuy nhiên ShortWarthogFileInput sẽ tự xử lý file chọn, ta không cần reset phức tạp
 
   return (
     <div className={styles.container}>
@@ -138,7 +137,15 @@ const SystemDeckManager = () => {
           <label>Tên bộ thẻ *</label>
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
-
+        <div className={styles.field}>
+          <label>Mô tả</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows="2"
+            placeholder="Nhập mô tả (không bắt buộc)"
+          />
+        </div>
         <div className={styles.field}>
           <label>Danh mục *</label>
           <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} required>

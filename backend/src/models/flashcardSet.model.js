@@ -1,6 +1,5 @@
 const db = require('../config/database');
 
-// Lấy danh sách bộ thẻ của user (bao gồm bộ tự tạo và bộ hệ thống đã lưu)
 const getSetsByUser = async (userId, limit, offset) => {
   const safeLimit = parseInt(limit, 10);
   const safeOffset = parseInt(offset, 10);
@@ -15,7 +14,7 @@ const getSetsByUser = async (userId, limit, offset) => {
     FROM flashcard_sets fs
     LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
     LEFT JOIN flashcards f ON fs.id = f.set_id
-    WHERE fs.user_id = ? OR uss.user_id = ?
+    WHERE (fs.is_system = FALSE AND fs.user_id = ?) OR (fs.is_system = TRUE AND uss.user_id = ?)
     GROUP BY fs.id, fs.service_id
     ORDER BY fs.created_at DESC
     LIMIT ${safeLimit} OFFSET ${safeOffset}
@@ -30,7 +29,7 @@ const getSetsByUser = async (userId, limit, offset) => {
     SELECT COUNT(DISTINCT fs.id) AS total
     FROM flashcard_sets fs
     LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
-    WHERE fs.user_id = ? OR uss.user_id = ?
+    WHERE (fs.is_system = FALSE AND fs.user_id = ?) OR (fs.is_system = TRUE AND uss.user_id = ?)
   `;
   const [[{ total }]] = await db.execute(countQuery, [userId, userId, userId]);
   console.log('[DEBUG] total items:', total);
@@ -120,7 +119,7 @@ const toggleSrs = async (userId, setId, isSrsEnabled, dailyNewWords) => {
   );
 };
 
-// Lưu/bỏ lưu bộ hệ thống
+// Lưu/bỏ lưu bộ hệ thống (tự động bật SRS khi lưu)
 const saveSystemSet = async (userId, setId, action) => {
   if (action === 'SAVE') {
     await db.execute(

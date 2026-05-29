@@ -126,26 +126,15 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.learnMoreBtn {
-  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 40px;
-  font-weight: bold;
-  cursor: pointer;
-  margin: 1rem auto;
-}
-
 .btn {
   background: #e5e7eb;
-  color: #1f2937;
+  color: #0e6ef5;
   border: none;
   padding: 12px 24px;
   border-radius: 40px;
   font-weight: bold;
   cursor: pointer;
-  margin-left: 1rem;
+  margin-top: 1.5rem;
 }
 
 .loading, .error {

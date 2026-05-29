@@ -4,7 +4,7 @@ const createSetSchema = Joi.object({
   service_id: Joi.number().integer().min(1).required().messages({
     'any.required': 'Vui lòng chọn danh mục cho bộ thẻ.',
   }),
-  title: Joi.string().trim().min(3).max(255).required().messages({
+  title: Joi.string().trim().min(1).max(255).required().messages({
     'string.empty': 'Tiêu đề bộ thẻ không được để trống.',
     'string.min': 'Tiêu đề bộ thẻ phải có ít nhất 3 ký tự.',
   }),

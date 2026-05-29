@@ -15,6 +15,7 @@ const adminRoute = require('./admin.route');
 const statisticsRoutes = require('./statistics.route');
 const contactRoutes = require('./contact.route');
 const tipRoutes = require('./tip.route');
+const aiRoutes = require('./ai.route');
 
 // Gắn route vào hệ thống
 router.use('/auth', authRoutes);
@@ -31,5 +32,6 @@ router.use('/super-admin', adminRoute.superAdminRouter);
 router.use('/statistics', statisticsRoutes);
 router.use('/contact', contactRoutes);
 router.use('/tip', tipRoutes);
+router.use('/ai', aiRoutes);
 
 module.exports = router;

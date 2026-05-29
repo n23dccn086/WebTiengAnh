@@ -18,11 +18,19 @@ const Home = () => {
   });
   const [contactLoading, setContactLoading] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
+  const [contactError, setContactError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     loadServices();
   }, []);
+
+  // Tự động điền email nếu đã đăng nhập
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      setContactForm(prev => ({ ...prev, email: user.email }));
+    }
+  }, [isAuthenticated, user]);
 
   const loadServices = async () => {
     const data = await getServicesApi();
@@ -32,19 +40,48 @@ const Home = () => {
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
-    setContactLoading(true);
+    setContactError("");
     setContactMessage("");
+
+    // Validation cơ bản
+    if (!contactForm.name.trim()) {
+      setContactError("Vui lòng nhập họ tên.");
+      return;
+    }
+    if (!contactForm.email.trim()) {
+      setContactError("Vui lòng nhập email.");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactForm.email)) {
+      setContactError("Email không hợp lệ.");
+      return;
+    }
+    if (!contactForm.message.trim()) {
+      setContactError("Vui lòng nhập nội dung.");
+      return;
+    }
+
+    setContactLoading(true);
     try {
       const res = await apiClient.post("/contact/send", contactForm);
       setContactMessage(res.data.message);
-      setContactForm({ name: "", email: "", message: "" });
+      // Reset form, giữ lại email nếu đã đăng nhập
+      setContactForm({
+        name: "",
+        email: isAuthenticated ? user?.email || "" : "",
+        message: "",
+      });
     } catch (err) {
-      setContactMessage(
+      setContactError(
         err.response?.data?.message || "Gửi thất bại, vui lòng thử lại.",
       );
     } finally {
       setContactLoading(false);
-      setTimeout(() => setContactMessage(""), 5000);
+      setTimeout(() => {
+        setContactMessage("");
+        setContactError("");
+      }, 5000);
     }
   };
 
@@ -207,13 +244,12 @@ const Home = () => {
               setContactForm({ ...contactForm, message: e.target.value })
             }
             required
-          ></textarea>
+          />
+          {contactError && <div className={styles.contactError}>{contactError}</div>}
+          {contactMessage && <div className={styles.contactMessage}>{contactMessage}</div>}
           <button type="submit" disabled={contactLoading}>
             {contactLoading ? "Đang gửi..." : "Gửi tin nhắn"}
           </button>
-          {contactMessage && (
-            <div className={styles.contactMessage}>{contactMessage}</div>
-          )}
         </form>
         <div className={styles.social}>
           <a href="#">Facebook</a>

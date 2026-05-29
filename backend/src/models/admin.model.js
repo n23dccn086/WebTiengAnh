@@ -76,7 +76,6 @@ const updateService = async (serviceId, title, description, status) => {
   );
 };
 
-// ✅ THÊM HÀM NÀY
 const updateServiceStatus = async (serviceId, status) => {
   await db.execute(`UPDATE services SET status = ? WHERE id = ?`, [status, serviceId]);
 };
@@ -86,20 +85,22 @@ const deleteService = async (serviceId) => {
 };
 
 // ==========================================
-// API 8: TẠO BỘ FLASHCARD HỆ THỐNG (CÓ TRANSACTION)
+// API 8: TẠO BỘ FLASHCARD HỆ THỐNG (CÓ TRANSACTION, KHÔNG TỰ LƯU VÀO THƯ VIỆN)
 // ==========================================
-const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) => {
+const createSystemFlashcardSet = async (adminId, serviceId, title, description, flashcards) => {
   const rawConnection = await db.getConnection();
   const connection = rawConnection.promise();
-
   try {
     await connection.beginTransaction();
-
+    
     const [setResult] = await connection.execute(
-      `INSERT INTO flashcard_sets (user_id, service_id, title, is_system) VALUES (?, ?, ?, TRUE)`,
-      [adminId, serviceId, title]
+      `INSERT INTO flashcard_sets (user_id, service_id, title, description, is_system) VALUES (?, ?, ?, ?, TRUE)`,
+      [adminId, serviceId, title, description || null]
     );
     const setId = setResult.insertId;
+
+    // ✅ ĐÃ XÓA HOÀN TOÀN DÒNG INSERT VÀO user_saved_sets
+    // Không tự động lưu bộ thẻ vào thư viện cá nhân của admin
 
     if (flashcards && flashcards.length > 0) {
       const values = [];
@@ -107,7 +108,7 @@ const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) =
         values.push(setId, card.word, card.meaning, card.pronunciation || null, card.example_sentence || null, card.part_of_speech || null);
         return `(?, ?, ?, ?, ?, ?)`;
       }).join(', ');
-
+      
       await connection.execute(
         `INSERT INTO flashcards (set_id, word, meaning, pronunciation, example_sentence, part_of_speech) VALUES ${placeholders}`,
         values
@@ -118,6 +119,7 @@ const createSystemFlashcardSet = async (adminId, serviceId, title, flashcards) =
     return setId;
   } catch (error) {
     await connection.rollback();
+    console.error('🔥 Lỗi tạo bộ thẻ hệ thống:', error);
     throw error;
   } finally {
     rawConnection.release();
@@ -190,7 +192,7 @@ module.exports = {
   updateUserRole,
   createService,
   updateService,
-  updateServiceStatus, // ✅ export hàm
+  updateServiceStatus,
   deleteService,
   createSystemFlashcardSet,
   getTransactions,
