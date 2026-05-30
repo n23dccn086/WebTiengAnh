@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/apiClient';
 import './AdminServiceSets.css';
-import './AdminServices.css'; // Mượn lại CSS bảng & nút của trang Service cho đồng bộ
+import './AdminServices.css'; 
 
 const AdminServiceSets = () => {
-  const { serviceId } = useParams(); // Lấy ID dịch vụ từ URL (VD: số 1)
+  const { serviceId } = useParams(); 
   const navigate = useNavigate();
   
   const [serviceName, setServiceName] = useState(`Dịch vụ #${serviceId}`);
@@ -13,29 +13,26 @@ const AdminServiceSets = () => {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ type: '', message: '', visible: false });
 
-  // Modal State cho Thêm Bộ thẻ
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ title: '', description: '' });
+  // Import State
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importData, setImportData] = useState({ title: '', description: '' });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
 
   const showToast = (type, message) => {
     setToast({ type, message, visible: true });
     setTimeout(() => setToast({ visible: false }), 3000);
   };
 
-  // 1. Fetch dữ liệu bộ thẻ của Dịch vụ này
   const fetchSets = async () => {
     setLoading(true);
     try {
-      // ⚠️ CẦN BACKEND HỖ TRỢ API NÀY: GET /api/v1/admin/services/:id/sets
-      // Tạm thời có thể nó sẽ báo lỗi 404 nếu BE chưa viết, nhưng giao diện vẫn sẽ lên.
       const res = await apiClient.get(`/admin/services/${serviceId}/sets`);
       setSets(res.data.data.sets || []);
       setServiceName(res.data.data.service_name || `Dịch vụ #${serviceId}`);
     } catch (error) {
-      if (error.response?.status === 404) {
-         showToast('error', 'Chưa có API lấy danh sách bộ thẻ cho dịch vụ này (Backend cần bổ sung).');
-      } else {
+      if (error.response?.status !== 404) {
          showToast('error', 'Lỗi khi tải danh sách bộ thẻ.');
       }
     } finally {
@@ -43,29 +40,55 @@ const AdminServiceSets = () => {
     }
   };
 
-  useEffect(() => {
-    fetchSets();
-  }, [serviceId]);
+  useEffect(() => { fetchSets(); }, [serviceId]);
 
-  // Xử lý Modal Thêm mới
-  const handleSaveSet = async () => {
-    if (!formData.title.trim()) return showToast('error', 'Vui lòng nhập tên bộ thẻ');
-    setIsSubmitting(true);
+  const handleDelete = async (id) => {
+    if (!window.confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa bộ thẻ này không?')) return;
     try {
-      // Gọi API tạo bộ thẻ hệ thống (API 8 của bạn)
-      // Chú ý: Ở đây tạm truyền mảng flashcards rỗng, sau này bạn sẽ có trang add từ vựng riêng
-      await apiClient.post('/admin/system-sets', {
-        title: formData.title,
-        description: formData.description,
-        service_id: Number(serviceId),
-        flashcards: [{ word: "Sample", meaning: "Mẫu (Vui lòng sửa)", question_type: "WORD_TO_MEANING" }] // Dummy data pass validate
-      });
-      showToast('success', 'Tạo bộ thẻ thành công!');
-      setIsModalOpen(false);
-      setFormData({ title: '', description: '' });
-      fetchSets(); // Load lại list
+      await apiClient.delete(`/admin/system-sets/${id}`);
+      showToast('success', 'Đã xóa bộ thẻ thành công!');
+      setSets(sets.filter(s => s.id !== id));
     } catch (error) {
-      showToast('error', error.response?.data?.message || 'Có lỗi xảy ra.');
+      showToast('error', 'Lỗi khi xóa bộ thẻ.');
+    }
+  };
+
+  // =====================================
+  // LOGIC IMPORT EXCEL XỬ LÝ FILE + TEXT
+  // =====================================
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleImportExcel = async () => {
+    if (!importData.title.trim()) return showToast('error', 'Vui lòng nhập tên bộ thẻ!');
+    if (!selectedFile) return showToast('error', 'Vui lòng chọn file Excel!');
+
+    setIsSubmitting(true);
+    
+    // Gói dữ liệu vào FormData (chuẩn của multer bên Backend)
+    const uploadData = new FormData();
+    uploadData.append('title', importData.title);
+    if (importData.description) {
+      uploadData.append('description', importData.description);
+    }
+    uploadData.append('service_id', serviceId);
+    uploadData.append('file', selectedFile);
+
+    try {
+      await apiClient.post('/admin/system-sets/import', uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      showToast('success', 'Import file Excel và tạo bộ thẻ thành công!');
+      setIsImportModalOpen(false);
+      setImportData({ title: '', description: '' });
+      setSelectedFile(null);
+      fetchSets(); // Tải lại bảng để thấy dữ liệu mới
+    } catch (error) {
+      showToast('error', error.response?.data?.message || 'Lỗi định dạng file Excel.');
     } finally {
       setIsSubmitting(false);
     }
@@ -75,68 +98,50 @@ const AdminServiceSets = () => {
     <div className="admin-sets-container">
       {toast.visible && <div className={`toast-notification ${toast.type}`}><p>{toast.message}</p></div>}
 
-      {/* THANH ĐIỀU HƯỚNG QUAY LẠI */}
       <div className="breadcrumb">
-        <span className="breadcrumb-link" onClick={() => navigate('/admin/services')}>
-          Dịch Vụ Học Tập
-        </span>
+        <span className="breadcrumb-link" onClick={() => navigate('/admin/services')}>Dịch Vụ Học Tập</span>
         <span className="material-symbols-outlined breadcrumb-separator" style={{fontSize: '16px'}}>chevron_right</span>
         <span>Bộ Thẻ Của "{serviceName}"</span>
       </div>
 
-      {/* TOOLBAR */}
       <div className="users-toolbar" style={{ justifyContent: 'space-between' }}>
-        <h2 style={{ fontSize: '20px', margin: 0, color: 'var(--text-main)' }}>Quản Lý Bộ Thẻ Hệ Thống</h2>
-        <button className="btn-create-service" onClick={() => setIsModalOpen(true)}>
-          <span className="material-symbols-outlined">add_circle</span> Thêm Bộ Thẻ Mới
+        <h2 style={{ fontSize: '20px', margin: 0, color: 'var(--text-main)' }}>Quản Lý Bộ Thẻ</h2>
+        <button className="btn-import-excel" onClick={() => { setSelectedFile(null); setIsImportModalOpen(true); }}>
+          <span className="material-symbols-outlined">upload_file</span> Import Excel
         </button>
       </div>
 
-      {/* TABLE */}
       <div className="table-wrapper">
         <table className="admin-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th style={{ width: '30%' }}>Tên Bộ Thẻ</th>
-              <th style={{ width: '30%' }}>Số lượng từ</th>
-              <th style={{ textAlign: 'center' }}>Hiển Thị</th>
-              <th style={{ textAlign: 'right' }}>Hành Động</th>
+              <th style={{ width: '10%' }}>ID</th>
+              <th style={{ width: '25%' }}>Tên Bộ Thẻ</th>
+              {/* Đã thêm cột Mô tả để cân đối bảng */}
+              <th style={{ width: '35%' }}>Mô Tả</th>
+              <th style={{ width: '15%' }}>Số Từ Vựng</th>
+              <th style={{ textAlign: 'right', width: '15%' }}>Hành Động</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr><td colSpan="5" style={{textAlign: 'center', padding: '32px'}}>Đang tải dữ liệu...</td></tr>
             ) : sets.length === 0 ? (
-              <tr>
-                <td colSpan="5" style={{textAlign: 'center', padding: '32px', color: 'var(--text-muted)'}}>
-                  Dịch vụ này chưa có bộ thẻ nào. Hãy tạo bộ thẻ đầu tiên!
-                  <br />
-                  <span style={{fontSize: '12px', opacity: 0.7}}>(Hoặc do Backend chưa có API GET /services/{serviceId}/sets)</span>
-                </td>
-              </tr>
+              <tr><td colSpan="5" style={{textAlign: 'center', padding: '32px', color: 'var(--text-muted)'}}>Dịch vụ này chưa có bộ thẻ nào.</td></tr>
             ) : (
               sets.map(set => (
                 <tr key={set.id}>
                   <td style={{ color: 'var(--text-muted)' }}>#{set.id}</td>
-                  <td><strong>{set.title}</strong></td>
-                  <td style={{ color: 'var(--text-muted)' }}>{set.total_cards || 0} thẻ</td>
-                  
-                  {/* Cột Ẩn hiện (Đã chuẩn bị sẵn UI cho bạn thêm sau) */}
-                  <td style={{textAlign: 'center'}}>
-                     <label className="toggle-switch">
-                      <input type="checkbox" checked={set.status !== 'HIDDEN'} readOnly />
-                      <span className="toggle-slider"></span>
-                    </label>
+                  <td><strong style={{ fontSize: '15px' }}>{set.title}</strong></td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{set.description || '...'}</td>
+                  <td>
+                    <span className="badge" style={{ background: 'var(--sidebar)', border: '1px solid var(--border-subtle)', color: 'var(--text-main)' }}>
+                      {set.total_cards || 0} thẻ
+                    </span>
                   </td>
-
                   <td style={{textAlign: 'right'}}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                      <button className="btn-view-sets" style={{ backgroundColor: 'transparent', border: '1px solid var(--accent)' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit_document</span>
-                        Sửa Từ Vựng
-                      </button>
-                      <button className="btn-icon-action delete" title="Xóa">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button className="btn-icon-action delete" title="Xóa Bộ Thẻ" onClick={() => handleDelete(set.id)}>
                         <span className="material-symbols-outlined">delete</span>
                       </button>
                     </div>
@@ -148,40 +153,66 @@ const AdminServiceSets = () => {
         </table>
       </div>
 
-      {/* MODAL THÊM BỘ THẺ */}
-      {isModalOpen && (
-        <div className="service-modal-overlay" onClick={() => setIsModalOpen(false)}>
+      {/* MODAL IMPORT EXCEL GỌN GÀNG */}
+      {isImportModalOpen && (
+        <div className="service-modal-overlay" onClick={() => setIsImportModalOpen(false)}>
           <div className="service-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Tạo Bộ Thẻ Mới</h3>
-              <button className="btn-icon-action" onClick={() => setIsModalOpen(false)}>
-                <span className="material-symbols-outlined">close</span>
-              </button>
+              <h3>Import Bộ Thẻ Hàng Loạt</h3>
+              <button className="btn-icon-action" onClick={() => setIsImportModalOpen(false)}><span className="material-symbols-outlined">close</span></button>
             </div>
             <div className="modal-body">
-              <div className="form-group">
-                <label>Tên bộ thẻ <span style={{color: 'var(--error)'}}>*</span></label>
-                <input 
-                  type="text" 
-                  placeholder="VD: TOEIC Part 1, 3000 Từ vựng cơ bản..."
-                  value={formData.title} 
-                  onChange={e => setFormData({...formData, title: e.target.value})} 
-                  autoFocus
-                />
+              
+              <div className="import-inputs">
+                <div className="form-group">
+                  <label>Tên bộ thẻ mới <span style={{color: 'var(--error)'}}>*</span></label>
+                  <input type="text" className="modern-input" placeholder="VD: 1000 Từ vựng IELTS..." value={importData.title} onChange={e => setImportData({...importData, title: e.target.value})} autoFocus />
+                </div>
+                <div className="form-group">
+                  <label>Mô tả ngắn</label>
+                  <input type="text" className="modern-input" placeholder="Nhập mô tả cho bộ thẻ..." value={importData.description} onChange={e => setImportData({...importData, description: e.target.value})} />
+                </div>
               </div>
-              <div className="form-group">
-                <label>Mô tả (Không bắt buộc)</label>
-                <textarea 
-                  placeholder="Giới thiệu về bộ thẻ này..."
-                  value={formData.description} 
-                  onChange={e => setFormData({...formData, description: e.target.value})} 
-                ></textarea>
-              </div>
+
+              {!selectedFile ? (
+                <>
+                  <div className="upload-zone" onClick={() => fileInputRef.current.click()}>
+                    <span className="material-symbols-outlined upload-icon">description</span>
+                    <p className="upload-text">Nhấp để chọn file Excel</p>
+                    <p className="upload-subtext">Hỗ trợ: .xlsx, .xls</p>
+                    <input type="file" hidden accept=".xlsx, .xls" ref={fileInputRef} onChange={handleFileSelect} />
+                  </div>
+                  <div className="download-template-wrapper">
+                    <a href="/template.xlsx" className="download-template-link" onClick={(e) => { e.preventDefault(); showToast('info', 'Bạn hãy tự tạo file mẫu theo định dạng cột nhé.'); }}>
+                      Tải file Excel mẫu
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <div className="file-selected-box">
+                  <div className="file-info">
+                    <span className="material-symbols-outlined">task</span>
+                    <div>
+                      <p className="file-name">{selectedFile.name}</p>
+                      <p className="file-size">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                  </div>
+                  <button className="btn-icon-action delete" onClick={() => setSelectedFile(null)}>
+                    <span className="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              )}
+
             </div>
             <div className="modal-footer">
-              <button className="btn-cancel" onClick={() => setIsModalOpen(false)} disabled={isSubmitting}>Hủy</button>
-              <button className="btn-submit" onClick={handleSaveSet} disabled={isSubmitting}>
-                {isSubmitting ? 'Đang tạo...' : 'Tạo Bộ Thẻ'}
+              <button className="btn-cancel" onClick={() => setIsImportModalOpen(false)}>Hủy</button>
+              <button 
+                className="btn-submit" 
+                style={{ background: selectedFile && importData.title ? 'linear-gradient(135deg, #10b981, #059669)' : 'var(--sidebar)' }} 
+                disabled={!selectedFile || !importData.title || isSubmitting}
+                onClick={handleImportExcel}
+              >
+                {isSubmitting ? 'Đang xử lý...' : 'Tiến Hành Import'}
               </button>
             </div>
           </div>

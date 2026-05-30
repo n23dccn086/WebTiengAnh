@@ -7,30 +7,85 @@
   animation: slideUp 0.3s ease;
 }
 
-/* Thanh điều hướng quay lại */
 .breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--text-muted);
 }
 
 .breadcrumb-link {
-  color: var(--accent-neon);
-  text-decoration: none;
-  font-weight: 600;
-  transition: 0.2s;
+  color: var(--accent-neon); text-decoration: none;
+  font-weight: 600; transition: 0.2s; cursor: pointer;
+}
+.breadcrumb-link:hover { text-decoration: underline; color: var(--accent-hover); }
+.breadcrumb-separator { color: var(--border-subtle); }
+
+/* NÚT IMPORT EXCEL */
+.btn-import-excel {
+  background: linear-gradient(135deg, #10b981, #059669); 
+  color: white; border: none; padding: 10px 20px;
+  border-radius: 10px; font-weight: 600; font-size: 14px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+.btn-import-excel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* ==========================================
+   MODAL IMPORT (THU GỌN LẠI RẤT NEAT)
+   ========================================== */
+.import-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Khu vực kéo thả file (Thu nhỏ gọn gàng) */
+.upload-zone {
+  border: 2px dashed rgba(16, 185, 129, 0.4);
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+  background: rgba(16, 185, 129, 0.05);
+  transition: all 0.2s ease;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
-.breadcrumb-link:hover {
-  text-decoration: underline;
-  color: var(--accent-hover);
+.upload-zone:hover {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
 }
+.upload-icon { font-size: 36px; color: #10b981; }
+.upload-text { font-size: 14px; color: var(--text-main); font-weight: 600; margin: 0; }
+.upload-subtext { font-size: 12px; color: var(--text-muted); margin: 0; }
 
-.breadcrumb-separator {
-  color: var(--border-subtle);
+/* File đã chọn */
+.file-selected-box {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  animation: slideUp 0.2s ease;
 }
+.file-info { display: flex; align-items: center; gap: 12px; }
+.file-info .material-symbols-outlined { color: #10b981; font-size: 28px; }
+.file-name { font-size: 13px; font-weight: 700; color: white; margin: 0 0 2px 0;}
+.file-size { font-size: 11px; color: var(--text-muted); margin: 0;}
 
-/* Tận dụng lại các class của AdminServices.css (nút bấm, bảng, modal...) */
-/* Chúng ta sẽ import trực tiếp file AdminServices.css trong file JSX để tái sử dụng giao diện */
+/* Link Tải file mẫu */
+.download-template-wrapper {
+  text-align: center;
+  margin-top: 16px;
+}
+.download-template-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #10b981; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: color 0.2s;
+}
+.download-template-link:hover { color: #34d399; text-decoration: underline; }
