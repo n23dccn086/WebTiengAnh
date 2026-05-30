@@ -66,65 +66,73 @@ const createTest = async (user, setId, numQuestions, options = {}) => {
 
   // 1. Nếu không phải "Làm lại", ưu tiên mở bài đang dở
   if (!force_new) {
-    let inProgress = null;
+    let attempts = [];
 
     if (resume_attempt_id) {
-      const [attempts] = await db.execute(
-        `SELECT id, started_at
+      const [rows] = await db.execute(
+        `SELECT 
+            id,
+            started_at,
+            GREATEST(
+              0,
+              ? - TIMESTAMPDIFF(SECOND, started_at, NOW())
+            ) AS remaining_seconds
          FROM test_attempts
          WHERE id = ?
            AND user_id = ?
            AND set_id = ?
            AND status = 'IN_PROGRESS'
          LIMIT 1`,
-        [resume_attempt_id, user.id, setId],
+        [TEST_TIME_LIMIT_SECONDS, resume_attempt_id, user.id, setId],
       );
 
-      if (attempts.length > 0) {
-        inProgress = attempts[0];
-      }
+      attempts = rows;
     } else {
-      const [attempts] = await db.execute(
-        `SELECT id, started_at
+      const [rows] = await db.execute(
+        `SELECT 
+            id,
+            started_at,
+            GREATEST(
+              0,
+              ? - TIMESTAMPDIFF(SECOND, started_at, NOW())
+            ) AS remaining_seconds
          FROM test_attempts
          WHERE user_id = ?
            AND set_id = ?
            AND status = 'IN_PROGRESS'
          ORDER BY id DESC
          LIMIT 1`,
-        [user.id, setId],
+        [TEST_TIME_LIMIT_SECONDS, user.id, setId],
       );
 
-      if (attempts.length > 0) {
-        inProgress = attempts[0];
-      }
+      attempts = rows;
     }
 
-    if (inProgress) {
-      const questions = await StudyModel.getTestQuestionsWithOptions(
-        inProgress.id,
-      );
+    if (attempts.length > 0) {
+      const inProgress = attempts[0];
+      const remainingSeconds = Number(inProgress.remaining_seconds);
 
-      const startTime = new Date(inProgress.started_at).getTime();
-      const timeElapsed = Number.isNaN(startTime) ? 0 : Date.now() - startTime;
+      // Nếu bài thật sự đã hết giờ thì nộp bài cũ rồi cho tạo bài mới
+      if (remainingSeconds <= 0) {
+        await submitTest(user.id, inProgress.id);
+      } else {
+        const questions = await StudyModel.getTestQuestionsWithOptions(
+          inProgress.id,
+        );
 
-      const remainingSeconds = Math.max(
-        0,
-        Math.floor((TEST_TIME_LIMIT_MS - timeElapsed) / 1000),
-      );
-
-      return {
-        is_resume: true,
-        attempt_id: inProgress.id,
-        message: "Tiếp tục bài thi đang dang dở",
-        started_at: inProgress.started_at,
-        questions,
-        remaining_seconds: remainingSeconds,
-      };
+        return {
+          is_resume: true,
+          attempt_id: inProgress.id,
+          message: "Tiếp tục bài thi đang dang dở",
+          started_at: inProgress.started_at,
+          questions,
+          remaining_seconds: remainingSeconds,
+        };
+      }
     }
   }
 
-  // 2. Chỉ tới đây khi không có bài dở hoặc user bấm "Làm lại"
+  // 2. Chỉ tới đây khi không có bài dở, bài cũ thật sự hết giờ, hoặc user bấm "Làm lại"
   checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
@@ -172,7 +180,7 @@ const createTest = async (user, setId, numQuestions, options = {}) => {
     attempt_id: attemptId,
     message: "Tạo bài thi mới thành công",
     questions: frontendQuestions,
-    remaining_seconds: TEST_TIME_LIMIT_MS / 1000,
+    remaining_seconds: TEST_TIME_LIMIT_SECONDS,
   };
 };
 
