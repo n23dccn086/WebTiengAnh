@@ -217,13 +217,6 @@
   cursor: pointer;
 }
 
-.social {
-  margin-top: 2rem;
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
 .social a {
   color: white;
   text-decoration: none;

@@ -251,11 +251,6 @@ const Home = () => {
             {contactLoading ? "Đang gửi..." : "Gửi tin nhắn"}
           </button>
         </form>
-        <div className={styles.social}>
-          <a href="#">Facebook</a>
-          <a href="#">Twitter</a>
-          <a href="#">Email</a>
-        </div>
       </section>
 
       <footer className={styles.footer}>

@@ -51,6 +51,18 @@ const useAuthStore = create(
           localStorage.setItem("user", JSON.stringify(user));
           if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
           set({ user, accessToken, refreshToken, isAuthenticated: true });
+
+          // ✅ Gọi thêm API lấy profile đầy đủ (bao gồm phone, dob)
+          try {
+            const profileRes = await apiClient.get('/users/profile');
+            const fullUser = profileRes.data.data;
+            set({ user: fullUser, isAuthenticated: true });
+            localStorage.setItem('user', JSON.stringify(fullUser));
+          } catch (profileErr) {
+            console.error("Không thể lấy đầy đủ thông tin profile:", profileErr);
+            // Không ảnh hưởng đến đăng nhập, chỉ log lỗi
+          }
+
           return { success: true, message: result.message || "Đăng nhập thành công." };
         } catch (error) {
           clearAuthStorage();
@@ -59,6 +71,7 @@ const useAuthStore = create(
         }
       },
 
+      // Các hàm còn lại (register, verifyEmail, ...) giữ nguyên
       register: async (email, password, full_name) => {
         try {
           const result = await registerApi(email, password, full_name);
