@@ -1,0 +1,33 @@
+.btn-base {
+  padding: 12px 24px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none; 
+  transition: box-shadow 0.2s ease; /* Bỏ transition background và color */
+}
+
+.btn-base:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* NÚT PRIMARY: TÍM ĐẶC - KHÔNG ĐỔI MÀU NỀN KHI HOLD/HOVER */
+.btn-primary {
+  background-color: #4F46FF !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  /* CHỈ HIỆN GLOW BAO NGOÀI, NỀN NÚT ĐỨNG YÊN */
+  box-shadow: 0 0 0 3px rgba(79, 70, 255, 0.3) !important;
+}
+
+/* NÚT SECONDARY */
+.btn-secondary {
+  background-color: transparent !important;
+  color: #E8E8FF !important;
+  border: 1px solid rgba(79, 70, 255, 0.25) !important;
+}

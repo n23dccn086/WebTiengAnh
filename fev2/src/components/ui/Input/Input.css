@@ -1,0 +1,44 @@
+.input-wrapper { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.input-label { font-size: 12px; color: #7B7BAA; }
+
+.input-container { position: relative; width: 100%; }
+
+.custom-input {
+  width: 100%;
+  /* ÉP CỨNG NỀN #0B0B2B CHO TEXT INPUT */
+  background-color: #0B0B2B !important; 
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #E8E8FF;
+  padding: 12px 14px;
+  border-radius: 9px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.custom-input::placeholder { color: #7B7BAA; }
+
+/* VIỀN KHI CLICK VÀO: MÀU TÍM GLOW CHUẨN COLOR_SYSTEM */
+.custom-input:focus {
+  background-color: #0B0B2B !important;
+  border-color: #4F46FF !important; 
+  box-shadow: 0 0 0 3px rgba(79, 70, 255, 0.2) !important; 
+}
+
+/* MẮT PASSWORD - TÍM NEON */
+.eye-btn {
+  position: absolute; 
+  right: 12px; 
+  top: 50%; 
+  transform: translateY(-50%);
+  background: none; 
+  border: none; 
+  cursor: pointer; 
+  display: flex;
+  color: var(--text-main) !important; /* Ép cứng về màu trắng ngà của hệ thống */
+  padding: 4px;
+}
+
+/* XÓA HOẶC BỎ HOÀN TOÀN ĐOẠN HOVER CỦA EYE-BTN */
+
+.custom-input.has-icon { padding-right: 44px; }

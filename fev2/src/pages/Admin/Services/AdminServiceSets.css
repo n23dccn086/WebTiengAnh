@@ -1,0 +1,36 @@
+/* src/pages/Admin/Services/AdminServiceSets.css */
+
+.admin-sets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: slideUp 0.3s ease;
+}
+
+/* Thanh điều hướng quay lại */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.breadcrumb-link {
+  color: var(--accent-neon);
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.breadcrumb-link:hover {
+  text-decoration: underline;
+  color: var(--accent-hover);
+}
+
+.breadcrumb-separator {
+  color: var(--border-subtle);
+}
+
+/* Tận dụng lại các class của AdminServices.css (nút bấm, bảng, modal...) */
+/* Chúng ta sẽ import trực tiếp file AdminServices.css trong file JSX để tái sử dụng giao diện */

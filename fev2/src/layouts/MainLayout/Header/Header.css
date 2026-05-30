@@ -1,0 +1,88 @@
+.main-header {
+  position: fixed; top: 0; right: 0; left: 220px;
+  height: 64px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; z-index: 40;
+  border-bottom: none; /* BỎ VIỀN THEO YÊU CẦU */
+  background-color: var(--bg-main); /* Hòa quyện vào nền web */
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-header.collapsed { left: 80px; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+
+/* FIX Ô SEARCH ĐẸP CHUẨN MÀU HỆ THỐNG MỚI */
+.search-container { position: relative; width: 320px; }
+.search-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 20px; pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background-color: var(--surface); /* Nền hơi sáng nhẹ hơn nền Header */
+  border: 1px solid transparent; /* Ẩn viền */
+  color: var(--text-main);
+  border-radius: 9px;
+  padding: 10px 16px 10px 42px;
+  font-size: 14px; transition: all 0.2s ease;
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:hover { border-color: var(--border-subtle); }
+.search-input:focus {
+  background-color: var(--sidebar);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+  outline: none;
+}
+
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+/* Nút tạo (+) */
+.header-btn-create {
+  width: 36px; height: 36px; border-radius: 50%;
+  background-color: var(--accent); color: white; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.header-btn-create:hover { background-color: var(--accent-hover); box-shadow: 0 0 10px var(--accent-dim); }
+
+/* Các code màu vàng cho Nút PRO & Avatar giữ nguyên vì nó đã đẹp sẵn */
+.header-btn-upgrade {
+  background-color: var(--premium-gold); color: #1a1a29; border: none; padding: 8px 16px;
+  border-radius: 999px; font-weight: 700; font-size: 14px; cursor: pointer; transition: filter 0.2s, transform 0.1s; white-space: nowrap;
+}
+.header-btn-upgrade:hover { filter: brightness(1.1); }
+.header-btn-upgrade:active { transform: scale(0.96); }
+
+.pro-badge-header {
+  background-color: var(--premium-gold); color: #1a1a29; padding: 6px 12px;
+  border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
+}
+
+.icon-btn {
+  background: transparent; border: none; color: var(--text-muted);
+  cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.2s ease; position: relative;
+}
+.icon-btn:hover { background-color: var(--surface); color: white; }
+.notification-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background-color: var(--error); border-radius: 50%; }
+
+.profile-container { position: relative; }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%; background-color: #55B4B0;
+  color: white; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;
+}
+
+/* Dropdown */
+.profile-dropdown {
+  position: absolute; top: 48px; right: 0; width: 240px;
+  background-color: var(--surface); border: 1px solid var(--border-subtle);
+  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden;
+}
+.dropdown-header { padding: 16px; border-bottom: 1px solid var(--border-subtle); }
+.user-name { font-size: 14px; font-weight: 600; color: white; margin-bottom: 4px; }
+.user-email { font-size: 12px; color: var(--text-muted); }
+.dropdown-menu { list-style: none; padding: 8px; margin: 0; }
+.dropdown-menu li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: var(--text-main); font-size: 14px; cursor: pointer; }
+.dropdown-menu li:hover { background-color: var(--accent-dim); color: var(--accent-hover); }
+.dropdown-divider { height: 1px; background-color: var(--border-subtle); margin: 4px 8px; }
+.logout-item { color: var(--error) !important; }
+.logout-item:hover { background-color: var(--error-bg) !important; color: var(--error) !important; }

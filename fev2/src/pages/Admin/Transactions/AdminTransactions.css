@@ -1,0 +1,97 @@
+/* src/pages/Admin/Transactions/AdminTransactions.css */
+
+.admin-transactions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: slideUp 0.3s ease;
+}
+
+/* Thẻ thống kê Doanh thu */
+.revenue-card {
+  background: linear-gradient(135deg, rgba(255, 209, 91, 0.1), rgba(165, 0, 100, 0.1));
+  border: 1px solid var(--premium-gold);
+  border-radius: 16px;
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8px 32px rgba(255, 209, 91, 0.1);
+}
+
+.revenue-info h3 {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.revenue-amount {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--premium-gold);
+  text-shadow: 0 0 20px rgba(255, 209, 91, 0.4);
+  margin: 0;
+}
+
+.revenue-icon {
+  width: 64px;
+  height: 64px;
+  background-color: rgba(255, 209, 91, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--premium-gold);
+}
+
+.revenue-icon span {
+  font-size: 32px;
+}
+
+/* Thanh công cụ Lọc */
+.toolbar-filters {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-select {
+  background-color: var(--surface);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.filter-select:focus {
+  border-color: var(--accent);
+}
+
+/* Provider Badges (Cổng thanh toán) */
+.provider-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+}
+.provider-momo { background-color: rgba(165, 0, 100, 0.15); color: #FF42A5; border: 1px solid rgba(255, 66, 165, 0.3); }
+.provider-vnpay { background-color: rgba(0, 85, 165, 0.15); color: #00B0D7; border: 1px solid rgba(0, 176, 215, 0.3); }
+.provider-stripe { background-color: rgba(99, 91, 255, 0.15); color: #635BFF; border: 1px solid rgba(99, 91, 255, 0.3); }
+
+/* Monospace cho Mã Giao dịch */
+.tx-ref {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}

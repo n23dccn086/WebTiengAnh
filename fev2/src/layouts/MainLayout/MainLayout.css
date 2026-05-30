@@ -1,0 +1,25 @@
+/* src/components/layout/MainLayout/MainLayout.css */
+.main-layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main, #080816);
+}
+
+.main-content-area {
+  margin-left: 220px; /* Khớp với độ rộng Sidebar 220px */
+  margin-top: 64px;   /* Khớp với Header 64px */
+  padding: 32px 48px;
+  width: calc(100% - 220px);
+  min-height: calc(100vh - 64px);
+  overflow-y: auto;
+  
+  /* Thêm transition để lúc thu gọn Sidebar không bị giật */
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Khi Sidebar bị thu gọn */
+.main-content-area.collapsed {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+}

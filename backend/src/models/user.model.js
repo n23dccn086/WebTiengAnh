@@ -292,9 +292,17 @@ async function deleteUser(userId) {
 
 // Trừ 1 quota AI của User
 // Thay thế hàm decrementAiQuota nếu có, hoặc thêm điều kiện
+// Trừ 1 quota AI của User
 const decrementAiQuota = async (userId) => {
-  // Lấy role của user trước
-  const [userRows] = await db.execute(`SELECT role FROM users JOIN roles ON users.role_id = roles.id WHERE users.id = ?`, [userId]);
+  // Lấy role của user trước (SỬA LẠI SQL: Lấy r.name AS role)
+  const [userRows] = await db.execute(
+    `SELECT r.name AS role 
+     FROM users u 
+     JOIN roles r ON u.role_id = r.id 
+     WHERE u.id = ?`, 
+    [userId]
+  );
+  
   if (userRows.length && (userRows[0].role === 'ADMIN' || userRows[0].role === 'SUPER_ADMIN')) {
     return; // không trừ quota
   }

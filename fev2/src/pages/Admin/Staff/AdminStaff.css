@@ -1,0 +1,70 @@
+/* src/pages/Admin/Staff/AdminStaff.css */
+
+.admin-staff-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: slideUp 0.3s ease;
+}
+
+/* Nút thêm nhân viên VIP */
+.btn-create-staff {
+  background: linear-gradient(135deg, var(--premium-gold), #F59E0B);
+  color: #1a1a29;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(255, 209, 91, 0.3);
+}
+
+.btn-create-staff:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(255, 209, 91, 0.4);
+}
+
+.staff-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--premium-gold), #F59E0B);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #1a1a29;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.staff-role-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+.staff-role-admin { background-color: rgba(79, 70, 255, 0.15); color: var(--accent); }
+.staff-role-super { background-color: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid var(--error-border); }
+
+/* Input Password Reset */
+.input-reset-pass {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  color: var(--warning);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  letter-spacing: 2px;
+  font-family: monospace;
+  width: 100%;
+  outline: none;
+}
+.input-reset-pass:focus { border-color: var(--warning); }   

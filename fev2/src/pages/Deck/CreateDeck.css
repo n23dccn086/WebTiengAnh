@@ -1,0 +1,201 @@
+/* src/pages/Deck/CreateDeck.css */
+
+.create-deck-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+  position: relative;
+  text-align: left !important; 
+}
+
+.page-header { margin-bottom: 24px; padding-top: 24px; }
+.page-header h1 { font-size: 28px; font-weight: 800; color: white; margin-bottom: 8px; }
+.page-header p { color: var(--text-muted); font-size: 14px; }
+
+/* =========================================
+   1. SURFACE & FLASHCARD KHÔNG VIỀN, HOVER MỚI HIỆN
+   ========================================= */
+.glass-panel { 
+  background-color: var(--surface) !important; 
+  border: 1px solid transparent !important; /* Ẩn viền mặc định */
+  border-radius: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Form nhập tên bộ thẻ */
+.deck-info-section { padding: 32px; margin-bottom: 24px; }
+.deck-info-section:hover { border-color: var(--border-subtle) !important; }
+
+/* Editor từng thẻ */
+.flashcard-editor { position: relative; padding: 28px; margin-bottom: 20px; }
+/* Tìm và sửa lại block này trong CreateDeck.css */
+.flashcard-editor:hover { 
+  border-color: transparent !important; /* Đổi var(--accent) thành transparent để bỏ viền khi hover */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); /* Giữ lại bóng đổ cho có độ nổi khối huyền bí */
+}
+.flashcard-editor.deleting { transform: translateX(-30px); opacity: 0; pointer-events: none; }
+
+.btn-remove-card {
+  position: absolute; top: 14px; right: 14px; 
+  background: transparent; border: none; color: var(--text-muted); font-size: 18px; 
+  cursor: pointer; transition: color 0.2s; padding: 4px; border-radius: 6px;
+}
+.btn-remove-card:hover { color: var(--error); background: var(--error-bg); }
+
+.flashcard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.side-title { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; margin-bottom: 14px; }
+
+
+/* =========================================
+   2. THANH COMMAND BAR NỔI (PDF & TOGGLE HUYỀN BÍ)
+   ========================================= */
+.command-center-wrapper { position: sticky; top: 16px; z-index: 3; display: flex; justify-content: center; margin-bottom: 32px; }
+.command-center { display: flex; align-items: center; gap: 20px; padding: 12px 24px; border-radius: 100px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.divider-vertical { width: 1px; height: 24px; background-color: var(--border-subtle); }
+.toggle-group { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600; color: white; }
+
+/* Nút Toggle "Huyền bí" có chiều sâu */
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-main); transition: 0.4s; border-radius: 24px; border: 1px solid var(--border-subtle); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--text-muted); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent); border-color: var(--accent); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2), 0 0 12px var(--accent-dim); }
+input:checked + .slider:before { transform: translateX(20px); background-color: white; }
+
+/* Nút PDF rực rỡ như bản cũ */
+/* Tìm và sửa lại block này trong CreateDeck.css */
+.btn-pdf-magic {
+  background: rgba(107, 100, 255, 0.08); /* Dùng màu tím hệ thống mờ */
+  color: var(--accent-hover); /* Đổi sang màu tím chuẩn hệ thống */
+  font-weight: 600; 
+  font-size: 14px;
+  padding: 8px 18px; 
+  border: none !important; /* BỎ HOÀN TOÀN VIỀN MẶC ĐỊNH */
+  border-radius: 10px;
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  cursor: pointer; 
+  transition: all 0.3s ease;
+}
+
+.btn-pdf-magic:hover:not(:disabled) { 
+  background: rgba(107, 100, 255, 0.18); 
+  /* Hiệu ứng phát sáng đổ bóng theo tông màu tím mới */
+  box-shadow: 0 0 15px rgba(107, 100, 255, 0.35); 
+}
+.btn-pdf-magic:disabled { opacity: 0.5; cursor: not-allowed; }
+
+
+/* =========================================
+   3. Ô TEXT INPUT (CHỈ HIỆN VIỀN KHI HOVER/FOCUS)
+   ========================================= */
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.label-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
+.input-group label { display: block; color: white !important; font-size: 13px; font-weight: 600; margin-bottom: 8px;}
+.label-row label { margin-bottom: 0; }
+
+.modern-input {
+  width: 100%; padding: 13px 15px;
+  background-color: var(--sidebar) !important; 
+  border: 1px solid transparent !important; /* Ẩn viền mặc định */
+  border-radius: 9px; color: white !important; font-size: 14px; line-height: 1.5; 
+  transition: all 0.2s ease; box-sizing: border-box; font-family: inherit;
+}
+.modern-input::placeholder { color: var(--text-muted); }
+
+/* Khi trỏ chuột: Hiện viền mờ */
+.modern-input:hover { border-color: var(--border-subtle) !important; }
+
+/* Khi bấm vào nhập liệu: Phát sáng tím */
+.modern-input:focus { 
+  background-color: var(--sidebar) !important; 
+  border-color: var(--accent) !important; 
+  box-shadow: 0 0 0 3px var(--accent-dim) !important; 
+  outline: none !important;
+}
+
+/* Ép chiều cao mặt sau */
+textarea.modern-input { overflow: hidden !important; resize: none !important; min-height: 80px; } 
+
+
+/* =========================================
+   4. NÚT GỢI Ý (Đẹp chuẩn như ảnh cũ)
+   ========================================= */
+/* Tìm và sửa lại block này trong CreateDeck.css */
+/* Tìm và sửa lại block này trong CreateDeck.css */
+.suggestion-inline-btn {
+  background: transparent; 
+  border: none !important; /* BỎ HOÀN TOÀN VIỀN MẶC ĐỊNH */
+  color: var(--accent-hover); /* Đổi sang màu tím chuẩn hệ thống */
+  font-size: 12px; 
+  display: flex; 
+  align-items: center; 
+  gap: 6px;
+  cursor: pointer; 
+  padding: 6px 12px; 
+  border-radius: 8px;
+  transition: all 0.2s ease; 
+  max-width: 70%; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+}
+
+.suggestion-inline-btn:hover { 
+  background: rgba(107, 100, 255, 0.12); /* Hiện nền mờ nhẹ khi hover */
+}
+.suggestion-inline-btn .material-symbols-outlined { font-size: 14px; }
+.suggestion-inline-btn strong { font-weight: 600; margin-left: 2px;}
+
+
+/* =========================================
+   5. FOOTER VÀ NÚT LƯU GRADIENT BẢN GỐC
+   ========================================= */
+.create-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--border-subtle); }
+.btn-add-more { background: transparent; border: 1px dashed var(--text-muted); color: var(--text-main); padding: 11px 22px; border-radius: 9px; display: flex; align-items: center; gap: 7px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s;}
+.btn-add-more:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+.btn-save-deck { 
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover)); 
+  color: white; 
+  font-weight: 700; font-size: 15px; 
+  padding: 12px 28px; border: none; border-radius: 10px; 
+  display: flex; align-items: center; gap: 8px; 
+  cursor: pointer; transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--accent-dim);
+}
+.btn-save-deck:hover:not(:disabled) { 
+  transform: translateY(-2px); 
+  box-shadow: 0 6px 20px rgba(79, 70, 255, 0.4); 
+  filter: brightness(1.1); 
+}
+.btn-save-deck:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* TOASTS & LOADER & MODAL (Giữ nguyên phần khung hệ thống) */
+.toast-notification { position: fixed; top: 16px; right: 16px; padding: 12px 20px; border-radius: 8px; color: white; z-index: 9999; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.5); animation: slideInToast 0.3s ease-out, fadeOutToast 0.5s ease-in 3.5s forwards; }
+.toast-notification.success { background-color: var(--success-bg); border: 1px solid var(--success-border); color: var(--success);}
+.toast-notification.error { background-color: var(--error-bg); border: 1px solid var(--error-border); color: var(--error);}
+.toast-notification.info { background-color: var(--surface); border: 1px solid var(--accent); }
+.global-loader-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9998; color: white; gap: 16px; font-weight: 600;}
+.circular-spinner { width: 40px; height: 40px; border: 3px solid var(--accent-dim); border-left-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;}
+
+/* MODAL JSX */
+.leave-modal-overlay { position: fixed; inset: 0; background-color: rgba(3, 0, 28, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; animation: fadeIn 0.2s ease; }
+.leave-modal { width: 100%; max-width: 420px; padding: 32px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.leave-modal-icon { font-size: 48px; color: var(--warning); margin-bottom: 8px;}
+.leave-modal h3 { font-size: 20px; font-weight: 700; color: white; margin: 0; }
+.leave-modal p { font-size: 14px; color: var(--text-muted); margin: 0 0 16px 0; line-height: 1.5; }
+.leave-modal-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.btn-leave-save { background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; font-weight: 700; font-size: 14px; padding: 12px; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.2s; }
+.btn-leave-save:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-leave-discard { background: var(--error-bg); color: var(--error); font-weight: 600; font-size: 14px; padding: 12px; border: 1px solid var(--error-border); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.btn-leave-discard:hover { background: rgba(239, 68, 68, 0.25); }
+.btn-leave-cancel { background: transparent; color: var(--text-muted); font-size: 14px; font-weight: 600; border: none; cursor: pointer; padding: 8px; transition: color 0.2s; }
+.btn-leave-cancel:hover { color: white; }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes slideInToast { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeOutToast { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

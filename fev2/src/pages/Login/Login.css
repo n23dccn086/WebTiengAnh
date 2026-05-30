@@ -1,0 +1,47 @@
+.auth-container {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background-color: rgba(3, 0, 28, 0.85); 
+  backdrop-filter: blur(12px); z-index: 9999;
+}
+
+.auth-card {
+  width: 100%; max-width: 400px; padding: 40px;
+  /* ÉP CỨNG MÀU #1A1A3A CHO FORM */
+  background-color: #1A1A3A !important; 
+  border: 1px solid rgba(79, 70, 255, 0.25);
+  border-radius: 20px; position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.auth-header { text-align: center; margin-bottom: 32px; }
+.auth-logo { margin-bottom: 16px; color: #4F46FF; cursor: pointer; }
+.auth-header h2 { font-size: 24px; font-weight: 700; color: #E8E8FF; margin-bottom: 8px; }
+.auth-header p { color: #7B7BAA; font-size: 14px; }
+
+.auth-error {
+  background-color: rgba(239, 68, 68, 0.15); color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 12px; border-radius: 8px; margin-bottom: 24px;
+  font-size: 14px; text-align: center;
+}
+
+.auth-form { display: flex; flex-direction: column; gap: 20px; }
+.auth-options { display: flex; justify-content: flex-end; }
+.forgot-link { font-size: 12px; color: #7B7BAA; text-decoration: none; }
+.forgot-link:hover { color: #E8E8FF; text-decoration: underline; }
+
+.auth-footer { margin-top: 32px; text-align: center; font-size: 14px; color: #7B7BAA; }
+
+/* ÉP MÀU TÍM NEON CHO NÚT ĐĂNG KÝ NGAY */
+/* Sửa lại duy nhất đoạn này trong file Login.css của bạn */
+/* Tìm và sửa lại chính xác đoạn này trong file Login.css */
+.auth-footer a { 
+  color: #6B64FF !important; /* Sử dụng mã màu tím sáng (accent-hover) để kéo lại độ tương phản cho font chữ mảnh */
+  font-weight: 600; 
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline; /* Chỉ gạch chân khi hover, giữ nguyên màu sắc cố định */
+}

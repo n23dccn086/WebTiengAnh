@@ -1,0 +1,190 @@
+/* src/pages/Dashboard/Dashboard.css */
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px; /* Thu gọn khoảng cách giữa các khối */
+  padding-bottom: 40px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* =========================================
+   KHỐI 1: DAILY REVIEW (Chào mừng - Đã làm lại thanh lịch hơn)
+   ========================================= */
+.welcome-banner {
+  background: linear-gradient(135deg, rgba(26, 26, 58, 0.8), rgba(15, 15, 35, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.welcome-info { display: flex; flex-direction: column; gap: 6px; }
+
+.welcome-info h2 {
+  font-size: 24px; font-weight: 700; color: white;
+  display: flex; align-items: center; gap: 12px; margin: 0;
+}
+
+.streak-badge {
+  background: rgba(170, 59, 255, 0.15);
+  color: var(--accent-neon);
+  border: 1px solid rgba(170, 59, 255, 0.3);
+  font-size: 12px; font-weight: 700;
+  padding: 4px 10px; border-radius: 99px;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.welcome-info p { margin: 0; color: var(--text-muted); font-size: 15px; }
+
+.btn-review {
+  background: var(--accent);
+  color: white; border: none;
+  padding: 12px 24px; border-radius: 10px;
+  font-weight: 600; font-size: 14px;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-review:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(79, 70, 255, 0.4); }
+/* =========================================
+   KHỐI 2: AI PDF BANNER (Hai cột có hình ảnh)
+   ========================================= */
+.ai-banner-card {
+  display: flex;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  min-height: 240px; /* Dùng min-height thay vì height cố định */
+}
+
+.ai-banner-left {
+  background: #0f0f20; /* Màu nền tối thẫm giống ảnh mẫu */
+  padding: 32px 40px;
+  flex: 1.2; /* Cho cột trái rộng hơn cột phải một chút */
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+.ai-icons { display: flex; gap: 4px; margin-bottom: 12px; }
+.ai-icon-mini {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.ai-icon-mini.blue { background: rgba(79, 70, 255, 0.2); color: var(--accent); transform: rotate(-10deg); }
+.ai-icon-mini.green { background: rgba(0, 226, 160, 0.2); color: #00e2a0; transform: rotate(10deg); margin-left: -12px; }
+
+.ai-banner-left h3 { font-size: 22px; font-weight: 700; color: white; margin-bottom: 8px; }
+.ai-banner-left p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; max-width: 90%; }
+
+.btn-ai {
+  background: var(--accent); color: white; border: none;
+  padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;
+  width: fit-content; cursor: pointer; transition: all 0.2s;
+}
+.btn-ai:hover { background: var(--accent-neon); }
+
+.ai-banner-right {
+  flex: 1;
+  background: #F4F7FB; /* Nền xám/xanh siêu nhạt giống hệt ảnh mẫu */
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; /* Giữ khoảng cách để ảnh không chạm viền */
+}
+
+.ai-banner-right img {
+  width: 100%;
+  height: 100%;
+  max-height: 180px; /* Giới hạn chiều cao để không bị tràn */
+  object-fit: contain; /* Ép ảnh nằm gọn gàng bên trong khung */
+  mix-blend-mode: multiply; 
+}
+
+/* =========================================
+   KHỐI CHUNG: TIÊU ĐỀ SECTION
+   ========================================= */
+.section-title {
+  font-size: 18px; font-weight: 700; color: white;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+
+/* =========================================
+   KHỐI 3: ĐANG HỌC (RECENTS - Đã làm nhỏ gọn/Compact)
+   ========================================= */
+.recents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px; /* Giảm gap */
+}
+
+.recent-card {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px; /* Bo góc nhỏ hơn */
+  padding: 16px; /* Padding nhỏ gọn */
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.recent-card:hover { border-color: rgba(79, 70, 255, 0.5); transform: translateY(-2px); }
+
+.recent-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.r-icon {
+  width: 32px; height: 32px; border-radius: 8px; /* Icon nhỏ lại */
+  background: rgba(79, 70, 255, 0.15); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.r-icon .material-symbols-outlined { font-size: 18px; }
+
+.r-info { flex: 1; overflow: hidden; }
+.r-info h3 { font-size: 14px; font-weight: 700; color: white; margin: 0 0 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-info p { font-size: 12px; color: var(--text-muted); margin: 0; }
+
+.progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 99px; }
+.progress-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-weight: 500;}
+
+/* =========================================
+   KHỐI 4: KHÁM PHÁ HỆ THỐNG (SCROLL NGANG)
+   ========================================= */
+.system-category { margin-bottom: 24px; }
+.category-name { color: var(--text-muted); font-weight: 600; font-size: 14px; margin-bottom: 12px; }
+
+.horizontal-scroll {
+  display: flex; gap: 16px; overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.horizontal-scroll::-webkit-scrollbar { display: none; }
+
+.system-card {
+  min-width: 260px; max-width: 260px;
+  background: rgba(26, 26, 58, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  scroll-snap-align: start;
+  padding: 20px;
+  display: flex; flex-direction: column;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.system-card:hover { background: rgba(26, 26, 58, 0.8); border-color: rgba(79, 70, 255, 0.4); }
+
+.system-card h4 { color: white; font-size: 16px; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
+.system-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.system-card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+.term-badge { background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+.btn-bookmark { background: none; border: none; color: var(--text-muted); cursor: pointer; transition: all 0.2s; padding: 4px; display: flex; align-items: center;}
+.btn-bookmark:hover { color: white; }
+.btn-bookmark.saved { color: var(--success); }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .welcome-banner { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .ai-banner-card { flex-direction: column; }
+  .ai-banner-right { padding: 24px; }
+  .ai-banner-right img { max-height: 150px; } /* Thu nhỏ ảnh trên mobile */
+}

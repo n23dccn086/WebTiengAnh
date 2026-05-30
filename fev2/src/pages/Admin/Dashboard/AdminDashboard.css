@@ -1,0 +1,117 @@
+/* src/pages/Admin/Dashboard/AdminDashboard.css */
+
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: slideUp 0.3s ease;
+}
+
+/* Khu vực thẻ thống kê */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.stat-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+/* Màu sắc riêng cho từng loại thẻ */
+.icon-users { background-color: var(--accent-dim); color: var(--accent); }
+.icon-premium { background-color: rgba(255, 209, 91, 0.15); color: var(--premium-gold); }
+.icon-revenue { background-color: var(--success-bg); color: var(--success); }
+.icon-system { background-color: rgba(165, 0, 100, 0.15); color: var(--momo-pink); }
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+/* Khu vực nội dung phụ (Bảng xếp hạng / Cảnh báo) */
+.dashboard-bottom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.dashboard-panel {
+  background-color: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.panel-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-header .material-symbols-outlined {
+  color: var(--accent);
+}
+
+/* Bảng thông báo rỗng tạm thời */
+.empty-panel {
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.empty-panel .material-symbols-outlined {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}

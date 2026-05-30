@@ -1,0 +1,247 @@
+/* src/pages/SRSDaily/SRSDaily.css */
+.srs-layout {
+  background-color: #080816;
+  color: #e3e0f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Sora', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Header & Close Button */
+.srs-header {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  /* Đổi thành flex-start để gom nút X sang trái */
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 0 40px;
+  background-color: rgba(8, 8, 22, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #232338;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.srs-header-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #5a55fa;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-close-srs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #8A8A9D;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 8px 0;
+}
+
+.btn-close-srs:hover {
+  color: #e3e0f5;
+}
+
+/* Main Content Area */
+.srs-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px;
+  overflow-y: auto;
+}
+
+.srs-content-wrapper {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Config Setup Box */
+.srs-setup-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  background-color: #151528;
+  border: 1px solid #232338;
+  padding: 48px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.btn-start-session {
+  padding: 14px 32px;
+  background: linear-gradient(to right, #5a55fa, #3B36E6);
+  color: white;
+  border: none;
+  border-bottom: 3px solid #1900a7;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(90, 85, 250, 0.4);
+  transition: all 0.1s;
+}
+
+.btn-start-session:active {
+  border-bottom-width: 0;
+  transform: translateY(3px);
+}
+
+/* Progress Bar */
+.srs-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.srs-topic-badge {
+  color: #5a55fa;
+  border: 1px solid #5a55fa;
+  background-color: rgba(90, 85, 250, 0.1);
+  padding: 4px 16px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+}
+
+.srs-progress-track {
+  width: 100%;
+  height: 8px;
+  background-color: #151528;
+  border: 1px solid #232338;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.srs-progress-fill {
+  height: 100%;
+  background-color: #5a55fa;
+  box-shadow: 0 0 10px rgba(90, 85, 250, 0.6);
+  transition: width 0.3s ease;
+}
+
+/* Flashcard 3D Flip */
+.srs-flashcard-wrapper {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  perspective: 1000px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.srs-flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.srs-flashcard-wrapper.flipped .srs-flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.srs-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.srs-front {
+  background-color: #151528;
+  border: 1px solid #232338;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.srs-front:hover {
+  transform: translateY(-4px);
+  border-color: #464556;
+}
+
+.srs-back {
+  background-color: #151528;
+  border: 1px solid #5a55fa;
+  transform: rotateY(180deg);
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(90, 85, 250, 0.15);
+}
+
+.srs-hint-text {
+  position: absolute;
+  bottom: 24px;
+  width: 100%;
+  text-align: center;
+  color: #8A8A9D;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  left: 0;
+}
+
+/* 🟢 NÚT ĐÁNH GIÁ (Mới) */
+.srs-rating-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.srs-rate-btn {
+  /* Nền mặc định là màu Surface */
+  background-color: #151528; 
+  border: 1px solid #232338;
+  color: #e3e0f5;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.srs-rate-btn:active {
+  transform: scale(0.95);
+}
+
+/* Khi hover chuyển sang màu Sidebar (#0A092D) và nổi viền màu */
+.srs-rate-btn.again:hover { background-color: #0A092D; border-color: #FF6B6B; color: #FF6B6B; box-shadow: 0 4px 12px rgba(255,107,107,0.15);}
+.srs-rate-btn.hard:hover  { background-color: #0A092D; border-color: #F59E0B; color: #F59E0B; box-shadow: 0 4px 12px rgba(245,158,11,0.15);}
+.srs-rate-btn.good:hover  { background-color: #0A092D; border-color: #00e2a0; color: #00e2a0; box-shadow: 0 4px 12px rgba(0,226,160,0.15);}
+.srs-rate-btn.easy:hover  { background-color: #0A092D; border-color: #5a55fa; color: #c2c1ff; box-shadow: 0 4px 12px rgba(90,85,250,0.15);}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .srs-rating-grid { grid-template-columns: repeat(2, 1fr); }
+  .srs-flashcard-wrapper { aspect-ratio: 4 / 3; }
+  .srs-header { padding: 0 20px; }
+}

@@ -42,6 +42,8 @@ const getPremiumStats = async (userId) => {
     LIMIT 5
   `, [userId]);
 
+  
+
   return {
     current_streak,
     total_learned,
@@ -51,4 +53,30 @@ const getPremiumStats = async (userId) => {
   };
 };
 
-module.exports = { getPremiumStats };
+const getHomeStats = async (userId) => {
+  // 1. Lấy Streak hiện tại
+  const [userRow] = await db.execute(
+    `SELECT current_streak FROM users WHERE id = ?`,
+    [userId]
+  );
+  const current_streak = userRow[0]?.current_streak || 0;
+
+  // 2. Số thẻ cần ôn tập hôm nay (chỉ tính những bộ thẻ đang bật is_srs_enabled)
+  const [dueTodayRow] = await db.execute(
+    `SELECT COUNT(DISTINCT uf.id) as due_today
+     FROM user_flashcards uf
+     JOIN flashcards f ON uf.flashcard_id = f.id
+     JOIN flashcard_sets fs ON f.set_id = fs.id
+     JOIN user_saved_sets uss ON uss.set_id = fs.id AND uss.user_id = uf.user_id
+     WHERE uf.user_id = ? AND uf.next_review_date <= NOW() AND uss.is_srs_enabled = TRUE`,
+    [userId]
+  );
+  const due_today = dueTodayRow[0]?.due_today || 0;
+
+  return {
+    current_streak,
+    due_today
+  };
+};
+
+module.exports = { getPremiumStats , getHomeStats};

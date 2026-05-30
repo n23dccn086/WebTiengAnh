@@ -16,42 +16,9 @@ const getUserSets = async (userId, page, limit, serviceId) => {
 };
 
 const getSystemSets = async (userId, serviceId = null) => {
-  let query = `
-    SELECT fs.id, fs.title, fs.description, s.title AS service_title,
-           COUNT(DISTINCT f.id) AS total_cards,
-           IF(MAX(uss.set_id) IS NOT NULL, TRUE, FALSE) AS is_saved,
-           COALESCE(MAX(uss.is_srs_enabled), FALSE) AS is_srs_enabled
-    FROM flashcard_sets fs
-    LEFT JOIN services s ON fs.service_id = s.id
-    LEFT JOIN flashcards f ON fs.id = f.set_id
-    LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
-    WHERE fs.is_system = TRUE
-  `;
-  const params = [userId];
-  if (serviceId) { query += ` AND fs.service_id = ?`; params.push(serviceId); }
-  query += ` GROUP BY fs.id, fs.title, fs.description, s.title ORDER BY fs.created_at DESC`;
-  const [rows] = await db.execute(query, params);
-  return rows;
+  return await FlashcardSetModel.getSystemSets(userId, serviceId);
 };
 
-const getPersonalSets = async (userId, page, limit) => {
-  const offset = (page - 1) * limit;
-  const [sets] = await db.query(
-    `SELECT fs.id, fs.title, fs.description, fs.is_system, fs.created_at,
-            s.title AS service_title, COALESCE(MAX(uss.is_srs_enabled), 0) AS is_srs_enabled, COUNT(DISTINCT f.id) AS total_cards
-     FROM flashcard_sets fs
-     LEFT JOIN services s ON fs.service_id = s.id
-     LEFT JOIN flashcards f ON fs.id = f.set_id
-     LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
-     WHERE fs.user_id = ? AND fs.is_system = FALSE
-     GROUP BY fs.id, fs.title, fs.description, fs.is_system, fs.created_at, s.title
-     ORDER BY fs.created_at DESC LIMIT ? OFFSET ?`,
-    [userId, userId, limit, offset],
-  );
-  const [countResult] = await db.query(`SELECT COUNT(*) as total FROM flashcard_sets WHERE user_id = ? AND is_system = FALSE`, [userId]);
-  const totalItems = countResult[0]?.total || 0;
-  return { sets, pagination: { current_page: page, total_pages: Math.ceil(totalItems / limit), total_items: totalItems, limit } };
-};
 
 const createSet = async (userId, title, description, serviceId) => await FlashcardSetModel.createSet(userId, title, description, serviceId);
 
@@ -260,6 +227,21 @@ const exportSetToFile = async (setId, userId, format) => {
     const csvContent = csvRows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
     return Buffer.from('\uFEFF' + csvContent, 'utf-8');
   }
+};
+
+const getPersonalSets = async (userId, page, limit) => {
+  const offset = (page - 1) * limit;
+  const { sets, totalItems } = await FlashcardSetModel.getPersonalSets(userId, limit, offset);
+  
+  return { 
+    sets, 
+    pagination: { 
+      current_page: page, 
+      total_pages: Math.ceil(totalItems / limit), 
+      total_items: totalItems, 
+      limit 
+    } 
+  };
 };
 
 module.exports = {

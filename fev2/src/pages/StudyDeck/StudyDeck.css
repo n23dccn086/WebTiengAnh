@@ -1,0 +1,190 @@
+/* ============================================================
+   StudyDeck.css – Tinh chỉnh góc cạnh, đồng bộ hệ thống màu
+   ============================================================ */
+
+/* CONTAINER GỌN GÀNG ĐỂ THẲNG HÀNG DỌC CHUẨN XÁC */
+.study-page { 
+  max-width: 800px; /* Ép độ rộng hẹp lại khớp với card để tạo hàng dọc đẹp mắt */
+  margin: 0 auto; 
+  padding: 0 16px 80px; 
+  box-sizing: border-box; 
+}
+
+.study-page.is-fullscreen {
+  position: fixed; inset: 0; z-index: 9998; max-width: none;
+  padding: 40px; background: var(--bg-main);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.study-page.is-fullscreen .study-main { width: 100%; max-width: 800px; }
+
+/* CẤU TRÚC TIÊU ĐỀ MỚI */
+.study-navigation-flow { padding: 24px 0 16px; margin-bottom: 16px; }
+.btn-back-link { 
+  display: flex; align-items: center; gap: 6px; background: transparent; border: none;
+  color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 12px; transition: color 0.2s;
+}
+.btn-back-link:hover { color: var(--text-main); }
+.study-title-block h2 { font-size: 24px; font-weight: 800; color: var(--text-main); margin: 0 0 4px; }
+.study-title-block p { color: var(--text-muted); font-size: 13px; margin: 0; font-weight: 500; }
+
+/* CHẾ ĐỘ HỌC (THÊM HOVER BORDER TÍM) */
+.study-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.mode-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  background-color: var(--surface); border: 1px solid transparent; color: var(--text-muted);
+}
+.mode-btn:hover { 
+  border-color: var(--accent) !important; /* Thêm viền tím nổi bật khi hover */
+  color: var(--text-main); 
+}
+.mode-btn.active { background-color: var(--accent-dim); border-color: var(--accent); color: var(--accent-hover); }
+
+/* ==============================================
+   LỚP THỨ 1: STUDY BOARD (MÀU SURFACE)
+   ============================================== */
+.study-board {
+  background-color: var(--surface) !important; /* #1A1A3A hoặc #151528 */
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px; /* Giảm bo góc gọn gàng */
+  padding: 24px; 
+  box-sizing: border-box;
+}
+
+/* ==============================================
+   LỚP THỨ 2: FLASHCARD PLAYER (MÀU SIDEBAR)
+   ============================================== */
+.flashcard-wrapper {
+  perspective: 1000px; cursor: pointer; border-radius: 8px; aspect-ratio: 16 / 9;
+  user-select: none; margin-bottom: 20px;
+}
+.flashcard-3d { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.4, 0.2, 0.2, 1); border-radius: 8px; }
+.flashcard-3d.flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute; inset: 0; backface-visibility: hidden; border-radius: 8px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 24px; overflow: hidden;
+  background-color: var(--sidebar) !important; /* Ép màu nền #0A092D sâu thẳm */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.card-back { transform: rotateY(180deg); }
+
+.card-top-actions { display: flex; justify-content: space-between; align-items: center; }
+.card-pos-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-hover); background: var(--accent-dim); padding: 4px 10px; border-radius: 6px; }
+.btn-card-speak { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; transition: all 0.2s; }
+.btn-card-speak:hover { background: var(--surface); color: var(--text-main); }
+
+/* Canh chữ thẳng thớm */
+.card-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.card-word { font-size: 32px; font-weight: 700; color: var(--text-main); margin: 0 0 6px; }
+.card-pronunciation { font-size: 15px; color: var(--accent-hover); font-family: monospace; margin: 0; }
+.card-meaning { font-size: 26px; font-weight: 700; color: var(--text-main); margin: 0 0 8px; }
+.card-example { font-size: 14px; color: var(--text-muted); font-style: italic; margin: 0; }
+.card-hint { text-align: center; font-size: 12px; color: var(--text-muted); font-weight: 600; margin: 0; }
+
+/* ==============================================
+   CONTROL BAR & CỤM NÚT ĐƯỢC KÉO SÁT NHAU
+   ============================================== */
+.srs-bar { display: flex; align-items: center; justify-content: space-between; }
+.srs-bar-left, .srs-bar-right { min-width: 80px; }
+.srs-bar-right { display: flex; justify-content: flex-end; gap: 4px; }
+
+/* Div wrapper bọc riêng các nút điều hướng sát lại nhau */
+.srs-bar-center-actions { display: flex; gap: 6px; justify-content: center; }
+
+.srs-count { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+/* Nút điều hướng - Thiết kế vuông vức mỏng mảnh góc cạnh */
+.btn-control-nav, .btn-control-action {
+  background-color: var(--sidebar);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  
+  /* SỬA 2 DÒNG NÀY ĐỂ NÚT TO LÊN */
+  padding: 12px 24px;   /* Tăng từ 8px 14px lên 12px 24px để nút rộng rãi hơn */
+  font-size: 15px;      /* Nâng chữ to lên một chút (cũ là 13px) */
+  
+  border-radius: 6px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.15s ease;
+  display: inline-flex; 
+  align-items: center; 
+  gap: 4px; 
+}
+.btn-control-nav:hover:not(:disabled), .btn-control-action:hover {
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.btn-control-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-control-nav .material-symbols-outlined { font-size: 16px; }
+
+.btn-icon-action { background: transparent; border: none; color: var(--text-muted); padding: 8px; border-radius: 6px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.btn-icon-action:hover { color: var(--text-main); }
+.btn-icon-action.active { color: var(--accent-hover); }
+
+/* LỊCH SỬ THI KHUNG GÓC CẠNH ĐỒNG BỘ */
+/* ==============================================
+   LỊCH SỬ THI - ĐÃ CHỈNH MÀU SẮC DỊU MẮT, SANG TRỌNG
+   ============================================== */
+.history-section { margin-top: 40px; }
+.history-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--text-main); }
+.history-header h3 { font-size: 18px; font-weight: 800; margin: 0; }
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+
+.history-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background-color: var(--surface); 
+  border: 1px solid transparent;
+  border-radius: 8px; padding: 14px 20px; flex-wrap: wrap; gap: 12px;
+  transition: border-color 0.15s ease;
+}
+.history-row:hover { border-color: var(--border-subtle); }
+.history-date { font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block; }
+.history-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); }
+.history-meta span { display: flex; align-items: center; gap: 4px; }
+  
+.history-right { display: flex; align-items: center; gap: 20px; }
+
+/* HẠ TÔNG MÀU ĐIỂM SỐ DỊU VÀ SẮC NÉT HƠN */
+.history-score { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text-main); }
+
+/* BADGE TRẠNG THÁI ĐANG THI DỞ: Trầm tính, tối giản */
+.history-badge-pending { 
+  font-size: 11px; font-weight: 700; 
+  background-color: var(--sidebar); 
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted); 
+  padding: 4px 10px; border-radius: 4px; 
+}
+
+/* CÁC NÚT BẤM HÀNH ĐỘNG: Chuyển về tone xám và tím chuẩn hệ thống */
+.btn-history-action { 
+  background: transparent; border: none; font-size: 13px; font-weight: 700; cursor: pointer; transition: color 0.15s; 
+}
+.btn-view-result { color: var(--text-muted); }
+.btn-view-result:hover { color: var(--text-main); } 
+
+.btn-resume-test { color: var(--accent); } 
+.btn-resume-test:hover { color: var(--accent-hover); text-decoration: underline; }
+
+/* HOÀN THÀNH */
+.session-done-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: var(--surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 48px 24px; aspect-ratio: 16 / 9; }
+.done-icon { font-size: 48px; color: var(--accent); margin-bottom: 12px; }
+.session-done-card h3 { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
+.session-done-card p { color: var(--text-muted); font-size: 15px; margin-bottom: 24px; }
+.done-actions { display: flex; gap: 12px; }
+.btn-restart { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn-back-lib { background: var(--sidebar); border: 1px solid var(--border-subtle); color: var(--text-main); padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+/* LOADER & TOAST */
+.study-loading, .study-empty { display: flex; align-items: center; justify-content: center; min-height: 40vh; }
+.circular-spinner { width: 32px; height: 32px; border: 3px solid var(--accent-dim); border-left-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+.study-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 6px; font-weight: 600; z-index: 10000; color: white; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.study-toast.success { background: var(--success); }
+.study-toast.error { background: var(--error); }
+.study-toast.info { background: var(--accent); }
+
+@keyframes spin { to { transform: rotate(360deg); } }

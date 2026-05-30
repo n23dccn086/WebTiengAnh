@@ -182,7 +182,42 @@ const deleteSystemSet = catchAsync(async (req, res) => {
   return successResponse(res, 'Xóa bộ thẻ thành công');
 });
 
+const getSetsByService = catchAsync(async (req, res) => {
+  // 1. Lấy param từ URL
+  const serviceId = parseInt(req.params.id, 10);
+
+  // 2. Gọi Service xử lý toàn bộ logic
+  const data = await AdminService.getSetsByServiceId(serviceId);
+
+  // 3. Trả về cho Frontend
+  // Nếu file của bạn đang xài successResponse thì dùng dòng dưới:
+  // return successResponse(res, "Lấy danh sách bộ thẻ thành công", data);
+  
+  // Còn nếu xài json thuần thì dùng dòng này:
+  return res.status(200).json({
+    status: "success",
+    message: "Lấy danh sách bộ thẻ thành công",
+    data: data
+  });
+});
+
+// Xử lý Route: GET /super-admin/staff
+const getStaff = catchAsync(async (req, res) => {
+  const data = await AdminService.getStaff();
+  
+  return res.status(200).json({
+    status: "success",
+    message: "Lấy danh sách nhân sự thành công",
+    data: data
+  });
+});
+
+
+
+
 module.exports = {
+  getStaff,
+  getSetsByService,
   getUsers,
   changeUserStatus,
   changeUserRole,

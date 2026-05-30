@@ -45,22 +45,27 @@ const getSetsByUser = async (userId, limit, offset) => {
 };
 
 // Lấy danh sách bộ thẻ hệ thống
-const getSystemSets = async (userId) => {
-  const query = `
-    SELECT 
-      fs.id, fs.title, fs.description,
-      s.title AS service_title,
-      COUNT(DISTINCT f.id) AS total_cards,
-      IF(uss.set_id IS NOT NULL, TRUE, FALSE) AS is_saved
+const getSystemSets = async (userId, serviceId = null) => {
+  let query = `
+    SELECT fs.id, fs.title, fs.description, s.title AS service_title,
+           COUNT(DISTINCT f.id) AS total_cards,
+           IF(MAX(uss.set_id) IS NOT NULL, TRUE, FALSE) AS is_saved,
+           COALESCE(MAX(uss.is_srs_enabled), FALSE) AS is_srs_enabled
     FROM flashcard_sets fs
     LEFT JOIN services s ON fs.service_id = s.id
     LEFT JOIN flashcards f ON fs.id = f.set_id
     LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
     WHERE fs.is_system = TRUE
-    GROUP BY fs.id
-    ORDER BY fs.created_at DESC
   `;
-  const [rows] = await db.execute(query, [userId]);
+  const params = [userId];
+  
+  if (serviceId) {
+    query += ` AND fs.service_id = ?`;
+    params.push(serviceId);
+  }
+  
+  query += ` GROUP BY fs.id, fs.title, fs.description, s.title ORDER BY fs.created_at DESC`;
+  const [rows] = await db.execute(query, params);
   return rows;
 };
 
@@ -138,7 +143,41 @@ const saveSystemSet = async (userId, setId, action) => {
   }
 };
 
+// Lấy danh sách bộ thẻ cá nhân (Kèm tiến độ học mastery_progress)
+const getPersonalSets = async (userId, limit, offset) => {
+  const safeLimit = parseInt(limit, 10);
+  const safeOffset = parseInt(offset, 10);
+  
+  const query = `
+    SELECT fs.id, fs.title, fs.description, fs.is_system, fs.created_at,
+           s.title AS service_title, 
+           COALESCE(MAX(uss.is_srs_enabled), 0) AS is_srs_enabled, 
+           COUNT(DISTINCT f.id) AS total_cards,
+           COALESCE(ROUND((SUM(CASE WHEN uf.status = 'REVIEW' THEN 1 ELSE 0 END) / NULLIF(COUNT(DISTINCT f.id), 0)) * 100), 0) AS mastery_progress
+    FROM flashcard_sets fs
+    LEFT JOIN services s ON fs.service_id = s.id
+    LEFT JOIN flashcards f ON fs.id = f.set_id
+    LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
+    LEFT JOIN user_flashcards uf ON f.id = uf.flashcard_id AND uf.user_id = ?
+    WHERE fs.user_id = ? AND fs.is_system = FALSE
+    GROUP BY fs.id, fs.title, fs.description, fs.is_system, fs.created_at, s.title
+    ORDER BY fs.created_at DESC 
+    LIMIT ${safeLimit} OFFSET ${safeOffset}
+  `;
+  // Truyền 3 lần userId cho 3 dấu chấm hỏi (?)
+  const [sets] = await db.execute(query, [userId, userId, userId]);
+  
+  // Đếm tổng số lượng để phân trang
+  const [countResult] = await db.execute(
+    `SELECT COUNT(*) as total FROM flashcard_sets WHERE user_id = ? AND is_system = FALSE`, 
+    [userId]
+  );
+  
+  return { sets, totalItems: countResult[0]?.total || 0 };
+};
+
 module.exports = {
+  getPersonalSets,
   getSetsByUser,
   getSystemSets,
   createSet,

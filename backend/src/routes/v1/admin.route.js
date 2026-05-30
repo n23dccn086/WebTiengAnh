@@ -50,6 +50,7 @@ adminRouter.put("/system-sets/:id", adminController.updateSystemSet);
 adminRouter.delete("/system-sets/:id", adminController.deleteSystemSet);
 
 adminRouter.get("/transactions", adminController.getTransactions);
+adminRouter.get("/services/:id/sets", adminController.getSetsByService);
 
 const superAdminRouter = express.Router();
 superAdminRouter.use(protect);
@@ -66,6 +67,9 @@ superAdminRouter.put(
   validate(adminValidation.resetStaffPasswordSchema),
   adminController.resetStaffPassword,
 );
+
+superAdminRouter.get("/staff", adminController.getStaff);
+superAdminRouter.post("/staff", validate(adminValidation.createStaffSchema), adminController.createStaff);
 
 module.exports = {
   adminRouter,

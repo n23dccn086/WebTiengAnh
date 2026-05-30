@@ -1,0 +1,106 @@
+/* src/pages/Study/StudyShared.css */
+.exam-layout { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* HEADER */
+.exam-header { height: 64px; background-color: var(--sidebar); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: relative; z-index: 10; }
+.exam-progress-line { position: absolute; top: 0; left: 0; height: 2px; width: 100%; background-color: var(--surface); }
+.exam-progress-fill { height: 100%; background-color: var(--success); box-shadow: 0 0 8px var(--success-border); transition: width 0.3s ease; }
+.exam-timer { display: flex; align-items: center; gap: 8px; background-color: var(--surface); padding: 6px 16px; border-radius: 8px; border: 1px solid var(--border-subtle); font-weight: 700; font-size: 18px;}
+.btn-home { display: flex; align-items: center; gap: 8px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 14px; transition: color 0.2s; }
+.btn-home:hover { color: var(--text-main); }
+
+/* MAIN QUIZ BOARD */
+.exam-main { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; align-items: center; position: relative; justify-content: center;}
+.exam-ambient-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; background-color: var(--accent-dim); border-radius: 50%; filter: blur(120px); pointer-events: none; }
+.exam-content-wrapper { width: 100%; max-width: 960px; position: relative; z-index: 10; display: flex; flex-direction: column; gap: 40px; margin: 0 auto;}
+
+.question-badge { display: inline-flex; align-items: center; justify-content: center; background-color: var(--surface); padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border-subtle); font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;}
+.question-title { font-size: 32px; font-weight: 800; line-height: 1.4; color: var(--text-main); }
+.exam-question-card { background-color: var(--surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 48px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.fill-blank-text { font-size: 24px; line-height: 1.6; font-weight: 600; color: var(--text-main); }
+.blank-line { display: inline-block; width: 100px; border-bottom: 2px solid var(--accent); margin: 0 8px; }
+
+/* LƯỚI ĐÁP ÁN */
+.exam-options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; }
+/* TÌM CLASS NÀY VÀ THÊM height: 100% VÀO */
+.exam-option-btn { 
+  height: 100%; /* 🟢 THÊM DÒNG NÀY ĐỂ ÉP BẰNG NHAU */
+  
+  display: flex; align-items: center; padding: 16px 20px; 
+  background-color: var(--surface); border: 2px solid var(--border-subtle); border-radius: 12px; 
+  color: var(--text-main); font-size: 16px; cursor: pointer; transition: all 0.2s ease; text-align: left; font-weight: 600;
+  position: relative; overflow: hidden;
+}
+.exam-option-btn.review-mode { cursor: default; }
+
+.exam-option-letter { 
+  width: 40px; height: 40px; border-radius: 8px; background-color: var(--sidebar); border: 2px solid transparent; 
+  display: flex; align-items: center; justify-content: center; color: var(--accent-hover); 
+  font-weight: 800; font-size: 16px; margin-right: 16px; transition: all 0.2s; flex-shrink: 0;
+}
+.option-text { flex: 1; min-width: 0; padding-right: 12px; line-height: 1.5; word-wrap: break-word; }
+
+.exam-option-btn:hover:not(.review-mode):not(.lock-hover) { border-color: var(--accent); background-color: var(--accent-dim); }
+.exam-option-btn:hover:not(.review-mode):not(.lock-hover) .exam-option-letter { background-color: var(--accent); color: white; }
+.exam-option-btn.selected { border-color: var(--accent); background-color: var(--accent-dim); }
+.exam-option-btn.selected .exam-option-letter { background-color: var(--accent); color: white; }
+
+.exam-option-btn.correct { background-color: rgba(74, 222, 128, 0.1); border-color: var(--success); }
+.exam-option-btn.correct .exam-option-letter { background-color: var(--success); color: #002114; }
+.exam-option-btn.incorrect { background-color: rgba(248, 113, 113, 0.1); border-color: var(--error); opacity: 0.8;}
+.exam-option-btn.incorrect .exam-option-letter { background-color: var(--error); color: white; }
+
+/* 🟢 NÚT TIẾP THEO (INLINE): Mũi tên trong suốt, tinh tế */
+.inline-next-btn {
+  margin-left: auto; background: transparent; color: rgba(255, 255, 255, 0.6); border: none;
+  padding: 8px; font-size: 14px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0;
+}
+.inline-next-btn:hover { transform: translateX(6px); color: white; }
+
+/* SETUP SCREEN */
+.setup-card { background-color: var(--surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 48px; width: 100%; max-width: 480px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.setup-icon { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: var(--accent-dim); color: var(--accent); border-radius: 50%; margin-bottom: 24px; }
+.setup-icon .material-symbols-outlined { font-size: 32px; }
+.setup-card h2 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+
+/* CHIA ĐÔI MÀN HÌNH REVIEW & AI CHAT */
+.review-layout { display: flex; height: calc(100vh - 64px); overflow: hidden; width: 100%;}
+.review-left { flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-main); display: flex; flex-direction: column; align-items: center; min-width: 0;}
+
+.ai-drawer { width: 420px; flex-shrink: 0; background-color: var(--surface); border-left: 1px solid var(--border-subtle); display: flex; flex-direction: column; height: 100%; overflow: hidden;}
+.ai-header { padding: 20px; border-bottom: 1px solid var(--border-subtle); font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+.ai-chat-area { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+.chat-message-row { display: flex; width: 100%; }
+.user-row { justify-content: flex-end; }
+.ai-row { justify-content: flex-start; }
+.chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.5; border: 1px solid var(--border-subtle); color: var(--text-main); word-wrap: break-word;}
+.chat-bubble.user { background-color: var(--sidebar); }
+.chat-bubble.ai { background-color: var(--bg-main); }
+.ai-input-area { padding: 20px; border-top: 1px solid var(--border-subtle); background-color: var(--surface); position: relative; }
+.chat-input { width: 100%; padding: 12px 48px 12px 16px; border-radius: 24px; border: 1px solid var(--border-subtle); background-color: var(--sidebar); color: white; font-size: 14px; outline: none; }
+.btn-send-chat { position: absolute; right: 28px; top: 26px; width: 30px; height: 30px; border-radius: 50%; border: none; background-color: var(--accent); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+.btn-send-chat:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-ask-ai { background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-hover); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; margin-top: 16px;}
+.btn-ask-ai:hover { background: var(--accent); color: white; }
+
+/* HERO RESULT */
+.result-hero { display: flex; flex-direction: column; align-items: center; text-align: center; animation: slideUp 0.5s ease-out forwards; }
+.score-ring-container { position: relative; width: 220px; height: 220px; margin-bottom: 24px; }
+.score-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.score-ring-bg { stroke: var(--sidebar); }
+.score-ring-fill { stroke: var(--accent); filter: drop-shadow(0 0 8px var(--accent-dim)); transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.score-text-absolute { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: 800; color: white; }
+.stats-row { display: flex; gap: 32px; color: var(--text-muted); margin-top: 16px; font-size: 15px; }
+
+/* FOOTER / UTILS */
+.exam-footer { background-color: var(--bg-main); border-top: 1px solid var(--border-subtle); padding: 20px 48px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; z-index: 20; }
+.exam-btn-secondary { padding: 12px 24px; border-radius: 8px; border: 1px solid var(--border-subtle); background-color: var(--sidebar); color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.2s; }
+.exam-btn-secondary:hover:not(:disabled) { background-color: var(--accent-dim); border-color: var(--accent); color: var(--accent-hover);}
+.exam-btn-primary { padding: 12px 32px; border-radius: 8px; background: var(--accent); border: none; color: white; font-weight: 700; cursor: pointer; transition: 0.2s; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 6px; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.circular-spinner { width: 40px; height: 40px; border: 3px solid var(--accent-dim); border-left-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;}
+@keyframes spin { to { transform: rotate(360deg); } }
