@@ -5,22 +5,22 @@ const getSetsByUser = async (userId, limit, offset) => {
   const safeOffset = parseInt(offset, 10);
   
   const query = `
-    SELECT 
-      fs.id, fs.title, fs.description, fs.is_system, fs.created_at,
-      fs.service_id,
-      COALESCE(MAX(uss.is_srs_enabled), 0) AS is_srs_enabled,
-      COALESCE(MAX(uss.daily_new_words), 20) AS daily_new_words,
-      COALESCE(ROUND((SUM(CASE WHEN uf.status = 'REVIEW' THEN 1 ELSE 0 END) / NULLIF(COUNT(DISTINCT f.id), 0)) * 100), 0) AS mastery_progress,
-      COUNT(DISTINCT f.id) AS total_cards
-    FROM flashcard_sets fs
-    LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
-    LEFT JOIN flashcards f ON fs.id = f.set_id
-    LEFT JOIN user_flashcards uf ON f.id = uf.flashcard_id AND uf.user_id = ?
-    WHERE fs.user_id = ? OR uss.user_id = ?
-    GROUP BY fs.id, fs.service_id
-    ORDER BY fs.created_at DESC
-    LIMIT ${safeLimit} OFFSET ${safeOffset}
-  `;
+  SELECT 
+    fs.id, fs.title, fs.description, fs.is_system, fs.created_at,
+    fs.service_id,
+    COALESCE(MAX(uss.is_srs_enabled), 0) AS is_srs_enabled,
+    COALESCE(MAX(uss.daily_new_words), 20) AS daily_new_words,
+    COALESCE(ROUND((SUM(CASE WHEN uf.status = 'REVIEW' THEN 1 ELSE 0 END) / NULLIF(COUNT(DISTINCT f.id), 0)) * 100), 0) AS mastery_progress,
+    COUNT(DISTINCT f.id) AS total_cards
+  FROM flashcard_sets fs
+  LEFT JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = ?
+  LEFT JOIN flashcards f ON fs.id = f.set_id
+  LEFT JOIN user_flashcards uf ON f.id = uf.flashcard_id AND uf.user_id = ?
+  WHERE (fs.is_system = FALSE AND fs.user_id = ?) OR (fs.is_system = TRUE AND uss.user_id = ?)
+  GROUP BY fs.id, fs.service_id
+  ORDER BY fs.created_at DESC
+  LIMIT ${safeLimit} OFFSET ${safeOffset}
+`;
   
   console.log('[DEBUG] getSetsByUser - userId:', userId);
   
