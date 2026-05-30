@@ -1,6 +1,7 @@
 import { useState } from "react";
 import useTestStore from "../../store/testStore";
 import { autoSave } from "../../services/studyApi";
+import useAutoSave from "../../hooks/useAutoSave";
 import styles from "./TestBoard.module.css";
 
 export default function TestBoard({ onSubmitTest }) {

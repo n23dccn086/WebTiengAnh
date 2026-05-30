@@ -14,7 +14,7 @@ const updateSetSchema = Joi.object({
 const toggleSrsSchema = Joi.object({
   is_srs_enabled: Joi.boolean().required(),
   daily_new_words: Joi.number().integer().min(1).max(100).optional(),
-  deleteFromLibrary: Joi.boolean().optional()  // ← THÊM DÒNG NÀY
+  deleteFromLibrary: Joi.boolean().optional()
 });
 
 module.exports = {

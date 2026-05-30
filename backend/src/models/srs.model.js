@@ -57,7 +57,7 @@ const startLearningNewCards = async (userId, flashcardIds) => {
   const values = [];
   const placeholders = [];
   for (const cardId of flashcardIds) {
-    placeholders.push(`(?, ?, 'NEW', NOW())`);
+    placeholders.push(`(?, ?, 'NEW', UTC_TIMESTAMP())`);
     values.push(userId, cardId);
   }
   const sql = `INSERT INTO user_flashcards (user_id, flashcard_id, status, next_review_date) VALUES ${placeholders.join(',')}`;

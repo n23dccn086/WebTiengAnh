@@ -11,60 +11,58 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
     throw new AppError(403, 'Bạn cần nâng cấp Premium để xem thống kê chi tiết.', 'PREMIUM_REQUIRED');
   }
 
+  // 1. Lấy streak
   const [userRows] = await db.execute(`SELECT current_streak FROM users WHERE id = ?`, [userId]);
   const current_streak = userRows[0]?.current_streak || 0;
 
+  // 2. Tổng số từ đã học (tất cả user_flashcards)
   const [totalLearnedRows] = await db.execute(`SELECT COUNT(*) as total FROM user_flashcards WHERE user_id = ?`, [userId]);
   const total_learned = totalLearnedRows[0]?.total || 0;
 
-  const [dueTodayRows] = await db.execute(`
-    SELECT COUNT(DISTINCT uf.id) as due_today
-    FROM user_flashcards uf
-    JOIN flashcards f ON uf.flashcard_id = f.id
-    JOIN flashcard_sets fs ON f.set_id = fs.id
-    JOIN user_saved_sets uss ON uss.set_id = fs.id AND uss.user_id = uf.user_id
-    WHERE uf.user_id = ? AND uf.next_review_date <= NOW() AND uss.is_srs_enabled = TRUE
-  `, [userId]);
+  // 3. Thẻ đến hạn hôm nay – dùng UTC_TIMESTAMP() để tránh lệch múi giờ
+  //    và kiểm tra điều kiện is_srs_enabled = TRUE
+const [dueTodayRows] = await db.execute(
+  `SELECT COUNT(*) as due_today FROM user_flashcards WHERE user_id = ? AND next_review_date <= UTC_TIMESTAMP()`,
+  [userId]
+);
   const due_today = dueTodayRows[0]?.due_today || 0;
 
-  // Lấy dữ liệu các ngày có review (đã convert sang VN)
+  // 4. Lấy dữ liệu review (last_reviewed_at) trong 7 ngày gần nhất theo giờ VN
+  //    Lấy tất cả last_reviewed_at từ 6 ngày trước (theo UTC) rồi chuyển sang VN trong JS
   const [rawProgress] = await db.execute(`
-    SELECT 
-      DATE(CONVERT_TZ(last_reviewed_at, '+00:00', '+07:00')) as date,
-      COUNT(*) as reviewed
+    SELECT last_reviewed_at
     FROM user_flashcards
     WHERE user_id = ? AND last_reviewed_at IS NOT NULL
-    GROUP BY DATE(CONVERT_TZ(last_reviewed_at, '+00:00', '+07:00'))
-    ORDER BY date ASC
+      AND last_reviewed_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 6 DAY)
   `, [userId]);
 
+  // Chuyển đổi sang giờ VN (UTC+7) và đếm số review theo ngày (chỉ lấy ngày)
   const reviewMap = {};
+  const offsetMs = 7 * 60 * 60 * 1000; // UTC+7
   rawProgress.forEach(row => {
-    reviewMap[row.date] = parseInt(row.reviewed);
+    const utcDate = new Date(row.last_reviewed_at);
+    const vnDate = new Date(utcDate.getTime() + offsetMs);
+    const dateStr = vnDate.toISOString().split('T')[0];
+    reviewMap[dateStr] = (reviewMap[dateStr] || 0) + 1;
   });
 
-  // Xác định ngày lớn nhất (gần đây nhất) từ dữ liệu, nếu không có thì lấy ngày hiện tại VN
-  let maxDate;
-  if (rawProgress.length > 0) {
-    maxDate = new Date(rawProgress[rawProgress.length - 1].date);
-  } else {
-    const now = new Date();
-    const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
-    maxDate = vnTime;
-  }
-  maxDate.setHours(0, 0, 0, 0);
-
-  const progress_chart = [];
+  // Tạo mảng 7 ngày liên tiếp tính từ hôm nay (theo giờ VN)
+  const todayVN = new Date(new Date().getTime() + offsetMs);
+  const dates = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(maxDate);
-    d.setDate(maxDate.getDate() - i);
+    const d = new Date(todayVN);
+    d.setUTCDate(todayVN.getUTCDate() - i);
     const dateStr = d.toISOString().split('T')[0];
-    progress_chart.push({
-      date: dateStr,
-      reviewed: reviewMap[dateStr] || 0
-    });
+    dates.push(dateStr);
   }
 
+  // Tạo mảng progress_chart, đảm bảo reviewed là số nguyên
+  const progress_chart = dates.map(dateStr => ({
+    date: dateStr,
+    reviewed: reviewMap[dateStr] || 0
+  }));
+
+  // 5. Top từ hay quên (ease_factor thấp nhất)
   const [hardestRows] = await db.execute(`
     SELECT f.word, f.meaning, uf.ease_factor, uf.repetition_count
     FROM user_flashcards uf
@@ -77,7 +75,7 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
   const hardest_words = hardestRows.map(row => ({
     word: row.word,
     meaning: row.meaning,
-    ease_factor: parseFloat(row.ease_factor),
+    ease_factor: parseFloat(row.ease_factor).toFixed(2),
     repetition_count: row.repetition_count
   }));
 

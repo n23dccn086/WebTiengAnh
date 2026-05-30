@@ -54,10 +54,33 @@ const StudyTest = () => {
         setError("");
         const effectiveResumeId = forceNew ? null : resumeAttemptId;
         const data = await createTest(id, 10, effectiveResumeId);
-        console.log("🔍 Resume attemptId:", data.attempt_id, "Questions count:", data.questions?.length);
+        console.log(
+          "🔍 Resume attemptId:",
+          data.attempt_id,
+          "Questions count:",
+          data.questions?.length,
+        );
         if (data && data.questions) {
           initTestSession(data.attempt_id, data.questions);
-          reset(TIME_LIMIT);
+          const savedAnswers = data.questions
+            .filter(
+              (q) =>
+                q.selected_option_id !== null &&
+                q.selected_option_id !== undefined,
+            )
+            .map((q) => ({
+              question_id: q.id,
+              selected_option_id: q.selected_option_id,
+            }));
+          if (savedAnswers.length > 0) {
+            useTestStore.getState().setAnswers(savedAnswers);
+          }
+          // ✅ Dùng remaining_seconds từ backend (nếu có), nếu không thì dùng TIME_LIMIT
+          if (data.remaining_seconds !== undefined) {
+            reset(data.remaining_seconds);
+          } else {
+            reset(TIME_LIMIT);
+          }
         } else {
           setError("Không thể tạo đề thi, dữ liệu trả về không hợp lệ.");
         }

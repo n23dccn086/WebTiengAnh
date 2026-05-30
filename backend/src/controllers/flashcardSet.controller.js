@@ -25,10 +25,7 @@ const getPersonalSets = catchAsync(async (req, res) => {
 
 const createSet = catchAsync(async (req, res) => {
   const { title, description } = req.body;
-  
-  // 🟢 FIX: Chuyển undefined thành null để MySQL không bị sập
   const service_id = req.body.service_id ? parseInt(req.body.service_id, 10) : null;
-  
   const newSet = await FlashcardSetService.createSet(req.user.id, title, description, service_id);
   return res.status(201).json({ status: "success", message: "Tạo bộ thẻ thành công", data: newSet });
 });
@@ -71,13 +68,15 @@ const unsaveSystemSet = catchAsync(async (req, res) => {
   return successResponse(res, "Đã bỏ lưu bộ thẻ hệ thống");
 });
 
+// ✅ SỬA LỖI service_id: thêm giá trị mặc định 6
 const createSetFromPdf = catchAsync(async (req, res) => {
   if (!req.file) throw new AppError(400, 'Vui lòng đính kèm file PDF.', 'MISSING_PDF_FILE');
   let title = req.body.title || req.body.set_title;
   if (!title || !title.trim()) throw new AppError(400, 'Vui lòng nhập tên bộ thẻ.', 'MISSING_TITLE');
   title = title.trim();
   const description = req.body.description ? req.body.description.trim() : null;
-  let service_id = req.body.service_id ? parseInt(req.body.service_id, 10) : nul;
+  // ✅ Fix: nếu không có service_id thì gán mặc định 6 (danh mục "Tài liệu cá nhân")
+  let service_id = req.body.service_id ? parseInt(req.body.service_id, 10) : 6;
   
   const result = await FlashcardSetService.createSetFromPdf(req.user, req.file.buffer, req.file.originalname, title, description, service_id);
   return res.status(201).json({ status: "success", message: "Trích xuất từ vựng từ PDF thành công", data: result });

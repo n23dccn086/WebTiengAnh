@@ -10,6 +10,7 @@
   justify-content: center;
   z-index: 1000;
 }
+
 .modal {
   background: white;
   border-radius: 24px;
@@ -18,28 +19,60 @@
   max-width: 500px;
   box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
 }
+
 .modal h3 {
   color: #1f2937;
   margin-bottom: 1.2rem;
   font-weight: 700;
   font-size: 1.4rem;
 }
+
 .field {
   margin-bottom: 1rem;
 }
+
 .field label {
   display: block;
   margin-bottom: 0.3rem;
   font-weight: 600;
   color: #1f2937;
 }
+
 .field input, .field select {
   width: 100%;
   padding: 10px 12px;
   border-radius: 40px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  transition: 0.2s;
 }
+
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
+/* ✅ Cải thiện textarea (ô mô tả) */
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: 0.2s;
+  background: #f9fafb;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+  background: white;
+}
+
 .error {
   background: #fee2e2;
   color: #b91c1c;
@@ -48,12 +81,14 @@
   text-align: center;
   margin: 1rem 0;
 }
+
 .actions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
   margin-top: 1.5rem;
 }
+
 .actions button {
   padding: 8px 20px;
   border-radius: 40px;
@@ -61,14 +96,17 @@
   cursor: pointer;
   font-weight: 600;
 }
+
 .actions button[type="button"] {
   background: #e5e7eb;
   color: #333;
 }
+
 .actions button[type="submit"] {
   background: #3b82f6;
   color: white;
 }
+
 .actions button[type="submit"]:disabled {
   background: #9ca3af;
   cursor: not-allowed;

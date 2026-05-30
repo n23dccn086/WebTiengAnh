@@ -132,3 +132,27 @@
     font-size: 1.4rem;
   }
 }
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settingItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settingItem label {
+  color: rgb(7, 246, 254);
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.settingNote {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+}
