@@ -1,147 +1,132 @@
+// backend/src/services/gemini.service.js
 const genAI = require("../config/gemini");
 const AppError = require("../utils/appError");
+const { HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
+
+// 🟢 IMPORT THƯ VIỆN GROQ LÊN ĐẦU FILE CHO CHUẨN
+const Groq = require("groq-sdk"); 
+
+const safetySettings = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+];
 
 const generationConfig = {
   responseMimeType: "application/json",
 };
 
-// Hàm làm sạch JSON từ response có thể bị nhiễm markdown hoặc text thừa
 const cleanJsonResponse = (text) => {
-  // Loại bỏ markdown code blocks
-  let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-  // Tìm phần JSON đầu tiên (từ { hoặc [ đến } hoặc ] cuối cùng)
+  if (!text) return "[]";
+  let cleaned = text.trim();
+  cleaned = cleaned.replace(/```json/gi, '').replace(/```/g, '').trim();
   const match = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
-  if (match) {
-    return match[0];
-  }
-  return cleaned;
+  return match ? match[0] : cleaned;
 };
 
+// 1. HÀM TRÍCH XUẤT PDF
 const extractVocabFromPdf = async (fileBuffer) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash", // ✅ Đã trả về 2.5 cho bạn
       generationConfig,
+      safetySettings
     });
+    
     const prompt = `Bạn là chuyên gia ngôn ngữ. Hãy trích xuất TỐI ĐA 50 từ vựng tiếng Anh có giá trị học thuật từ file PDF đính kèm. BỎ QUA các từ thông dụng như: the, a, is, are, and, or, in, on, at.
-Trả về ĐÚNG định dạng JSON là một mảng các object chứa: word, meaning, pronunciation, example_sentence, part_of_speech.
-TUYỆT ĐỐI KHÔNG SỬ DỤNG MARKDOWN. CHỈ TRẢ VỀ JSON.`;
+Trả về MẢNG JSON thuần chứa các object có key: word, meaning, pronunciation, example_sentence, part_of_speech.`;
     
-    const filePart = {
-      inlineData: {
-        data: fileBuffer.toString("base64"),
-        mimeType: "application/pdf",
-      },
-    };
-    
+    const filePart = { inlineData: { data: fileBuffer.toString("base64"), mimeType: "application/pdf" } };
     const result = await model.generateContent([prompt, filePart]);
-    const rawText = result.response.text();
-    const cleanText = cleanJsonResponse(rawText);
+    const cleanText = cleanJsonResponse(result.response.text());
 
     return JSON.parse(cleanText);
   } catch (error) {
     console.error("🔥 Lỗi Gemini API (PDF):", error.message);
     if (error.message.includes("429") || error.message.includes("quota")) {
-      throw new AppError(
-        429,
-        "Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại sau 24 giờ hoặc nâng cấp Premium để tăng giới hạn.",
-        "AI_QUOTA_EXCEEDED",
-      );
+      throw new AppError(429, "Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại sau.", "AI_QUOTA_EXCEEDED");
     }
-    throw new AppError(
-      500,
-      "Lỗi khi gọi AI trích xuất từ vựng. Vui lòng thử lại sau.",
-      "GEMINI_API_ERROR",
-    );
+    throw new AppError(500, "Lỗi khi gọi AI trích xuất từ vựng. Vui lòng thử lại sau.", "GEMINI_API_ERROR");
   }
 };
 
+// 2. HÀM TẠO CÂU HỎI
 const generateQuestions = async (flashcards, numQuestions) => {
-  try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig,
-    });
-    
-    const vocabList = flashcards.map((f) => ({
-      id: f.id,
-      word: f.word,
-      meaning: f.meaning,
-    }));
-
-    const prompt = `Bạn là giáo viên tiếng Anh. Dựa vào danh sách từ vựng sau, hãy sinh ra ĐÚNG ${numQuestions} câu hỏi trắc nghiệm.
+  const vocabList = flashcards.map((f) => ({ id: f.id, word: f.word, meaning: f.meaning }));
+  const prompt = `Bạn là giáo viên tiếng Anh. Dựa vào danh sách từ vựng sau, hãy sinh ra ĐÚNG ${numQuestions} câu hỏi trắc nghiệm.
 Từ vựng: ${JSON.stringify(vocabList)}
-Quy tắc: Trộn lẫn 3 loại câu hỏi (WORD_TO_MEANING, MEANING_TO_WORD, FILL_IN_BLANK). Mỗi câu có 4 đáp án, 1 đáp án đúng. Trả về MẢNG JSON các object chứa: flashcard_id, question_type, content, options (mảng 4 object: content, is_correct), explanation.
-TUYỆT ĐỐI KHÔNG DÙNG MARKDOWN. CHỈ TRẢ VỀ JSON ARRAY THUẦN.`;
-    
-    const result = await model.generateContent(prompt);
-    const rawText = result.response.text();
-    const cleanText = cleanJsonResponse(rawText);
+Quy tắc: Trộn lẫn 3 loại câu hỏi (WORD_TO_MEANING, MEANING_TO_WORD, FILL_IN_BLANK). Mỗi câu có 4 đáp án, 1 đáp án đúng. Trả về MẢNG JSON các object chứa: flashcard_id, question_type, content, options (mảng 4 object: content, is_correct(boolean)), explanation. KHÔNG DÙNG MARKDOWN, CHỈ TRẢ VỀ MẢNG JSON.`;
 
-    return JSON.parse(cleanText);
-  } catch (error) {
-    console.error("🔥 Lỗi Gemini API (Questions):", error.message);
-    if (error.message.includes("429") || error.message.includes("quota")) {
-      throw new AppError(
-        429,
-        "Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại sau 24 giờ hoặc nâng cấp Premium để tăng giới hạn.",
-        "AI_QUOTA_EXCEEDED",
-      );
+  try {
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.5-flash", // ✅ Đã trả về 2.5 cho bạn
+      generationConfig, 
+      safetySettings 
+    });
+    const result = await model.generateContent(prompt);
+    return JSON.parse(cleanJsonResponse(result.response.text()));
+  } catch (geminiError) {
+    console.warn("⚠️ [GEMINI LỖI TẠO CÂU HỎI]: Đang chuyển sang GROQ API...", geminiError.message);
+    try {
+      if (!process.env.GROQ_API_KEY) throw new Error("Thiếu GROQ_API_KEY trong file .env");
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: "user", content: prompt }],
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.2,
+      });
+      return JSON.parse(cleanJsonResponse(chatCompletion.choices[0]?.message?.content));
+    } catch (groqError) {
+      console.error("❌ [LỖI NGHIÊM TRỌNG] Cả Gemini và Groq đều thất bại (Questions):", groqError.message);
+      throw new AppError(500, "Hệ thống AI đang quá tải, không thể sinh câu hỏi. Vui lòng thử lại.", "AI_ALL_FAILED");
     }
-    throw new AppError(
-      500,
-      "AI không sinh được câu hỏi. Vui lòng thử lại.",
-      "GEMINI_API_ERROR",
-    );
   }
 };
 
-// --- [API 7] Chat với AI Tutor ---
+// 3. HÀM CHAT TUTOR
 const chatTutor = async (userMessage, chatHistory = [], currentQuestion = null) => {
+  let systemPrompt = `Bạn là NeuralLearn AI - một gia sư tiếng Anh tận tâm. 
+QUY TẮC: CHỈ TRẢ LỜI các vấn đề tiếng Anh (ngữ pháp, từ vựng...). TỪ CHỐI mọi yêu cầu ngoài lề lịch sự. Trình bày ngắn gọn.`;
+
+  if (currentQuestion) {
+    systemPrompt += `\nNGỮ CẢNH: Đang làm câu hỏi: ${currentQuestion.content} | Đáp án: ${currentQuestion.options?.map(o => o.content).join(', ') || '...'} | Giải thích: ${currentQuestion.explanation || 'Không'}`;
+  }
+
   try {
-    // Lưu ý: Chat Tutor trả về Text thường (Markdown), KHÔNG ép responseMimeType là JSON
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
-    // 1. XÂY DỰNG "VÒNG KIM CÔ" CHO AI (SYSTEM PROMPT)
-    let systemPrompt = `Bạn là NeuralLearn AI - một gia sư tiếng Anh tận tâm, thân thiện và chuyên nghiệp.
-    QUY TẮC TỐI THƯỢNG (BẮT BUỘC TUÂN THỦ):
-    1. CHỈ TRẢ LỜI các vấn đề liên quan đến việc học tiếng Anh (ngữ pháp, từ vựng, dịch thuật, phát âm, IELTS/TOEIC).
-    2. TỪ CHỐI MỌI YÊU CẦU ngoài lề như: Giải toán, viết code lập trình, lịch sử, chính trị, viết văn bản không liên quan đến học ngoại ngữ.
-    3. Nếu user hỏi ngoài lề, hãy trả lời lịch sự: "Xin lỗi, mình là gia sư tiếng Anh của NeuralLearn nên chỉ có thể hỗ trợ bạn các vấn đề về ngôn ngữ thôi nhé. Bạn cần hỏi gì về từ vựng hay ngữ pháp nào?".
-    4. Trình bày ngắn gọn, dễ hiểu. Sử dụng in đậm (**từ khóa**) hoặc in nghiêng để làm nổi bật.`;
-
-    // 2. BƠM NGỮ CẢNH BÀI TẬP HIỆN TẠI VÀO NÃO AI (Để AI biết user đang làm câu nào)
-    if (currentQuestion) {
-      systemPrompt += `\n\nNGỮ CẢNH HIỆN TẠI (Học viên đang làm câu hỏi này):
-      - Câu hỏi: ${currentQuestion.content}
-      - Các đáp án: ${currentQuestion.options?.map(o => o.content).join(' | ') || 'Chưa rõ'}
-      - Giải thích từ hệ thống: ${currentQuestion.explanation || 'Không có'}`;
-    }
-
-    // 3. CHUYỂN ĐỔI LỊCH SỬ CHAT SANG CHUẨN GEMINI
-    // Frontend gửi lên: { role: 'user'/'ai', content: '...' }
-    // Gemini nhận vào: { role: 'user'/'model', parts: [{ text: '...' }] }
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash', // ✅ Đã trả về 2.5 cho bạn
+      safetySettings 
+    });
     const formattedHistory = chatHistory.map(msg => ({
       role: msg.role === 'ai' ? 'model' : 'user',
       parts: [{ text: msg.content || '' }]
     }));
-
-    // 4. BẮT ĐẦU PHIÊN CHAT
     const chat = model.startChat({
-      history: [
-        { role: "user", parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Đã rõ! Tôi sẽ tuân thủ tuyệt đối quy tắc chỉ dạy tiếng Anh và từ chối mọi câu hỏi ngoài lề." }] },
-        ...formattedHistory
-      ],
+      history: [ { role: "user", parts: [{ text: systemPrompt }] }, { role: "model", parts: [{ text: "Đã rõ!" }] }, ...formattedHistory ],
     });
-
-    // 5. GỬI TIN NHẮN CỦA USER VÀ LẤY PHẢN HỒI
     const result = await chat.sendMessage(userMessage);
     return result.response.text();
-
-  } catch (error) {
-    console.error('🔥 Lỗi Gemini API (Chat Tutor):', error.message);
-    throw new AppError(500, 'AI Tutor hiện đang quá tải. Bạn hãy thử lại sau ít phút nhé.', 'GEMINI_API_ERROR');
+  } catch (geminiError) {
+    console.warn("⚠️ [GEMINI LỖI CHAT TUTOR]: Đang chuyển sang GROQ API...", geminiError.message);
+    try {
+      if (!process.env.GROQ_API_KEY) throw new Error("Thiếu GROQ_API_KEY trong file .env");
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      const groqMessages = [
+        { role: "system", content: systemPrompt },
+        ...chatHistory.map(msg => ({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.content })),
+        { role: "user", content: userMessage }
+      ];
+      const chatCompletion = await groq.chat.completions.create({
+        messages: groqMessages,
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.7,
+      });
+      return chatCompletion.choices[0]?.message?.content;
+    } catch (groqError) {
+      console.error("❌ [LỖI NGHIÊM TRỌNG] Cả Gemini và Groq đều thất bại (Chat):", groqError.message);
+      throw new AppError(500, "AI Tutor hiện đang quá tải. Bạn hãy thử lại sau ít phút nhé.", "AI_ALL_FAILED");
+    }
   }
 };
 
