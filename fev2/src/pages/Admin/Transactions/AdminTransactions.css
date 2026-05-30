@@ -7,50 +7,66 @@
   animation: slideUp 0.3s ease;
 }
 
-/* Thẻ thống kê Doanh thu */
+/* =========================================
+   THẺ THỐNG KÊ DOANH THU (FINTECH STYLE)
+   ========================================= */
 .revenue-card {
-  background: linear-gradient(135deg, rgba(255, 209, 91, 0.1), rgba(165, 0, 100, 0.1));
-  border: 1px solid var(--premium-gold);
-  border-radius: 16px;
-  padding: 24px 32px;
+  background: rgba(26, 26, 58, 0.6); /* Kính mờ sang trọng */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(74, 222, 128, 0.2); /* Viền xanh nhẹ */
+  border-radius: 20px;
+  padding: 32px 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 8px 32px rgba(255, 209, 91, 0.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), inset 0 0 40px rgba(74, 222, 128, 0.05);
 }
 
 .revenue-info h3 {
   color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
 }
 
 .revenue-amount {
-  font-size: 36px;
+  font-size: 44px;
   font-weight: 800;
-  color: var(--premium-gold);
-  text-shadow: 0 0 20px rgba(255, 209, 91, 0.4);
+  /* Gradient màu tiền tệ hiện đại (Mint to Emerald) */
+  background: linear-gradient(135deg, #4ade80, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 24px rgba(74, 222, 128, 0.3);
   margin: 0;
+  letter-spacing: -1px;
 }
 
 .revenue-icon {
-  width: 64px;
-  height: 64px;
-  background-color: rgba(255, 209, 91, 0.2);
-  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: 20px; /* Bo góc hiện đại thay vì tròn xoe */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--premium-gold);
+  color: #4ade80;
+  box-shadow: 0 8px 24px rgba(74, 222, 128, 0.15);
+  transform: rotate(-5deg); /* Nghiêng nhẹ box icon cho nghệ thuật */
+  transition: transform 0.3s ease;
+}
+
+.revenue-icon:hover {
+  transform: rotate(0deg) scale(1.05); /* Hiệu ứng khi lướt chuột qua */
 }
 
 .revenue-icon span {
-  font-size: 32px;
+  font-size: 36px;
+  transform: rotate(5deg); /* Trả icon bên trong thẳng lại */
 }
-
 /* Thanh công cụ Lọc */
 .toolbar-filters {
   display: flex;

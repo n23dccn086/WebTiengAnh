@@ -16,16 +16,15 @@ const AdminUsers = () => {
 
   const showToast = (type, message) => {
     setToast({ type, message, visible: true });
-    setTimeout(() => setToast({ visible: false }), 3000);
+    setTimeout(() => setToast({ type: '', message: '', visible: false }), 3000);
   };
 
-  // Kỹ thuật Debounce: Chờ user gõ xong 500ms mới cập nhật từ khóa để gọi API
+  // Kỹ thuật Debounce
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(searchTerm), 500);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Gọi API 4: Lấy danh sách Users
   const fetchUsers = useCallback(async (pageToFetch = 1) => {
     setLoading(true);
     try {
@@ -42,23 +41,20 @@ const AdminUsers = () => {
   }, [debouncedSearch, statusFilter]);
 
   useEffect(() => {
-    fetchUsers(1); // Gọi lại trang 1 mỗi khi search hoặc đổi filter
+    fetchUsers(1); 
   }, [fetchUsers]);
 
-  // Gọi API 5: Ban / Unban User
   const toggleUserStatus = async (userId, currentStatus) => {
     const newStatus = currentStatus === 'BANNED' ? 'ACTIVE' : 'BANNED';
     try {
       await apiClient.patch(`/admin/users/${userId}/status`, { status: newStatus });
       showToast('success', `Đã ${newStatus === 'BANNED' ? 'khóa' : 'mở khóa'} tài khoản!`);
-      // Cập nhật lại UI không cần gọi lại API list
       setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus } : u));
     } catch (error) {
       showToast('error', error.response?.data?.message || 'Lỗi cập nhật trạng thái.');
     }
   };
 
-  // Gọi API 6: Đổi Role
   const handleRoleChange = async (userId, newRole) => {
     try {
       await apiClient.patch(`/admin/users/${userId}/role`, { role: newRole });
@@ -96,7 +92,7 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* TABLE */}
+      {/* MODERN TABLE */}
       <div className="table-wrapper">
         <table className="admin-table">
           <thead>
@@ -104,18 +100,19 @@ const AdminUsers = () => {
               <th>Người Dùng</th>
               <th>Phân Quyền</th>
               <th>Trạng Thái</th>
-              <th>AI Quota</th>
+              {/* Đã xóa cột AI Quota */}
               <th>Hành Động</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="5" style={{textAlign: 'center'}}>Đang tải dữ liệu...</td></tr>
+              <tr><td colSpan="4" style={{textAlign: 'center', padding: '40px 0'}}>Đang đồng bộ dữ liệu...</td></tr>
             ) : users.length === 0 ? (
-              <tr><td colSpan="5" style={{textAlign: 'center'}}>Không tìm thấy kết quả phù hợp.</td></tr>
+              <tr><td colSpan="4" style={{textAlign: 'center', padding: '40px 0'}}>Không tìm thấy kết quả phù hợp.</td></tr>
             ) : (
               users.map(u => (
                 <tr key={u.id}>
+                  {/* Cột 1: Thông tin người dùng */}
                   <td>
                     <div className="td-user-info">
                       <div className="user-avatar-mini">{getInitials(u.full_name)}</div>
@@ -125,40 +122,49 @@ const AdminUsers = () => {
                       </div>
                     </div>
                   </td>
+                  
+                  {/* Cột 2: Phân quyền */}
                   <td>
                     <span className={`badge role-${u.role?.toLowerCase()}`}>
                       {u.role}
                     </span>
                   </td>
+                  
+                  {/* Cột 3: Trạng thái */}
                   <td>
                     <span className={`badge status-${u.status?.toLowerCase()}`}>
-                      {u.status}
+                      {u.status === 'ACTIVE' ? 'Hoạt động' : u.status === 'BANNED' ? 'Bị khóa' : 'Chưa xác thực'}
                     </span>
                   </td>
-                  <td>
-                    <strong>{u.ai_quota}</strong> <span style={{color: 'var(--text-muted)', fontSize: '12px'}}>lượt</span>
-                  </td>
+                  
+                  {/* Cột 4: Hành động */}
                   <td>
                     <div className="td-actions">
-                      {/* Đổi Role: Chỉ cho phép đổi lên PREMIUM hoặc ADMIN */}
-                      <select 
-                        className="select-role" 
-                        value={u.role} 
-                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        disabled={u.role === 'SUPER_ADMIN'} // Không được đụng vào Sếp tổng
-                      >
-                        <option value="USER">USER</option>
-                        <option value="PREMIUM">PREMIUM</option>
-                        <option value="ADMIN">ADMIN</option>
-                      </select>
+                      {/* Dropdown Đổi Role cực mượt */}
+                      <div className="select-role-wrapper">
+                        <select 
+                          className="select-role" 
+                          value={u.role} 
+                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                          disabled={u.role === 'SUPER_ADMIN'}
+                        >
+                          <option value="USER">Học viên</option>
+                          <option value="PREMIUM">Premium</option>
+                          <option value="ADMIN">Quản trị viên</option>
+                        </select>
+                        <span className="material-symbols-outlined">expand_more</span>
+                      </div>
 
-                      {/* Nút Ban/Unban */}
+                      {/* Nút Ban/Unban sang trọng có Icon */}
                       {u.role !== 'SUPER_ADMIN' && (
                         <button 
-                          className={u.status === 'BANNED' ? 'btn-action-unban' : 'btn-action-ban'}
+                          className={`btn-action ${u.status === 'BANNED' ? 'unban' : 'ban'}`}
                           onClick={() => toggleUserStatus(u.id, u.status)}
                         >
-                          {u.status === 'BANNED' ? 'Mở Khóa' : 'Khóa'}
+                          <span className="material-symbols-outlined">
+                            {u.status === 'BANNED' ? 'lock_open' : 'lock'}
+                          </span>
+                          {u.status === 'BANNED' ? 'Mở Khóa' : 'Khóa User'}
                         </button>
                       )}
                     </div>
@@ -173,7 +179,7 @@ const AdminUsers = () => {
         {!loading && users.length > 0 && (
           <div className="pagination-controls">
             <div className="pagination-info">
-              Hiển thị trang {pagination.page} / {pagination.totalPages} (Tổng: {pagination.total} user)
+              Trang {pagination.page} / {pagination.totalPages} • Tổng cộng {pagination.total} người dùng
             </div>
             <div className="pagination-buttons">
               <button 
@@ -181,14 +187,14 @@ const AdminUsers = () => {
                 disabled={pagination.page === 1}
                 onClick={() => fetchUsers(pagination.page - 1)}
               >
-                Trước
+                <span className="material-symbols-outlined" style={{fontSize: '16px'}}>chevron_left</span> Trước
               </button>
               <button 
                 className="btn-page" 
                 disabled={pagination.page === pagination.totalPages}
                 onClick={() => fetchUsers(pagination.page + 1)}
               >
-                Sau
+                Sau <span className="material-symbols-outlined" style={{fontSize: '16px'}}>chevron_right</span>
               </button>
             </div>
           </div>

@@ -4,67 +4,94 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  animation: slideUp 0.3s ease;
+  animation: slideUp 0.4s ease-out;
 }
 
-/* Thanh công cụ (Search & Filter) */
+/* =========================================
+   1. THANH CÔNG CỤ (TOOLBAR)
+   ========================================= */
 .users-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--surface);
-  padding: 16px 24px;
+  background: rgba(26, 26, 58, 0.6); /* Kính mờ */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 20px 24px;
   border-radius: 16px;
   border: 1px solid var(--border-subtle);
   gap: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .toolbar-search {
   position: relative;
-  width: 320px;
+  width: 380px;
 }
 
 .toolbar-search .search-icon {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
+  font-size: 20px;
+  pointer-events: none;
 }
 
 .toolbar-search input {
   width: 100%;
-  background-color: var(--bg-main);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--sidebar);
+  border: 1px solid transparent;
   color: var(--text-main);
-  padding: 10px 16px 10px 42px;
-  border-radius: 8px;
+  padding: 12px 16px 12px 48px;
+  border-radius: 12px;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .toolbar-search input:focus {
+  background-color: var(--surface);
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-dim);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
 .toolbar-filters select {
-  background-color: var(--bg-main);
+  background-color: var(--sidebar);
   color: var(--text-main);
-  border: 1px solid var(--border-subtle);
-  padding: 10px 16px;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 12px 20px;
+  border-radius: 12px;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   outline: none;
+  transition: all 0.3s ease;
+  appearance: none; /* Ẩn style mặc định của trình duyệt */
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237B7BAA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
 }
 
-/* Bảng dữ liệu (Table) */
-.table-wrapper {
+.toolbar-filters select:hover, .toolbar-filters select:focus {
+  border-color: var(--accent);
   background-color: var(--surface);
+}
+
+/* =========================================
+   2. BẢNG DỮ LIỆU HIỆN ĐẠI (MODERN TABLE)
+   ========================================= */
+.table-wrapper {
+  background: rgba(26, 26, 58, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .admin-table {
@@ -74,141 +101,198 @@
 }
 
 .admin-table th {
-  padding: 16px 24px;
-  font-size: 13px;
+  padding: 20px 24px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   border-bottom: 1px solid var(--border-subtle);
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(10, 9, 45, 0.6); /* Tối hơn 1 chút để nổi Header */
 }
 
 .admin-table td {
   padding: 16px 24px;
   font-size: 14px;
   color: var(--text-main);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   vertical-align: middle;
 }
 
-.admin-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+.admin-table tbody tr {
+  transition: all 0.2s ease;
 }
 
-/* Thông tin User (Cột đầu tiên) */
+.admin-table tbody tr:hover {
+  background-color: rgba(79, 70, 255, 0.06); /* Đổi nền khi lướt chuột */
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* THÔNG TIN USER (Avatar + Tên) */
 .td-user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .user-avatar-mini {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-neon));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 16px;
   color: white;
+  box-shadow: 0 4px 12px var(--accent-dim);
 }
 
 .user-name-block {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .user-fullname {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .user-email-text {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
-/* Badges (Nhãn trạng thái và chức vụ) */
+/* =========================================
+   3. NHÃN (BADGES) PHÁT SÁNG NHẸ
+   ========================================= */
 .badge {
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
-  display: inline-block;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.5px;
 }
 
-/* Role Badges */
-.badge.role-user { background-color: rgba(123, 123, 170, 0.15); color: var(--text-muted); }
-.badge.role-premium { background-color: rgba(255, 209, 91, 0.15); color: var(--premium-gold); }
-.badge.role-admin { background-color: var(--accent-dim); color: var(--accent); }
-.badge.role-super_admin { background-color: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid var(--error-border); }
+/* Roles */
+.badge.role-user { background: rgba(123, 123, 170, 0.1); color: var(--text-muted); border: 1px solid rgba(123, 123, 170, 0.2); }
+.badge.role-premium { background: rgba(255, 209, 91, 0.1); color: var(--premium-gold); border: 1px solid rgba(255, 209, 91, 0.3); }
+.badge.role-admin { background: var(--accent-dim); color: #8C85FF; border: 1px solid rgba(79, 70, 255, 0.3); }
+.badge.role-super_admin { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid var(--error-border); box-shadow: 0 0 12px rgba(239, 68, 68, 0.2); }
 
-/* Status Badges */
-.badge.status-active { background-color: var(--success-bg); color: var(--success); }
-.badge.status-banned { background-color: var(--error-bg); color: var(--error); }
-.badge.status-unverified { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); }
+/* Status */
+.badge.status-active { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge.status-banned { background: var(--error-bg); color: var(--error); border: 1px solid var(--error-border); }
+.badge.status-unverified { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
 
-/* Cột Actions */
+/* =========================================
+   4. CÁC NÚT HÀNH ĐỘNG (ACTIONS)
+   ========================================= */
 .td-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* Select đổi Role mượt mà */
-.select-role {
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  border: 1px solid var(--border-subtle);
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  outline: none;
-  cursor: pointer;
+/* Dropdown Role */
+.select-role-wrapper {
+  position: relative;
 }
-.select-role:focus { border-color: var(--accent); }
 
-/* Nút Cấm/Mở Khóa */
-.btn-action-ban {
+.select-role-wrapper .material-symbols-outlined {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.select-role {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--sidebar);
+  color: var(--text-main);
+  border: 1px solid transparent;
+  padding: 8px 36px 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.select-role:hover:not(:disabled), .select-role:focus {
+  background-color: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.select-role:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Nút Ban/Unban */
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: transparent;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action .material-symbols-outlined { font-size: 18px; }
+
+.btn-action.ban {
   border: 1px solid var(--error-border);
   color: var(--error);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
 }
-.btn-action-ban:hover { background-color: var(--error); color: white; }
+.btn-action.ban:hover {
+  background: var(--error);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
 
-.btn-action-unban {
-  background: transparent;
+.btn-action.unban {
   border: 1px solid var(--success-border);
   color: var(--success);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
 }
-.btn-action-unban:hover { background-color: var(--success); color: white; }
+.btn-action.unban:hover {
+  background: var(--success);
+  color: white;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
 
-/* Phân trang (Pagination) */
+/* =========================================
+   5. PHÂN TRANG (PAGINATION)
+   ========================================= */
 .pagination-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
   border-top: 1px solid var(--border-subtle);
+  background: rgba(10, 9, 45, 0.4);
 }
 
 .pagination-info {
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
@@ -218,13 +302,27 @@
 }
 
 .btn-page {
-  background-color: var(--bg-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-main);
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
-.btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-page:not(:disabled):hover { background-color: var(--accent); border-color: var(--accent); }
+
+.btn-page:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-page:not(:disabled):hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
