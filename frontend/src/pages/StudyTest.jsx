@@ -163,9 +163,14 @@ const StudyTest = () => {
 
         const payload = {
           num_questions: 10,
-          force_new: Boolean(forceNew),
         };
 
+        // Chỉ gửi force_new khi thật sự bấm "Làm lại"
+        if (forceNew) {
+          payload.force_new = true;
+        }
+
+        // Khi bấm "Tiếp tục" thì gửi resume_attempt_id nếu có
         if (!forceNew && resumeAttemptId) {
           payload.resume_attempt_id = resumeAttemptId;
         }
