@@ -8,7 +8,7 @@ const AppError = require('../utils/appError');
  // requestType: 'captureWallet',
 const createMoMoPayment = async (userId) => {
   const orderId = `EDTECH_${Date.now()}_${userId}`;
-  const amount = 50000;
+  const amount = 49000;
   const orderInfo = 'Nang cap tai khoan Premium 1 Thang';
   const requestId = orderId;
   const extraData = '';
