@@ -5,7 +5,8 @@ const StudyModel = require("../models/study.model");
 const AppError = require("../utils/appError");
 const db = require("../config/database");
 
-const TEST_TIME_LIMIT_MS = 16 * 60 * 1000; // 15 phút + 1 phút buffer bù trừ mạng
+const TEST_TIME_LIMIT_SECONDS = 16 * 60; // 15 phút + 1 phút buffer
+const TEST_TIME_LIMIT_MS = TEST_TIME_LIMIT_SECONDS * 1000; // giữ lại nếu chỗ khác còn cần dùng
 
 // Helper: kiểm tra nếu không phải admin/super admin thì mới kiểm tra quota
 const checkQuota = (user) => {
@@ -21,30 +22,35 @@ const checkQuota = (user) => {
 };
 
 // ===================================
-// CHẾ ĐỘ PRACTICE (ÔN TẬP NHANH)
+// CHẾ ĐỘ PRACTICE - ÔN TẬP NHANH
 // ===================================
-const generatePractice = async (user, setId, numQuestions) => {
+const generatePractice = async (user, setId, numQuestions = 10) => {
   checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
-  if (flashcards.length === 0)
+
+  if (!flashcards || flashcards.length === 0) {
     throw new AppError(
       400,
       "Bộ thẻ này chưa có từ vựng nào để học.",
       "EMPTY_SET",
     );
+  }
 
   try {
     const questions = await GeminiService.generateQuestions(
       flashcards,
-      numQuestions,
+      Number(numQuestions) || 10,
     );
+
     if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
       await UserModel.decrementAiQuota(user.id);
     }
+
     return { questions };
   } catch (error) {
     if (error.statusCode === 429) throw error;
+
     throw new AppError(
       500,
       "Không thể sinh câu hỏi do lỗi AI, vui lòng thử lại.",
@@ -54,9 +60,9 @@ const generatePractice = async (user, setId, numQuestions) => {
 };
 
 // ===================================
-// CHẾ ĐỘ TEST (THI THỬ - CÓ LƯU ĐIỂM)
+// CHẾ ĐỘ TEST - THI THỬ CÓ LƯU ĐIỂM
 // ===================================
-const createTest = async (user, setId, numQuestions, options = {}) => {
+const createTest = async (user, setId, numQuestions = 10, options = {}) => {
   const { resume_attempt_id = null, force_new = false } =
     typeof options === "object" && options !== null
       ? options
@@ -112,7 +118,7 @@ const createTest = async (user, setId, numQuestions, options = {}) => {
       const inProgress = attempts[0];
       const remainingSeconds = Number(inProgress.remaining_seconds);
 
-      // Nếu bài thật sự đã hết giờ thì nộp bài cũ rồi cho tạo bài mới
+      // Nếu bài thật sự hết giờ thì nộp bài cũ rồi mới cho tạo bài mới
       if (remainingSeconds <= 0) {
         await submitTest(user.id, inProgress.id);
       } else {
@@ -132,12 +138,15 @@ const createTest = async (user, setId, numQuestions, options = {}) => {
     }
   }
 
-  // 2. Chỉ tới đây khi không có bài dở, bài cũ thật sự hết giờ, hoặc user bấm "Làm lại"
+  // 2. Chỉ tạo bài mới khi:
+  // - Không có bài đang dở
+  // - Hoặc bài cũ thật sự hết giờ
+  // - Hoặc user bấm "Làm lại" với force_new = true
   checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
 
-  if (flashcards.length === 0) {
+  if (!flashcards || flashcards.length === 0) {
     throw new AppError(400, "Bộ thẻ trống.", "EMPTY_SET");
   }
 
@@ -149,12 +158,12 @@ const createTest = async (user, setId, numQuestions, options = {}) => {
       finalNumQuestions,
     );
 
+    if (questionsData && questionsData.questions) {
+      questionsData = questionsData.questions;
+    }
+
     if (!questionsData || questionsData.length === 0) {
-      if (questionsData && questionsData.questions) {
-        questionsData = questionsData.questions;
-      } else {
-        throw new AppError(500, "Lỗi tạo câu hỏi.", "AI_GENERATE_FAILED");
-      }
+      throw new AppError(500, "Lỗi tạo câu hỏi.", "AI_GENERATE_FAILED");
     }
 
     if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
@@ -187,9 +196,44 @@ const createTest = async (user, setId, numQuestions, options = {}) => {
 // ===================================
 // LƯU NHÁP VÀ NỘP BÀI
 // ===================================
-const saveProgress = async (userId, attemptId, answers) => {
+const saveProgress = async (userId, attemptId, answers = []) => {
+  if (!Array.isArray(answers)) {
+    throw new AppError(
+      400,
+      "Danh sách câu trả lời không hợp lệ.",
+      "INVALID_ANSWERS",
+    );
+  }
+
+  const [attemptRows] = await db.execute(
+    `SELECT id
+     FROM test_attempts
+     WHERE id = ?
+       AND user_id = ?
+       AND status = 'IN_PROGRESS'
+     LIMIT 1`,
+    [attemptId, userId],
+  );
+
+  if (attemptRows.length === 0) {
+    throw new AppError(
+      404,
+      "Không tìm thấy bài test đang làm hoặc bài đã kết thúc.",
+      "TEST_ATTEMPT_NOT_FOUND",
+    );
+  }
+
+  const validAnswers = answers.filter(
+    (ans) =>
+      ans &&
+      ans.question_id !== undefined &&
+      ans.question_id !== null &&
+      ans.selected_option_id !== undefined &&
+      ans.selected_option_id !== null,
+  );
+
   await Promise.all(
-    answers.map((ans) =>
+    validAnswers.map((ans) =>
       StudyModel.saveTestAnswer(
         attemptId,
         ans.question_id,
@@ -197,16 +241,36 @@ const saveProgress = async (userId, attemptId, answers) => {
       ),
     ),
   );
+
   await StudyModel.updateLastSaved(attemptId);
+
+  return {
+    saved_count: validAnswers.length,
+  };
 };
 
 const submitTest = async (userId, attemptId) => {
+  const [attemptRows] = await db.execute(
+    `SELECT id, status
+     FROM test_attempts
+     WHERE id = ?
+       AND user_id = ?
+     LIMIT 1`,
+    [attemptId, userId],
+  );
+
+  if (attemptRows.length === 0) {
+    throw new AppError(404, "Không tìm thấy bài test này.", "TEST_NOT_FOUND");
+  }
+
+  // Nếu đã completed rồi thì vẫn lấy kết quả hiện tại, tránh lỗi submit lặp
   const questions = await StudyModel.getQuestionsForGrading(attemptId);
+
   if (!questions.length) {
     throw new AppError(
       404,
-      "Không tìm thấy câu hỏi cho bài test này",
-      "TEST_NOT_FOUND",
+      "Không tìm thấy câu hỏi cho bài test này.",
+      "TEST_QUESTIONS_NOT_FOUND",
     );
   }
 
@@ -215,6 +279,7 @@ const submitTest = async (userId, attemptId) => {
 
   for (const q of questions) {
     const isCorrect = q.selected_option_id === q.correct_option_id;
+
     if (isCorrect) correctCount++;
 
     results.push({
@@ -223,6 +288,7 @@ const submitTest = async (userId, attemptId) => {
       correct_option_id: q.correct_option_id,
       is_correct: isCorrect,
       explanation: q.explanation,
+      content: q.content,
     });
   }
 
@@ -231,6 +297,7 @@ const submitTest = async (userId, attemptId) => {
   const scoreFixed = parseFloat(score.toFixed(2));
 
   await StudyModel.updateTestScore(attemptId, correctCount, scoreFixed);
+
   return {
     score: scoreFixed,
     correct_count: correctCount,
@@ -245,12 +312,17 @@ const getHistory = async (userId, setId) => {
 
 const deleteTestAttempt = async (userId, attemptId) => {
   const [attempt] = await db.execute(
-    `SELECT id FROM test_attempts WHERE id = ? AND user_id = ?`,
+    `SELECT id
+     FROM test_attempts
+     WHERE id = ?
+       AND user_id = ?`,
     [attemptId, userId],
   );
+
   if (attempt.length === 0) {
     throw new AppError(404, "Không tìm thấy bài test", "NOT_FOUND");
   }
+
   await db.execute(`DELETE FROM test_attempts WHERE id = ?`, [attemptId]);
 };
 
@@ -259,14 +331,16 @@ const deleteTestAttempt = async (userId, attemptId) => {
 // ===================================
 const getTestDetail = async (userId, attemptId) => {
   const attemptInfo = await StudyModel.getAttemptById(userId, attemptId);
-  if (!attemptInfo)
+
+  if (!attemptInfo) {
     throw new AppError(404, "Không tìm thấy bài test", "NOT_FOUND");
+  }
 
   const questions = await StudyModel.getTestReviewDetail(attemptId);
 
   return {
     ...attemptInfo,
-    questions: questions,
+    questions,
   };
 };
 
@@ -278,6 +352,7 @@ const chatWithAI = async (
   currentQuestion,
 ) => {
   checkQuota(user);
+
   if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
     await UserModel.decrementAiQuota(user.id);
   }
@@ -287,7 +362,11 @@ const chatWithAI = async (
     chatHistory,
     currentQuestion,
   );
-  return { reply: reply, remaining_quota: Math.max(0, user.ai_quota - 1) };
+
+  return {
+    reply,
+    remaining_quota: Math.max(0, user.ai_quota - 1),
+  };
 };
 
 module.exports = {
