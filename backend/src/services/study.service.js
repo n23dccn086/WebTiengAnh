@@ -56,83 +56,107 @@ const generatePractice = async (user, setId, numQuestions) => {
 // ===================================
 // CHẾ ĐỘ TEST (THI THỬ - CÓ LƯU ĐIỂM)
 // ===================================
-const createTest = async (
-  user,
-  setId,
-  numQuestions,
-  resumeAttemptId = null,
-) => {
-  // 1. Check bài thi cũ
-  let inProgress = null;
+const createTest = async (user, setId, numQuestions, options = {}) => {
+  const { resume_attempt_id = null, force_new = false } =
+    typeof options === "object" && options !== null
+      ? options
+      : { resume_attempt_id: options, force_new: false };
 
-  if (resumeAttemptId) {
-    const [attempt] = await db.execute(
-      `SELECT id, started_at FROM test_attempts WHERE id = ? AND user_id = ? AND status = 'IN_PROGRESS'`,
-      [resumeAttemptId, user.id],
-    );
-    if (attempt.length > 0) inProgress = attempt[0];
-  } else {
-    inProgress = await StudyModel.getInProgressAttempt(user.id, setId);
-  }
+  const finalNumQuestions = Number(numQuestions) || 10;
 
-  if (inProgress) {
-    const startTime = new Date(inProgress.started_at).getTime();
-    const timeElapsed = Date.now() - startTime;
-    const remainingSeconds = Math.max(
-      0,
-      Math.floor((TEST_TIME_LIMIT_MS - timeElapsed) / 1000),
-    );
-    // KHẮC PHỤC LỖ HỔNG: Nếu lố 16 phút, tự động nộp bài cũ
-    if (timeElapsed > TEST_TIME_LIMIT_MS) {
-      await submitTest(user.id, inProgress.id);
-      // Tiếp tục luồng bên dưới để tạo bài mới
-    } else {
-      // Trả về bài dở
-      if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
-        if (user.ai_quota <= 0)
-          throw new AppError(
-            429,
-            "Bạn đã hết lượt sử dụng AI hôm nay, không thể tiếp tục bài thi cũ.",
-            "QUOTA_AI_EXCEEDED",
-          );
+  // 1. Nếu không phải "Làm lại", ưu tiên mở bài đang dở
+  if (!force_new) {
+    let inProgress = null;
+
+    if (resume_attempt_id) {
+      const [attempts] = await db.execute(
+        `SELECT id, started_at
+         FROM test_attempts
+         WHERE id = ?
+           AND user_id = ?
+           AND set_id = ?
+           AND status = 'IN_PROGRESS'
+         LIMIT 1`,
+        [resume_attempt_id, user.id, setId],
+      );
+
+      if (attempts.length > 0) {
+        inProgress = attempts[0];
       }
+    } else {
+      const [attempts] = await db.execute(
+        `SELECT id, started_at
+         FROM test_attempts
+         WHERE user_id = ?
+           AND set_id = ?
+           AND status = 'IN_PROGRESS'
+         ORDER BY id DESC
+         LIMIT 1`,
+        [user.id, setId],
+      );
+
+      if (attempts.length > 0) {
+        inProgress = attempts[0];
+      }
+    }
+
+    if (inProgress) {
       const questions = await StudyModel.getTestQuestionsWithOptions(
         inProgress.id,
       );
+
+      const startTime = new Date(inProgress.started_at).getTime();
+      const timeElapsed = Number.isNaN(startTime) ? 0 : Date.now() - startTime;
+
+      const remainingSeconds = Math.max(
+        0,
+        Math.floor((TEST_TIME_LIMIT_MS - timeElapsed) / 1000),
+      );
+
       return {
+        is_resume: true,
         attempt_id: inProgress.id,
         message: "Tiếp tục bài thi đang dang dở",
         started_at: inProgress.started_at,
-        questions: questions,
+        questions,
         remaining_seconds: remainingSeconds,
       };
     }
   }
 
-  // 2. Tạo bài mới
+  // 2. Chỉ tới đây khi không có bài dở hoặc user bấm "Làm lại"
   checkQuota(user);
 
   const flashcards = await FlashcardModel.getFlashcardsBySet(setId);
-  if (flashcards.length === 0)
+
+  if (flashcards.length === 0) {
     throw new AppError(400, "Bộ thẻ trống.", "EMPTY_SET");
+  }
 
   let questionsData;
+
   try {
     questionsData = await GeminiService.generateQuestions(
       flashcards,
-      numQuestions,
+      finalNumQuestions,
     );
+
     if (!questionsData || questionsData.length === 0) {
-      if (questionsData && questionsData.questions)
+      if (questionsData && questionsData.questions) {
         questionsData = questionsData.questions;
-      else throw new AppError(500, "Lỗi tạo câu hỏi.", "AI_GENERATE_FAILED");
+      } else {
+        throw new AppError(500, "Lỗi tạo câu hỏi.", "AI_GENERATE_FAILED");
+      }
     }
 
     if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
       await UserModel.decrementAiQuota(user.id);
     }
   } catch (error) {
-    if (error.statusCode === 429) throw error;
+    if (error.statusCode === 429) {
+      throw error;
+    }
+
     throw new AppError(
       500,
       "AI không sinh được câu hỏi. Vui lòng thử lại.",
@@ -142,7 +166,9 @@ const createTest = async (
 
   const { attemptId, frontendQuestions } =
     await StudyModel.saveFullTestTransaction(user.id, setId, questionsData);
+
   return {
+    is_resume: false,
     attempt_id: attemptId,
     message: "Tạo bài thi mới thành công",
     questions: frontendQuestions,

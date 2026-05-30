@@ -1,27 +1,43 @@
-const StudyService = require('../services/study.service');
-const catchAsync = require('../utils/catchAsync');
-const { successResponse } = require('../utils/response.helper');
+const StudyService = require("../services/study.service");
+const catchAsync = require("../utils/catchAsync");
+const { successResponse } = require("../utils/response.helper");
 
 const generatePractice = catchAsync(async (req, res) => {
   const setId = parseInt(req.params.setId, 10);
   const { num_questions } = req.body;
-  const data = await StudyService.generatePractice(req.user, setId, num_questions);
+  const data = await StudyService.generatePractice(
+    req.user,
+    setId,
+    num_questions,
+  );
   return successResponse(res, "Sinh câu hỏi ôn tập thành công", data);
 });
 
 const createTest = catchAsync(async (req, res) => {
   const setId = parseInt(req.params.setId, 10);
-  // Giữ lại resume_attempt_id từ nhánh HEAD để hỗ trợ tính năng làm tiếp bài cũ
-  const { num_questions, resume_attempt_id } = req.body;
-  const data = await StudyService.createTest(req.user, setId, num_questions, resume_attempt_id);
-  
-  return res.status(201).json({
+
+  const {
+    num_questions = 10,
+    resume_attempt_id = null,
+    force_new = false,
+  } = req.body || {};
+
+  const data = await StudyService.createTest(
+    req.user,
+    setId,
+    Number(num_questions),
+    {
+      resume_attempt_id,
+      force_new,
+    },
+  );
+
+  return res.status(data.is_resume ? 200 : 201).json({
     status: "success",
     message: data.message || "Tạo bài kiểm tra thành công",
-    data: data
+    data,
   });
 });
-
 const autoSaveProgress = catchAsync(async (req, res) => {
   const attemptId = parseInt(req.params.attemptId, 10);
   const { answers } = req.body;
@@ -52,10 +68,17 @@ const getTestDetail = catchAsync(async (req, res) => {
 const chatWithAI = catchAsync(async (req, res) => {
   const setId = parseInt(req.params.setId, 10);
   const { message, chat_history, current_question } = req.body;
-  
-  if (!message) return res.status(400).json({ status: 'fail', message: 'Trống tin nhắn.' });
 
-  const data = await StudyService.chatWithAI(req.user, setId, message, chat_history, current_question);
+  if (!message)
+    return res.status(400).json({ status: "fail", message: "Trống tin nhắn." });
+
+  const data = await StudyService.chatWithAI(
+    req.user,
+    setId,
+    message,
+    chat_history,
+    current_question,
+  );
   return successResponse(res, "Chat thành công", data);
 });
 
@@ -75,5 +98,5 @@ module.exports = {
   getHistory,
   getTestDetail,
   chatWithAI,
-  deleteTestAttempt
+  deleteTestAttempt,
 };
