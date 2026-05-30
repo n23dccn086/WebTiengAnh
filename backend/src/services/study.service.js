@@ -6,7 +6,6 @@ const AppError = require("../utils/appError");
 const db = require("../config/database");
 
 const TEST_TIME_LIMIT_SECONDS = 16 * 60; // 15 phút + 1 phút buffer
-const TEST_TIME_LIMIT_MS = TEST_TIME_LIMIT_SECONDS * 1000; // giữ lại nếu chỗ khác còn cần dùng
 
 // Helper: kiểm tra nếu không phải admin/super admin thì mới kiểm tra quota
 const checkQuota = (user) => {
@@ -263,7 +262,6 @@ const submitTest = async (userId, attemptId) => {
     throw new AppError(404, "Không tìm thấy bài test này.", "TEST_NOT_FOUND");
   }
 
-  // Nếu đã completed rồi thì vẫn lấy kết quả hiện tại, tránh lỗi submit lặp
   const questions = await StudyModel.getQuestionsForGrading(attemptId);
 
   if (!questions.length) {
@@ -306,7 +304,48 @@ const submitTest = async (userId, attemptId) => {
   };
 };
 
+// ===================================
+// TỰ ĐỘNG NỘP BÀI QUÁ GIỜ
+// ===================================
+const expireOverdueAttempts = async (userId, setId = null) => {
+  const params = [userId, TEST_TIME_LIMIT_SECONDS];
+
+  let setCondition = "";
+
+  if (setId !== null && setId !== undefined) {
+    setCondition = "AND set_id = ?";
+    params.push(setId);
+  }
+
+  const [attempts] = await db.execute(
+    `SELECT id
+     FROM test_attempts
+     WHERE user_id = ?
+       AND status = 'IN_PROGRESS'
+       AND TIMESTAMPDIFF(SECOND, started_at, NOW()) >= ?
+       ${setCondition}
+     ORDER BY id ASC`,
+    params,
+  );
+
+  for (const attempt of attempts) {
+    try {
+      await submitTest(userId, attempt.id);
+    } catch (error) {
+      console.error(
+        `Không thể tự động nộp bài quá hạn attempt_id=${attempt.id}:`,
+        error.message,
+      );
+    }
+  }
+
+  return {
+    expired_count: attempts.length,
+  };
+};
+
 const getHistory = async (userId, setId) => {
+  await expireOverdueAttempts(userId, setId);
   return await StudyModel.getTestHistory(userId, setId);
 };
 
@@ -330,6 +369,8 @@ const deleteTestAttempt = async (userId, attemptId) => {
 // REVIEW TEST & AI CHAT
 // ===================================
 const getTestDetail = async (userId, attemptId) => {
+  await expireOverdueAttempts(userId);
+
   const attemptInfo = await StudyModel.getAttemptById(userId, attemptId);
 
   if (!attemptInfo) {
