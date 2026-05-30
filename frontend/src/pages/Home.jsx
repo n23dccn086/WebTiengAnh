@@ -28,7 +28,7 @@ const Home = () => {
   // Tự động điền email nếu đã đăng nhập
   useEffect(() => {
     if (isAuthenticated && user?.email) {
-      setContactForm(prev => ({ ...prev, email: user.email }));
+      setContactForm((prev) => ({ ...prev, email: user.email }));
     }
   }, [isAuthenticated, user]);
 
@@ -140,11 +140,12 @@ const Home = () => {
 
       <section className={styles.hero}>
         <h1>
-          Chinh phục tiếng Anh <br /> với <span>EngVocab</span>
+          Bứt phá tiếng Anh <br /> mỗi ngày cùng <span>EngVocab</span>
         </h1>
         <p>
-          Học từ vựng thông minh bằng Flashcard SRS, kiểm tra trình độ qua quiz,
-          và sử dụng AI để tạo tài liệu cá nhân hóa.
+          Học từ vựng thông minh với Flashcard SRS, luyện quiz theo trình độ và
+          để AI giúp bạn tạo lộ trình học cá nhân hóa. Bắt đầu ngay hôm nay để
+          nhớ lâu hơn, học chủ động hơn và tiến bộ rõ ràng hơn.
         </p>
         <div className={styles.heroButtons}>
           {!isAuthenticated ? (
@@ -245,8 +246,12 @@ const Home = () => {
             }
             required
           />
-          {contactError && <div className={styles.contactError}>{contactError}</div>}
-          {contactMessage && <div className={styles.contactMessage}>{contactMessage}</div>}
+          {contactError && (
+            <div className={styles.contactError}>{contactError}</div>
+          )}
+          {contactMessage && (
+            <div className={styles.contactMessage}>{contactMessage}</div>
+          )}
           <button type="submit" disabled={contactLoading}>
             {contactLoading ? "Đang gửi..." : "Gửi tin nhắn"}
           </button>
