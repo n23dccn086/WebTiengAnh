@@ -15,7 +15,6 @@ const PremiumDashboard = () => {
   const fetchStats = async () => {
     try {
       const res = await apiClient.get('/statistics/dashboard');
-      console.log('📊 API response (full):', res.data.data);
       setStats(res.data.data);
     } catch (err) {
       console.error(err);
@@ -28,9 +27,6 @@ const PremiumDashboard = () => {
   if (loading) return <div className={styles.container}>Đang tải dữ liệu...</div>;
   if (error) return <div className={styles.container}>{error}</div>;
   if (!stats) return <div className={styles.container}>Không có dữ liệu</div>;
-
-  // Kiểm tra mảng progress_chart
-  console.log('progress_chart:', stats.progress_chart);
 
   return (
     <div className={styles.container}>
@@ -52,20 +48,27 @@ const PremiumDashboard = () => {
       </div>
 
       <div className={styles.section}>
-        <h3>📈 Tiến độ tuần qua</h3>
+        <h3>📈 Tiến độ 7 ngày qua</h3>
         <div className={styles.chart}>
           {stats.progress_chart && stats.progress_chart.length > 0 ? (
             stats.progress_chart.map(day => (
               <div key={day.date} className={styles.barWrapper}>
-                <div className={styles.bar} style={{ height: `${Math.min(day.reviewed * 5, 100)}px` }}></div>
+                <div 
+                  className={styles.bar} 
+                  style={{ 
+                    height: `${Math.min(day.reviewed * 8, 100)}px`,
+                    backgroundColor: day.reviewed > 0 ? '#ffd966' : '#334155'
+                  }}
+                ></div>
                 <span>{new Date(day.date).getDate()}</span>
-                <small>{day.reviewed}</small>
+                <small>{day.reviewed}</small>  {/* day.reviewed là số nguyên */}
               </div>
             ))
           ) : (
             <p>Chưa có dữ liệu học tập</p>
           )}
         </div>
+        <p className={styles.note}>* Mỗi cột tương ứng số từ đã ôn trong ngày</p>
       </div>
 
       <div className={styles.section}>
@@ -75,7 +78,7 @@ const PremiumDashboard = () => {
             <li key={word.word}>
               <strong>{word.word}</strong> – {word.meaning}
               <span className={styles.difficulty}>
-                Độ khó: {word.ease_factor ? parseFloat(word.ease_factor).toFixed(2) : '—'}
+                Độ khó: {word.ease_factor}
               </span>
             </li>
           ))}
