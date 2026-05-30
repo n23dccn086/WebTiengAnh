@@ -39,6 +39,7 @@ const useTestStore = create((set, get) => ({
         }
         set({ answers: updatedAnswers });
     },
+    setAnswers: (answers) => set({ answers }),
     setSavingStatus: (status) => set({ isSaving: status }),
     markSavedSuccess: () => set({
         isSaving: false,

@@ -62,7 +62,7 @@ const deleteFlashcard = async (flashcardId) => {
 const addToUserFlashcards = async (userId, flashcardId) => {
   await db.execute(
     `INSERT INTO user_flashcards (user_id, flashcard_id, next_review_date) 
-     VALUES (?, ?, NOW()) 
+     VALUES (?, ?, UTC_TIMESTAMP()) 
      ON DUPLICATE KEY UPDATE next_review_date = next_review_date`,
     [userId, flashcardId]
   );
