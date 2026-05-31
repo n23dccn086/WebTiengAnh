@@ -24,6 +24,9 @@ import SystemDeckList from "./pages/SystemDeckList";
 import MemberDetail from "./pages/MemberDetail";
 import DictionarySearch from "./components/ui/DictionarySearch";
 import FloatingChat from "./components/ui/FloatingChat";
+import BackgroundMusic from "./components/ui/BackgroundMusic";
+import FontSizeControl from "./components/ui/FontSizeControl";
+import PomodoroTimer from "./components/ui/PomodoroTimer";
 
 // Cụm 2: Premium & Thanh toán
 import PremiumDashboard from "./pages/PremiumDashboard";
@@ -97,6 +100,8 @@ function Navbar() {
             {user?.full_name && (
               <span className="userName">👋 {user.full_name}</span>
             )}
+            <BackgroundMusic />
+            <FontSizeControl />
             <LogoutButton onClick={logout} />
           </>
         ) : (
@@ -374,6 +379,7 @@ function App() {
         </Routes>
       </div>
       <FloatingChat />
+      <PomodoroTimer />
     </BrowserRouter>
   );
 }

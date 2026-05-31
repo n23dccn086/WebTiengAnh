@@ -1,0 +1,136 @@
+/* Giữ nguyên các style cũ (tôi sẽ viết lại toàn bộ để tránh thiếu) */
+.container {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 10px 12px;
+  min-width: 170px;
+  cursor: grab;
+  user-select: none;
+  z-index: 1000;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.container:active {
+  cursor: grabbing;
+}
+.header {
+  font-size: 0.75rem;
+  text-align: center;
+  margin-bottom: 6px;
+  color: #ffd966;
+  font-weight: bold;
+}
+.settings {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.settings label {
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: white;
+}
+.settings input {
+  width: 45px;
+  border-radius: 20px;
+  border: none;
+  padding: 2px 4px;
+  text-align: center;
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.timer {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: #ffd966;
+  font-family: monospace;
+  margin: 4px 0;
+}
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 6px 0 4px;
+}
+.btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+.btn:hover {
+  transform: scale(1.1);
+}
+.mode {
+  font-size: 0.65rem;
+  text-align: center;
+  color: #ccc;
+}
+
+/* Alert modal */
+.alertOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+.alertBox {
+  background: linear-gradient(135deg, #fff0e0, #ffe0b5);
+  border-radius: 32px;
+  padding: 24px 32px;
+  text-align: center;
+  min-width: 280px;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+  border: 2px solid #ffb347;
+  animation: bounce 0.3s ease;
+}
+.alertIcon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+.alertMessage {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #c0392b;
+  margin-bottom: 20px;
+}
+.alertCloseBtn {
+  background: #ff9a3c;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+.alertCloseBtn:hover {
+  background: #e67e22;
+  transform: scale(1.02);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes bounce {
+  0% { transform: scale(0.8); opacity: 0; }
+  80% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}

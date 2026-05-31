@@ -9,8 +9,8 @@ const { sendVerificationEmail, sendResetPasswordEmail } = require('../config/ema
 const generateAccessToken = (user) => {
   return jwt.sign(
     { id: user.id, role: user.role, role_id: user.role_id },
-    process.env.JWT_SECRET, // Xài đúng biến JWT_SECRET trong .env của team
-    { expiresIn: '1h' }     // Vẫn giữ 1 tiếng để đảm bảo an toàn nha
+    process.env.JWT_SECRET, 
+    { expiresIn: '2h' }    
   );
 };
 

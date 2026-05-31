@@ -1,0 +1,28 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 8px;
+  border-radius: 40px;
+}
+.btn {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+.percent {
+  font-size: 0.8rem;
+  min-width: 45px;
+  text-align: center;
+}
