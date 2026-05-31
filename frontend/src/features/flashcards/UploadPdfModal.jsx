@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import apiClient from '../../services/apiClient';
 import ShortWarthogFileInput from '../../components/ui/ShortWarthogFileInput';
 import styles from './UploadPdfModal.module.css';
+import { playUploadSuccess, playUploadError } from '../../utils/sound';
 
 const UploadPdfModal = ({ onClose, onSuccess }) => {
   const [file, setFile] = useState(null);
@@ -14,16 +15,13 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
-
-    // Kiểm tra kích thước file (giới hạn 10MB)
-    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_SIZE = 10 * 1024 * 1024;
     if (selectedFile.size > MAX_SIZE) {
       setError('❌ File quá lớn. Vui lòng chọn file PDF có kích thước dưới 10MB.');
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
-
     if (selectedFile.type !== 'application/pdf') {
       setError('❌ Chỉ chấp nhận file PDF. Vui lòng chọn file có đuôi .pdf');
       setFile(null);
@@ -48,18 +46,17 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
     }
     setLoading(true);
     setError('');
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('title', title);
     if (description.trim()) formData.append('description', description.trim());
-
     try {
       const res = await apiClient.post('/flashcard-sets/pdf-extract', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       if (onSuccess) onSuccess(res.data.data);
       onClose();
+      playUploadSuccess();
     } catch (err) {
       console.error('Upload error:', err);
       let errorMsg = 'Có lỗi xảy ra khi xử lý PDF.';
@@ -71,7 +68,6 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
         } else if (status === 403) {
           errorMsg = data.message || 'Bạn đã đạt giới hạn upload PDF (2 file/tháng) hoặc vượt quá số trang cho phép.';
         } else if (status === 400) {
-          // Kiểm tra message lỗi từ backend (có thể "File too large" từ multer)
           if (data.message && data.message.toLowerCase().includes('file too large')) {
             errorMsg = '❌ File quá lớn. Kích thước tối đa cho phép là 10MB.';
           } else {
@@ -86,6 +82,7 @@ const UploadPdfModal = ({ onClose, onSuccess }) => {
         errorMsg = err.message;
       }
       setError(errorMsg);
+      playUploadError();
     } finally {
       setLoading(false);
     }

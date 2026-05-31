@@ -3,14 +3,15 @@ import { useParams, Link } from "react-router-dom";
 import { getSetDetail } from "../services/flashcardSetApi";
 import styles from "./MemoryMatchGame.module.css";
 import confetti from "canvas-confetti";
+import { playMatch, playError, playWin } from "../utils/sound";
 
 const MAX_PAIRS = 20;
 
 const MemoryMatchGame = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
-  const [wordCards, setWordCards] = useState([]); // { id, word, pairId }
-  const [meaningCards, setMeaningCards] = useState([]); // { id, meaning, pairId }
+  const [wordCards, setWordCards] = useState([]);
+  const [meaningCards, setMeaningCards] = useState([]);
   const [matchedWords, setMatchedWords] = useState([]);
   const [matchedMeanings, setMatchedMeanings] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -28,7 +29,6 @@ const MemoryMatchGame = () => {
     try {
       const data = await getSetDetail(id);
       let flashcards = data.flashcards || [];
-      // Chọn ngẫu nhiên tối đa MAX_PAIRS từ
       let selected = flashcards;
       if (flashcards.length > MAX_PAIRS) {
         const shuffled = [...flashcards];
@@ -38,7 +38,6 @@ const MemoryMatchGame = () => {
         }
         selected = shuffled.slice(0, MAX_PAIRS);
       }
-      // Tạo danh sách thẻ từ và thẻ nghĩa riêng
       const words = selected.map((card, idx) => ({
         id: card.id,
         content: card.word,
@@ -49,7 +48,6 @@ const MemoryMatchGame = () => {
         content: card.meaning,
         pairId: idx,
       }));
-      // Xáo trộn thứ tự các thẻ (để không theo thứ tự cố định)
       for (let i = words.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [words[i], words[j]] = [words[j], words[i]];
@@ -75,16 +73,26 @@ const MemoryMatchGame = () => {
     }
   };
 
+  const resetGame = () => {
+    loadDeck();
+  };
+
+  // Phím tắt R reset
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'r' || e.key === 'R') resetGame();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [resetGame]);
+
   const handleWordClick = (wordCard) => {
     if (gameOver || gameWin) return;
     if (matchedWords.includes(wordCard.id)) return;
-
-    // Nếu đã chọn một nghĩa trước đó, thử ghép
     if (selectedMeaning) {
       checkMatch(wordCard, selectedMeaning);
       setSelectedMeaning(null);
     } else {
-      // Chọn từ mới, bỏ chọn từ cũ (nếu có)
       setSelectedWord(wordCard);
       setSelectedMeaning(null);
     }
@@ -93,7 +101,6 @@ const MemoryMatchGame = () => {
   const handleMeaningClick = (meaningCard) => {
     if (gameOver || gameWin) return;
     if (matchedMeanings.includes(meaningCard.id)) return;
-
     if (selectedWord) {
       checkMatch(selectedWord, meaningCard);
       setSelectedWord(null);
@@ -105,30 +112,26 @@ const MemoryMatchGame = () => {
 
   const checkMatch = (word, meaning) => {
     if (word.pairId === meaning.pairId) {
-      // Ghép đúng
       setMatchedWords([...matchedWords, word.id]);
       setMatchedMeanings([...matchedMeanings, meaning.id]);
       setMessage("✓ Chính xác!");
+      playMatch();
       setTimeout(() => setMessage(""), 800);
-      // Kiểm tra thắng
       if (matchedWords.length + 1 === wordCards.length) {
         setGameWin(true);
+        playWin();
         confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 } });
       }
     } else {
-      // Ghép sai
       const newLives = lives - 1;
       setLives(newLives);
       setMessage(`❌ Sai! Còn ${newLives} mạng.`);
+      playError();
       setTimeout(() => setMessage(""), 1000);
       if (newLives === 0) {
         setGameOver(true);
       }
     }
-  };
-
-  const resetGame = () => {
-    loadDeck();
   };
 
   if (loading) return <div className={styles.loading}>🎮 Đang tải trò chơi...</div>;
@@ -151,37 +154,29 @@ const MemoryMatchGame = () => {
         <div className={styles.column}>
           <h3>Từ vựng</h3>
           <div className={styles.cardGrid}>
-            {wordCards.map((card) => {
-              const isMatched = matchedWords.includes(card.id);
-              const isSelected = selectedWord?.id === card.id;
-              return (
-                <div
-                  key={card.id}
-                  className={`${styles.wordCard} ${isMatched ? styles.matched : ""} ${isSelected ? styles.selected : ""}`}
-                  onClick={() => handleWordClick(card)}
-                >
-                  {card.content}
-                </div>
-              );
-            })}
+            {wordCards.map((card) => (
+              <div
+                key={card.id}
+                className={`${styles.wordCard} ${matchedWords.includes(card.id) ? styles.matched : ""} ${selectedWord?.id === card.id ? styles.selected : ""}`}
+                onClick={() => handleWordClick(card)}
+              >
+                {card.content}
+              </div>
+            ))}
           </div>
         </div>
         <div className={styles.column}>
           <h3>Nghĩa</h3>
           <div className={styles.cardGrid}>
-            {meaningCards.map((card) => {
-              const isMatched = matchedMeanings.includes(card.id);
-              const isSelected = selectedMeaning?.id === card.id;
-              return (
-                <div
-                  key={card.id}
-                  className={`${styles.meaningCard} ${isMatched ? styles.matched : ""} ${isSelected ? styles.selected : ""}`}
-                  onClick={() => handleMeaningClick(card)}
-                >
-                  {card.content}
-                </div>
-              );
-            })}
+            {meaningCards.map((card) => (
+              <div
+                key={card.id}
+                className={`${styles.meaningCard} ${matchedMeanings.includes(card.id) ? styles.matched : ""} ${selectedMeaning?.id === card.id ? styles.selected : ""}`}
+                onClick={() => handleMeaningClick(card)}
+              >
+                {card.content}
+              </div>
+            ))}
           </div>
         </div>
       </div>

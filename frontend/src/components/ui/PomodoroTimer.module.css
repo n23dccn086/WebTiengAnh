@@ -1,7 +1,7 @@
 /* Giữ nguyên các style cũ (tôi sẽ viết lại toàn bộ để tránh thiếu) */
 .container {
   position: fixed;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(26, 1, 23, 0.85);
   backdrop-filter: blur(8px);
   border-radius: 20px;
   padding: 10px 12px;

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { generatePractice } from '../services/studyApi';
+import { playCorrect, playWrong } from '../utils/sound';
 import styles from './StudyPractice.module.css';
 
 const StudyPractice = () => {
@@ -28,12 +29,14 @@ const StudyPractice = () => {
     load();
   }, [id]);
 
-  const handleAnswer = (optionId, isCorrect, explanation) => {
+  const handleAnswer = useCallback((optionId, isCorrect, explanation) => {
     setSelected(optionId);
     setResult({ isCorrect, explanation });
-  };
+    if (isCorrect) playCorrect();
+    else playWrong();
+  }, []);
 
-  const nextQuestion = () => {
+  const nextQuestion = useCallback(() => {
     setSelected(null);
     setResult(null);
     if (currentIndex + 1 < questions.length) {
@@ -42,7 +45,29 @@ const StudyPractice = () => {
       alert('🏆 Hoàn thành practice!');
       window.location.href = `/sets/${id}`;
     }
-  };
+  }, [currentIndex, questions.length, id]);
+
+  const currentQ = questions[currentIndex];
+
+  // Phím tắt
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (selected !== null) {
+        if (e.key === 'Enter' || e.key === 'n' || e.key === 'N') {
+          e.preventDefault();
+          nextQuestion();
+        }
+        return;
+      }
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= currentQ?.options?.length) {
+        const opt = currentQ.options[num-1];
+        handleAnswer(opt.id, opt.is_correct, currentQ.explanation);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selected, currentQ, handleAnswer, nextQuestion]);
 
   if (loading) return <div className={styles.loading}>🧠 AI đang tạo câu hỏi...</div>;
   if (error) {
@@ -69,7 +94,7 @@ const StudyPractice = () => {
         <h3>Câu {currentIndex+1}/{questions.length}</h3>
         <p className={styles.question}>{q.content}</p>
         <div className={styles.options}>
-          {q.options.map((opt) => (
+          {q.options.map((opt, idx) => (
             <button
               key={opt.id}
               className={`${styles.option} ${selected !== null && opt.is_correct ? styles.correct : ''} ${selected === opt.id && !opt.is_correct ? styles.wrong : ''}`}

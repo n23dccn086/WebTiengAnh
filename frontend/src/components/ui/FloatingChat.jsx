@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import apiClient from '../../services/apiClient';
 import useAuthStore from '../../store/authStore';
 import styles from './FloatingChat.module.css';
+import { playNotification } from '../../utils/sound';
 
 const FloatingChat = () => {
   const { isAuthenticated } = useAuthStore();
@@ -15,7 +16,7 @@ const FloatingChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (!isAuthenticated) return null; // chỉ hiện khi đã đăng nhập
+  if (!isAuthenticated) return null;
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -23,7 +24,6 @@ const FloatingChat = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
-
     try {
       const res = await apiClient.post('/ai/chat', {
         message: input,
@@ -31,10 +31,12 @@ const FloatingChat = () => {
       });
       const botMessage = { role: 'ai', content: res.data.data.reply };
       setMessages(prev => [...prev, botMessage]);
+      playNotification();
     } catch (err) {
       console.error('Chat error:', err);
       const errorMsg = err.response?.data?.message || 'Lỗi kết nối AI';
       setMessages(prev => [...prev, { role: 'ai', content: `❌ ${errorMsg}` }]);
+      playNotification();
     } finally {
       setLoading(false);
     }
@@ -42,9 +44,7 @@ const FloatingChat = () => {
 
   return (
     <>
-      <button className={styles.chatButton} onClick={() => setIsOpen(!isOpen)}>
-        💬
-      </button>
+      <button className={styles.chatButton} onClick={() => setIsOpen(!isOpen)}>💬</button>
       {isOpen && (
         <div className={styles.chatWindow}>
           <div className={styles.chatHeader}>
@@ -73,9 +73,7 @@ const FloatingChat = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             />
-            <button onClick={handleSend} disabled={loading}>
-              Gửi
-            </button>
+            <button onClick={handleSend} disabled={loading}>Gửi</button>
           </div>
         </div>
       )}
