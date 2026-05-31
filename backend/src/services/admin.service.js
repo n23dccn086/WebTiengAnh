@@ -128,7 +128,9 @@ const getTransactions = async (page = 1, limit = 20, status = "") => {
     pagination: {
       page: Number(page),
       limit: Number(limit),
-    },
+      total: result.total,
+      totalPages: Math.ceil(result.total / limit)
+    }
   };
 };
 

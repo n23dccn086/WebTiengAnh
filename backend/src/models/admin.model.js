@@ -135,10 +135,17 @@ const getTransactions = async (limit, offset, status) => {
     JOIN users u ON t.user_id = u.id
     WHERE 1=1
   `;
+  let countQueryStr = `
+    SELECT COUNT(*) as total
+    FROM transactions t
+    JOIN users u ON t.user_id = u.id
+    WHERE 1=1
+  `;
   const params = [];
 
   if (status) {
     queryStr += ` AND t.status = ?`;
+    countQueryStr += ` AND t.status = ?`;
     params.push(status);
   }
 
@@ -148,19 +155,20 @@ const getTransactions = async (limit, offset, status) => {
   queryStr += ` ORDER BY t.created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
   
   const [rows] = await db.execute(queryStr, params);
+  const [countResult] = await db.execute(countQueryStr, params);
+  const total = countResult[0].total;
 
   let revenueQuery = `SELECT SUM(amount) as total_revenue FROM transactions WHERE status = 'SUCCESS'`;
   let revenueParams = [];
-  
-  if (status) {
+  if (status === 'SUCCESS') {
     revenueQuery += ` AND status = ?`;
     revenueParams.push(status);
   }
-  
   const [revenueResult] = await db.execute(revenueQuery, revenueParams);
 
   return {
     transactions: rows,
+    total,
     total_revenue: revenueResult[0].total_revenue || 0
   };
 };
