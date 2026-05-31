@@ -158,6 +158,7 @@ const createSetFromPdfPreview = async (user, fileBuffer, fileName, title, descri
   try {
     const pdfInfo = await extractTextFromPDF(fileBuffer);
     numPages = pdfInfo.numPages;
+    console.log(`📄 [DEBUG] Số trang PDF: ${numPages}, User role: ${user.role}`);
   } catch (err) { throw new AppError(400, err.message || "Không thể đọc file PDF.", "PDF_READ_ERROR"); }
 
   if (!isAdmin) {

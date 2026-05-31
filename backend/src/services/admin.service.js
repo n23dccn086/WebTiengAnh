@@ -4,13 +4,14 @@ const AdminModel = require("../models/admin.model");
 const UserModel = require("../models/user.model");
 const ServiceModel = require("../models/service.model");
 const AppError = require("../utils/appError");
+const db = require("../config/database");
 
 // ==========================================
 // API 4: LẤY DANH SÁCH USER
 // ==========================================
-const getUsers = async (page = 1, limit = 20, search = "", status = "") => {
+const getUsers = async (page = 1, limit = 20, search = "", status = "", role = "") => {
   const offset = (page - 1) * limit;
-  const result = await AdminModel.getUsers(limit, offset, search, status);
+  const result = await AdminModel.getUsers(limit, offset, search, status, role);
   return {
     users: result.users,
     pagination: {
@@ -36,15 +37,28 @@ const changeUserStatus = async (userId, status) => {
 };
 
 // ==========================================
-// API 6: ĐỔI ROLE USER
+// API 6: ĐỔI ROLE USER (CHỈ GIỮ BẢN NÀY)
 // ==========================================
 const changeUserRole = async (userId, roleName) => {
-  if (!["USER", "PREMIUM", "ADMIN"].includes(roleName)) {
+  if (!["USER", "PREMIUM", "ADMIN", "SUPER_ADMIN"].includes(roleName)) {
     throw new AppError(400, "Role không hợp lệ", "INVALID_ROLE");
   }
   const user = await UserModel.findUserById(userId);
   if (!user) throw new AppError(404, "Không tìm thấy user", "USER_NOT_FOUND");
+  
   await AdminModel.updateUserRole(userId, roleName);
+  
+  // Cập nhật quota và premium_until
+  let quota = 10;
+  let premiumUntil = null;
+  if (roleName === 'PREMIUM') {
+    quota = 200;
+    premiumUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  } else if (roleName === 'ADMIN' || roleName === 'SUPER_ADMIN') {
+    quota = 9999;
+  }
+  await db.execute(`UPDATE users SET ai_quota = ?, premium_until = ? WHERE id = ?`, [quota, premiumUntil, userId]);
+  
   return { id: userId, role: roleName };
 };
 
@@ -172,7 +186,7 @@ const resetStaffPassword = async (staffId, newPassword) => {
 };
 
 // ==========================================
-// API IMPORT EXCEL (ĐÃ IMPLEMENT)
+// API IMPORT EXCEL
 // ==========================================
 const importSystemFlashcardSet = async (
   adminId,
@@ -185,7 +199,6 @@ const importSystemFlashcardSet = async (
     if (!fileBuffer || fileBuffer.length === 0) {
       throw new AppError(400, "File không có dữ liệu", "EMPTY_FILE");
     }
-    // Xóa BOM nếu có
     let buffer = fileBuffer;
     if (buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf) {
       buffer = buffer.slice(3);
@@ -206,7 +219,6 @@ const importSystemFlashcardSet = async (
     if (!data || data.length === 0) {
       throw new AppError(400, "File không có dữ liệu", "EMPTY_FILE");
     }
-    // Chuẩn hóa dữ liệu
     const flashcards = data
       .map((row) => {
         const word = row.word || row.Word || row.WORD || "";
@@ -251,16 +263,10 @@ const importSystemFlashcardSet = async (
   }
 };
 
-
 const getSetsByServiceId = async (serviceId) => {
-  // 1. Lấy tên dịch vụ
   const title = await AdminModel.getServiceTitleById(serviceId);
   const serviceName = title ? title : `Dịch vụ #${serviceId}`;
-
-  // 2. Lấy danh sách bộ thẻ
   const sets = await AdminModel.getSystemSetsByService(serviceId);
-
-  // 3. Đóng gói dữ liệu trả về
   return {
     service_id: serviceId,
     service_name: serviceName,
@@ -268,12 +274,10 @@ const getSetsByServiceId = async (serviceId) => {
   };
 };
 
-
 const getStaff = async () => {
   const staffList = await AdminModel.getStaffList();
   return staffList;
 };
-
 
 module.exports = {
   getStaff,

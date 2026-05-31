@@ -118,3 +118,11 @@
   border-radius: 40px;
   font-size: 0.9rem;
 }
+
+.roleReadOnly {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 40px;
+  font-size: 0.85rem;
+}

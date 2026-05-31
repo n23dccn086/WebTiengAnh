@@ -1,15 +1,16 @@
-const AdminService = require("../services/admin.service");
 const catchAsync = require("../utils/catchAsync");
 const { successResponse } = require("../utils/response.helper");
+const AdminService = require("../services/admin.service");
 const AppError = require("../utils/appError");
 const db = require("../config/database");
+const UserModel = require("../models/user.model"); // cần cho changeUserRole
 
 // ==========================================
 // PHẦN B: ADMIN PANEL
 // ==========================================
 const getUsers = catchAsync(async (req, res) => {
-  const { page, limit, search, status } = req.query;
-  const data = await AdminService.getUsers(page, limit, search, status);
+  const { page, limit, search, status, role } = req.query;
+  const data = await AdminService.getUsers(page, limit, search, status, role);
   return successResponse(res, "Lấy danh sách người dùng thành công", data);
 });
 
@@ -23,7 +24,23 @@ const changeUserStatus = catchAsync(async (req, res) => {
 const changeUserRole = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
-  const data = await AdminService.changeUserRole(id, role);
+  const currentUser = req.user;
+  const targetUserId = parseInt(id);
+
+  if (currentUser.id === targetUserId) {
+    throw new AppError(403, "Bạn không thể thay đổi role của chính mình");
+  }
+  if (currentUser.role === 'ADMIN') {
+    const targetUser = await UserModel.findUserById(targetUserId);
+    if (!targetUser) throw new AppError(404, "User không tồn tại");
+    if (!['USER', 'PREMIUM'].includes(targetUser.role)) {
+      throw new AppError(403, "Bạn không thể thay đổi role của admin hoặc super admin");
+    }
+    if (!['USER', 'PREMIUM'].includes(role)) {
+      throw new AppError(403, "Bạn chỉ có thể chuyển đổi giữa USER và PREMIUM");
+    }
+  }
+  const data = await AdminService.changeUserRole(targetUserId, role);
   return successResponse(res, "Cập nhật phân quyền người dùng thành công", data);
 });
 
@@ -122,8 +139,6 @@ const getSystemSets = catchAsync(async (req, res) => {
   const offset = (page - 1) * limit;
   const safeLimit = parseInt(limit, 10);
   const safeOffset = parseInt(offset, 10);
-  
-  // Dùng db.query (hoặc db.execute) nhưng đảm bảo số tham số khớp
   const [rows] = await db.query(
     `SELECT id, title, description, service_id, created_at
      FROM flashcard_sets
@@ -132,34 +147,14 @@ const getSystemSets = catchAsync(async (req, res) => {
      LIMIT ? OFFSET ?`,
     [safeLimit, safeOffset]
   );
-  
-  const [[{ total }]] = await db.query(
-    `SELECT COUNT(*) as total FROM flashcard_sets WHERE is_system = TRUE`
-  );
-  
+  const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM flashcard_sets WHERE is_system = TRUE`);
   const sets = await Promise.all(rows.map(async (set) => {
-    const [[{ count }]] = await db.query(
-      `SELECT COUNT(*) as count FROM flashcards WHERE set_id = ?`,
-      [set.id]
-    );
-    return {
-      id: set.id,
-      title: set.title,
-      description: set.description,
-      service_id: set.service_id,
-      total_cards: count,
-      created_at: set.created_at
-    };
+    const [[{ count }]] = await db.query(`SELECT COUNT(*) as count FROM flashcards WHERE set_id = ?`, [set.id]);
+    return { ...set, total_cards: count };
   }));
-  
   return successResponse(res, 'Lấy danh sách bộ thẻ hệ thống thành công', {
     sets,
-    pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      totalItems: total,
-      totalPages: Math.ceil(total / limit)
-    }
+    pagination: { page: parseInt(page), limit: parseInt(limit), totalItems: total, totalPages: Math.ceil(total / limit) }
   });
 });
 
@@ -167,33 +162,19 @@ const updateSystemSet = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { title, description } = req.body;
   if (!title) throw new AppError(400, 'Tiêu đề không được để trống');
-  
-  await db.execute(
-    `UPDATE flashcard_sets SET title = ?, description = ? WHERE id = ? AND is_system = TRUE`,
-    [title, description || null, id]
-  );
+  await db.execute(`UPDATE flashcard_sets SET title = ?, description = ? WHERE id = ? AND is_system = TRUE`, [title, description || null, id]);
   return successResponse(res, 'Cập nhật bộ thẻ thành công');
 });
 
 const deleteSystemSet = catchAsync(async (req, res) => {
-  console.log('🔍 Delete system set ID:', req.params.id);
   const { id } = req.params;
   await db.execute(`DELETE FROM flashcard_sets WHERE id = ? AND is_system = TRUE`, [id]);
   return successResponse(res, 'Xóa bộ thẻ thành công');
 });
 
 const getSetsByService = catchAsync(async (req, res) => {
-  // 1. Lấy param từ URL
   const serviceId = parseInt(req.params.id, 10);
-
-  // 2. Gọi Service xử lý toàn bộ logic
   const data = await AdminService.getSetsByServiceId(serviceId);
-
-  // 3. Trả về cho Frontend
-  // Nếu file của bạn đang xài successResponse thì dùng dòng dưới:
-  // return successResponse(res, "Lấy danh sách bộ thẻ thành công", data);
-  
-  // Còn nếu xài json thuần thì dùng dòng này:
   return res.status(200).json({
     status: "success",
     message: "Lấy danh sách bộ thẻ thành công",
@@ -201,19 +182,14 @@ const getSetsByService = catchAsync(async (req, res) => {
   });
 });
 
-// Xử lý Route: GET /super-admin/staff
 const getStaff = catchAsync(async (req, res) => {
   const data = await AdminService.getStaff();
-  
   return res.status(200).json({
     status: "success",
     message: "Lấy danh sách nhân sự thành công",
     data: data
   });
 });
-
-
-
 
 module.exports = {
   getStaff,

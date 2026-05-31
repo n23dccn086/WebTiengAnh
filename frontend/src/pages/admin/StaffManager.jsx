@@ -25,10 +25,14 @@ const StaffManager = () => {
   const fetchStaffs = async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get('/admin/users');
-      const admins = res.data.data.users.filter(u => u.role === 'ADMIN');
+      // ✅ Sử dụng API /super-admin/staff (không phân trang, trả về tất cả staff)
+      const res = await apiClient.get('/super-admin/staff');
+      const allStaff = res.data.data || [];
+      // Lọc chỉ lấy những user có role = 'ADMIN' (không lấy SUPER_ADMIN)
+      const admins = allStaff.filter(s => s.role === 'ADMIN');
       setStaffs(admins);
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.message || 'Không thể tải danh sách Admin');
     } finally {
       setLoading(false);

@@ -13,7 +13,7 @@ apiClient.interceptors.request.use(
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor: xử lý 401, refresh token
@@ -25,7 +25,10 @@ apiClient.interceptors.response.use(
     const errorCode = error.response?.data?.error_code;
 
     // Không xử lý nếu là request login/refresh
-    if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh-token')) {
+    if (
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/refresh-token")
+    ) {
       return Promise.reject(error);
     }
 
@@ -37,7 +40,7 @@ apiClient.interceptors.response.use(
         try {
           const res = await axios.post(
             `${import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"}/auth/refresh-token`,
-            { refresh_token: refreshToken }
+            { refresh_token: refreshToken },
           );
           const newAccessToken = res.data.data.accessToken;
           localStorage.setItem("accessToken", newAccessToken);
@@ -56,7 +59,12 @@ apiClient.interceptors.response.use(
     }
 
     // Không logout với lỗi 403 do quota (QUOTA_AI_EXCEEDED, QUOTA_PDF_EXCEEDED)
-    if (status === 403 && (errorCode === 'QUOTA_AI_EXCEEDED' || errorCode === 'QUOTA_PDF_EXCEEDED')) {
+    if (
+      status === 403 &&
+      (errorCode === "QUOTA_AI_EXCEEDED" ||
+        errorCode === "QUOTA_PDF_EXCEEDED" ||
+        errorCode === "PDF_PAGE_LIMIT_EXCEEDED")
+    ) {
       return Promise.reject(error);
     }
 
@@ -67,7 +75,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

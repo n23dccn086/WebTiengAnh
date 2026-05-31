@@ -3,7 +3,7 @@ const db = require('../config/database');
 // ==========================================
 // API 4: LẤY DANH SÁCH USER (KÈM PHÂN TRANG & TÌM KIẾM)
 // ==========================================
-const getUsers = async (limit, offset, search, status) => {
+const getUsers = async (limit, offset, search, status, role) => {
   let queryStr = `
     SELECT u.id, u.email, u.full_name, u.status, u.ai_quota, u.premium_until, r.name as role 
     FROM users u
@@ -23,25 +23,24 @@ const getUsers = async (limit, offset, search, status) => {
     countQueryStr += ` AND (u.email LIKE ? OR u.full_name LIKE ?)`;
     params.push(`%${search}%`, `%${search}%`);
   }
-
   if (status) {
     queryStr += ` AND u.status = ?`;
     countQueryStr += ` AND u.status = ?`;
     params.push(status);
   }
+  if (role) {
+    queryStr += ` AND r.name = ?`;
+    countQueryStr += ` AND r.name = ?`;
+    params.push(role);
+  }
 
   const limitNum = Math.max(1, parseInt(limit, 10));
   const offsetNum = Math.max(0, parseInt(offset, 10));
-
   queryStr += ` ORDER BY u.created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
   
   const [rows] = await db.execute(queryStr, params);
   const [countResult] = await db.execute(countQueryStr, params);
-
-  return {
-    users: rows,
-    total: countResult[0].total
-  };
+  return { users: rows, total: countResult[0].total };
 };
 
 // ==========================================
