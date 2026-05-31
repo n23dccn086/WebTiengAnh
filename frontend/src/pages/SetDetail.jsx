@@ -8,11 +8,14 @@ import TestHistory from "../components/TestHistory";
 import styles from "./SetDetail.module.css";
 import apiClient from '../services/apiClient';
 
+const ITEMS_PER_PAGE = 10;
+
 const SetDetail = () => {
   const { id } = useParams();
   const [set, setSet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadSet();
@@ -69,12 +72,21 @@ const SetDetail = () => {
     }
   };
 
+  // Phân trang
+  const flashcards = set?.flashcards || [];
+  const totalPages = Math.ceil(flashcards.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedCards = flashcards.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const goToPage = (page) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
   if (loading) return <div className={styles.loading}>📖 Đang tải...</div>;
 
-  // Xác định link quay lại
   const backLink = set?.is_system 
-    ? `/sets/service/${set.service_id}`  // quay về danh mục chứa bộ thẻ hệ thống
-    : '/library';                         // quay về thư viện cá nhân
+    ? `/sets/service/${set.service_id}`
+    : '/library';
 
   return (
     <div className={styles.container}>
@@ -91,6 +103,7 @@ const SetDetail = () => {
         <Link to={`/sets/${id}/flashcard-basic`} className={styles.btn}>📇 Học lật thẻ</Link>
         <Link to={`/sets/${id}/practice`} className={styles.btn}>✍️ Practice (ABCD)</Link>
         <Link to={`/sets/${id}/test`} className={styles.btn}>📝 Test (có lưu)</Link>
+        <Link to={`/game/${id}`} className={`${styles.btn} ${styles.gameBtn}`}>🎮 Ghép thẻ</Link>
         <div className={styles.exportButtons}>
           <button onClick={() => handleExport('csv')} className={styles.exportBtn}>📥 CSV</button>
           <button onClick={() => handleExport('xlsx')} className={styles.exportBtn}>📥 Excel</button>
@@ -105,7 +118,7 @@ const SetDetail = () => {
 
       <div className={styles.flashcardList}>
         <h3>Danh sách từ vựng</h3>
-        {set.flashcards && set.flashcards.map(fc => (
+        {paginatedCards.map(fc => (
           <div key={fc.id} className={styles.fcItem}>
             <div className={styles.fcInfo}>
               <span className={styles.fcWord}>{fc.word}</span>
@@ -119,9 +132,15 @@ const SetDetail = () => {
             )}
           </div>
         ))}
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className={styles.pageBtn}>◀</button>
+            <span>Trang {currentPage} / {totalPages}</span>
+            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className={styles.pageBtn}>▶</button>
+          </div>
+        )}
       </div>
 
-      {/* Chỉ hiển thị form thêm từ nếu không phải bộ thẻ hệ thống */}
       {!set.is_system && <AddFlashcardForm setId={id} onAdded={() => setRefresh(prev => !prev)} />}
       
       <TestHistory setId={id} />

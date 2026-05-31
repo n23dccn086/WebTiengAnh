@@ -16,7 +16,7 @@ import FlashcardStudyBasic from "./pages/FlashcardStudyBasic";
 import StudyPractice from "./pages/StudyPractice";
 import StudyTest from "./pages/StudyTest";
 import ProfilePage from "./features/profile/ProfilePage";
-
+import MemoryMatchGame from "./pages/MemoryMatchGame";
 import Quizzes from "./pages/Quizzes";
 import QuizDetail from "./pages/QuizDetail";
 import SRSDaily from "./pages/SRSDaily";
@@ -178,6 +178,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/sets/:id/flashcard-basic"
             element={
@@ -207,6 +208,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <SetDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/game/:id"
+            element={
+              <ProtectedRoute>
+                <MemoryMatchGame />
               </ProtectedRoute>
             }
           />
