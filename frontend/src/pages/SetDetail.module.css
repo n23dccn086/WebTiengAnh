@@ -209,3 +209,47 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Nút Học lật thẻ - tone vàng */
+.btnFlashcard {
+  background: linear-gradient(135deg, #ecc03c 0%, #daf170 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(249, 202, 36, 0.4);
+}
+.btnFlashcard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 202, 36, 0.6);
+}
+
+/* Nút Practice - tone xanh dương */
+.btnPractice {
+  background: linear-gradient(135deg, #15e4eb 0%, #0b5bd3 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+.btnPractice:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+}
+
+/* Nút Test - tone tím (tùy chọn, không xanh lá) */
+.btnTest {
+  background: linear-gradient(135deg, #a64bca 0%, #e21d5c 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(170, 28, 225, 0.4);
+}
+.btnTest:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(206, 11, 255, 0.6);
+}
+
+/* Nút Ghép thẻ (giữ nguyên, nếu chưa có thì thêm) */
+.gameBtn {
+  background: linear-gradient(135deg, #f3c0f9 0%, #f5576c 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+}
+.gameBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+}
