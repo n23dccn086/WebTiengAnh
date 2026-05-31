@@ -27,7 +27,7 @@ import FloatingChat from "./components/ui/FloatingChat";
 import BackgroundMusic from "./components/ui/BackgroundMusic";
 import FontSizeControl from "./components/ui/FontSizeControl";
 import PomodoroTimer from "./components/ui/PomodoroTimer";
-
+import { useEffect } from 'react';
 // Cụm 2: Premium & Thanh toán
 import PremiumDashboard from "./pages/PremiumDashboard";
 import PricingTable from "./features/premium/PricingTable";
@@ -120,6 +120,18 @@ function Navbar() {
 }
 
 function App() {
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (window.AudioContext || window.webkitAudioContext) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === "suspended") ctx.resume();
+      }
+      document.removeEventListener("click", handleFirstInteraction);
+      document.removeEventListener("keydown", handleFirstInteraction);
+    };
+    document.addEventListener("click", handleFirstInteraction);
+    document.addEventListener("keydown", handleFirstInteraction);
+  }, []);
   return (
     <BrowserRouter>
       <Navbar />

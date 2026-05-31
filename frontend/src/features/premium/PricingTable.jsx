@@ -12,7 +12,7 @@ const PricingTable = () => {
     try {
       const { payUrl } = await createMomoPayment();
       if (payUrl) {
-        window.location.href = payUrl; // Chuyển hướng đến MoMo
+        window.location.href = payUrl;
       } else {
         setError("Không thể tạo giao dịch. Vui lòng thử lại.");
       }
@@ -32,7 +32,7 @@ const PricingTable = () => {
         <h3>Gói Premium 1 tháng</h3>
         <div className={styles.price}>49,000đ</div>
         <ul className={styles.features}>
-          <li>✨ 200 lượt câu hỏi AI / tháng</li>
+          <li>✨ 200 lượt câu hỏi AI / ngày</li>
           <li>📊 Xem thống kê chi tiết</li>
           <li>📄 Upload PDF nhiều hơn</li>
           <li>🎯 Ưu tiên hỗ trợ</li>

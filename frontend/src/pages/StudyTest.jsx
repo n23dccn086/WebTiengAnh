@@ -5,7 +5,7 @@ import useTestStore from "../store/testStore";
 import TestBoard from "../features/study/TestBoard";
 import { formatCountdown } from "../utils/formatTime";
 import confetti from "canvas-confetti";
-import { playComplete } from "../utils/sound";
+import { playSubmitTest } from "../utils/sound";
 import styles from "./StudyTest.module.css";
 
 const TEST_TIME_LIMIT_SECONDS = 16 * 60;
@@ -111,7 +111,7 @@ const StudyTest = () => {
         await saveLatestAnswers();
         const res = await submitTest(currentAttemptId);
         setTestResult(res.score, res.results);
-        playComplete(); // ✅ thêm âm thanh
+        playSubmitTest();
         if (res.score >= 80) {
           confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 } });
         } else {
