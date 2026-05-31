@@ -59,52 +59,52 @@ function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
 
   return (
-    <nav style={navStyle}>
-      <div style={logoStyle}>📘 EngVocab</div>
-      <div style={navLinksStyle}>
-        <Link to="/" style={linkStyle}>
+    <nav className="navbar">
+      <div className="logo">📘 EngVocab</div>
+      <div className="navLinks">
+        <Link to="/" className="link">
           Trang chủ
         </Link>
         {isAuthenticated ? (
           <>
-            <Link to="/dashboard" style={linkStyle}>
+            <Link to="/dashboard" className="link">
               Dashboard
             </Link>
-            <Link to="/library" style={linkStyle}>
+            <Link to="/library" className="link">
               Thư viện
             </Link>
             <DictionarySearch />
-            <Link to="/profile" style={linkStyle}>
+            <Link to="/profile" className="link">
               Hồ sơ
             </Link>
-            <Link to="/srs/daily" style={linkStyle}>
+            <Link to="/srs/daily" className="link">
               📅 Ôn tập SRS
             </Link>
             {user?.role === "PREMIUM" ? (
-              <Link to="/premium-dashboard" style={linkStyle}>
+              <Link to="/premium-dashboard" className="link">
                 📊 Premium
               </Link>
             ) : (
-              <Link to="/upgrade" style={linkStyle}>
+              <Link to="/upgrade" className="link">
                 💎 Nâng cấp
               </Link>
             )}
             {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
-              <Link to="/admin" style={linkStyle}>
+              <Link to="/admin" className="link">
                 🔧 Admin
               </Link>
             )}
             {user?.full_name && (
-              <span style={userNameStyle}>👋 {user.full_name}</span>
+              <span className="userName">👋 {user.full_name}</span>
             )}
             <LogoutButton onClick={logout} />
           </>
         ) : (
           <>
-            <Link to="/login" style={linkStyle}>
+            <Link to="/login" className="link">
               Đăng nhập
             </Link>
-            <Link to="/register" style={linkStyle}>
+            <Link to="/register" className="link">
               Đăng ký
             </Link>
           </>
@@ -367,33 +367,5 @@ function App() {
     </BrowserRouter>
   );
 }
-
-const navStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "0 2rem",
-  background: "rgba(0,0,0,0.8)",
-  backdropFilter: "blur(10px)",
-  color: "white",
-  height: "60px",
-  zIndex: 1000,
-  fontFamily:
-    'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-};
-const logoStyle = { fontSize: "1.5rem", fontWeight: "bold" };
-const navLinksStyle = { display: "flex", gap: "1rem", alignItems: "center" };
-const linkStyle = {
-  color: "white",
-  textDecoration: "none",
-  padding: "0.5rem 1rem",
-  borderRadius: "40px",
-  transition: "0.2s",
-};
-const userNameStyle = { color: "#ffefb9", fontWeight: "600" };
 
 export default App;

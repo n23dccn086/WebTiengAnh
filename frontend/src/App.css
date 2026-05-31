@@ -15,3 +15,64 @@ body {
 button, input, textarea {
   font-family: inherit;
 }
+
+/* Navbar container */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  height: 60px;
+  z-index: 1000;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Container các link - có thể cuộn ngang */
+.navLinks {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+/* Tuỳ chỉnh thanh cuộn (Webkit) */
+.navLinks::-webkit-scrollbar {
+  height: 4px;
+}
+.navLinks::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+}
+.navLinks::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.5);
+  border-radius: 4px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.link {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 40px;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.userName {
+  color: #ffefb9;
+  font-weight: 600;
+  flex-shrink: 0;
+}
