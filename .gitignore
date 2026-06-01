@@ -44,3 +44,8 @@ mysql/
 # =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# Chat data (JSON file)
+# =========================
+backend/data/chat_messages.json

@@ -28,6 +28,8 @@ import BackgroundMusic from "./components/ui/BackgroundMusic";
 import FontSizeControl from "./components/ui/FontSizeControl";
 import PomodoroTimer from "./components/ui/PomodoroTimer";
 import { useEffect } from "react";
+import GlobalChat from "./components/ui/GlobalChat";
+
 // Cụm 2: Premium & Thanh toán
 import PremiumDashboard from "./pages/PremiumDashboard";
 import PricingTable from "./features/premium/PricingTable";
@@ -62,8 +64,11 @@ function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
 
   return (
-    <nav className={`navbar ${user?.role === 'PREMIUM' ? 'navbarPremium' : ''}`}>
+    <nav
+      className={`navbar ${user?.role === "PREMIUM" ? "navbarPremium" : ""}`}
+    >
       <div className="logo">🌟 EngVocab .🐵.</div>
+      <GlobalChat />
       <div className="navLinks">
         <Link to="/" className="link">
           Trang chủ

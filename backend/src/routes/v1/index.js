@@ -16,7 +16,7 @@ const statisticsRoutes = require('./statistics.route');
 const contactRoutes = require('./contact.route');
 const tipRoutes = require('./tip.route');
 const aiRoutes = require('./ai.route');
-
+const chatRoutes = require('./chat.route');
 // Gắn route vào hệ thống
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -33,5 +33,6 @@ router.use('/statistics', statisticsRoutes);
 router.use('/contact', contactRoutes);
 router.use('/tip', tipRoutes);
 router.use('/ai', aiRoutes);
+router.use('/chat', chatRoutes);
 
 module.exports = router;
