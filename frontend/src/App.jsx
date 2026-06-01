@@ -62,7 +62,7 @@ function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${user?.role === 'PREMIUM' ? 'navbarPremium' : ''}`}>
       <div className="logo">📘 EngVocab</div>
       <div className="navLinks">
         <Link to="/" className="link">
@@ -99,7 +99,14 @@ function Navbar() {
               </Link>
             )}
             {user?.full_name && (
-              <span className="userName">👋 {user.full_name}</span>
+              <span
+                className={`userName ${user?.role === "PREMIUM" ? "premiumUser" : ""}`}
+              >
+                👋 {user.full_name}
+                {user?.role === "PREMIUM" && (
+                  <span className="premiumBadge">⭐ PREMIUM</span>
+                )}
+              </span>
             )}
             <BackgroundMusic />
             <FontSizeControl />

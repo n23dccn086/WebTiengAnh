@@ -9,8 +9,9 @@ import PlasticGooseButton from "../components/ui/PlasticGooseButton";
 import MightyMooseButton from "../components/ui/MightyMooseButton";
 import styles from "./Library.module.css";
 
+
 const Library = () => {
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
   const navigate = useNavigate();
 
   const [sets, setSets] = useState([]);
@@ -20,7 +21,7 @@ const Library = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const limit = 12;
+  const limit = 18;
 
   useEffect(() => {
     loadSets();
@@ -105,7 +106,10 @@ const Library = () => {
         <>
           <div className={styles.grid}>
             {sets.map((set) => (
-              <div key={set.id} className={styles.card}>
+              <div
+                key={set.id}
+                className={`${styles.card} ${user?.role === "PREMIUM" ? styles.premiumCard : ""}`}
+              >
                 <h3>{set.title}</h3>
                 <p>{set.description || "Không có mô tả"}</p>
                 <div className={styles.meta}>

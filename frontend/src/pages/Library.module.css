@@ -131,3 +131,62 @@
   border-radius: 40px;
   font-size: 0.9rem;
 }
+
+/* ===== CARD PREMIUM – SANG TRỌNG, CHUYỂN MÀU RÕ ===== */
+.premiumCard {
+  background: linear-gradient(135deg, #1e2a3a 0%, #0f172a 100%) !important;
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hiệu ứng sóng ánh sáng – dùng màu cam/vàng để không trùng với nền */
+.premiumCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 160, 50, 0.4), rgba(255, 200, 80, 0.2), transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.premiumCard:hover::before {
+  left: 100%;
+}
+
+.premiumCard:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: #ffc107 !important;
+  box-shadow: 0 18px 30px -8px rgba(255, 193, 7, 0.3) !important;
+  background: linear-gradient(135deg, #37734e, #1a2535) !important;
+}
+
+/* Chữ màu vàng kim, nổi bật, không đen */
+.premiumCard h3 {
+  color: #1aebf2 !important;
+  font-weight: 700;
+}
+.premiumCard p,
+.premiumCard .meta {
+  color: #cbd5e6 !important;
+}
+
+/* Nút bấm trên card Premium */
+.premiumCard .srsBtn,
+.premiumCard .deleteBtn {
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd966;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  transition: all 0.2s;
+}
+.premiumCard .srsBtn:hover,
+.premiumCard .deleteBtn:hover {
+  background: rgba(255, 215, 0, 0.35);
+  border-color: #ffc107;
+  transform: scale(1.02);
+}

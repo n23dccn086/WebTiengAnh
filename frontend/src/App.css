@@ -76,3 +76,48 @@ button, input, textarea {
   font-weight: 600;
   flex-shrink: 0;
 }
+
+/* Navbar Premium – đảm bảo ghi đè lên style cũ */
+.navbarPremium {
+  background: linear-gradient(90deg, #df1aa1, #0fa5a3) !important;
+  border-bottom: 3px solid #ffd700 !important;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
+}
+
+/* Tên user Premium – nền vàng, chữ đỏ, glow đỏ/vàng */
+.premiumUser {
+  background: linear-gradient(135deg, #ffd700, #ffb347) !important;
+  color: #fb0303 !important;    /* màu đỏ đậm */
+  font-weight: bold !important;
+  padding: 4px 12px !important;
+  border-radius: 40px !important;
+  box-shadow: 0 0 12px rgba(182, 247, 3, 0.5) !important;
+  transition: all 0.3s ease !important;
+  animation: glowRedPulse 2s infinite !important;
+}
+
+@keyframes glowRedPulse {
+  0% { box-shadow: 0 0 5px rgba(192, 57, 43, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(192, 57, 43, 0.9); }
+  100% { box-shadow: 0 0 5px rgba(192, 57, 43, 0.4); }
+}
+
+/* Badge Premium cạnh tên – giữ nguyên màu vàng nhưng thêm viền đỏ nhẹ */
+.premiumBadge {
+  font-size: 0.7rem;
+  background: #ffd700;
+  color: #c0392b;               /* chữ đỏ */
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 8px;
+  font-weight: bold;
+  display: inline-block;
+  border: 1px solid #c0392b;
+  animation: badgeShine 1.5s infinite;
+}
+
+@keyframes badgeShine {
+  0% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); background: #ffea80; }
+  100% { opacity: 0.7; transform: scale(1); }
+}

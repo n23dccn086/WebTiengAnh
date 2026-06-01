@@ -42,8 +42,6 @@ const getPremiumStats = async (userId) => {
     LIMIT 5
   `, [userId]);
 
-  
-
   return {
     current_streak,
     total_learned,
@@ -79,4 +77,28 @@ const getHomeStats = async (userId) => {
   };
 };
 
-module.exports = { getPremiumStats , getHomeStats};
+// ✅ ĐÃ SỬA: ép kiểu limit, đảm bảo an toàn
+const getLeaderboard = async (limit = 10) => {
+  const safeLimit = parseInt(limit, 10);
+  if (isNaN(safeLimit) || safeLimit <= 0) safeLimit = 10;
+  const query = `
+    SELECT 
+      u.id, 
+      u.email,
+      u.full_name, 
+      COALESCE(SUM(t.score), 0) AS total_score,
+      COUNT(t.id) AS total_tests
+    FROM users u
+    LEFT JOIN test_attempts t ON u.id = t.user_id AND t.status = 'COMPLETED' AND t.score IS NOT NULL
+    WHERE u.status = 'ACTIVE' 
+      AND u.role_id IN (SELECT id FROM roles WHERE name IN ('USER', 'PREMIUM'))
+    GROUP BY u.id, u.email, u.full_name
+    HAVING total_tests > 0
+    ORDER BY total_score DESC
+    LIMIT ?
+  `;
+  const [rows] = await db.query(query, [safeLimit]);
+  return rows;
+};
+
+module.exports = { getPremiumStats, getHomeStats, getLeaderboard };

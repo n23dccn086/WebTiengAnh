@@ -10,12 +10,19 @@ const Dashboard = () => {
   const { user, fetchProfile, logout } = useAuthStore();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ totalLearned: 0, totalQuizzes: 0, averageScore: 0 });
+  const [stats, setStats] = useState({
+    totalLearned: 0,
+    totalQuizzes: 0,
+    averageScore: 0,
+  });
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 
   useEffect(() => {
     if (!user?.id) fetchProfile();
     loadServices();
     fetchStats();
+    fetchLeaderboard();
   }, []);
 
   const loadServices = async () => {
@@ -31,14 +38,26 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await apiClient.get('/users/dashboard-stats');
+      const res = await apiClient.get("/users/dashboard-stats");
       setStats(res.data.data);
     } catch (err) {
-      console.error('Lỗi tải thống kê:', err);
+      console.error("Lỗi tải thống kê:", err);
     }
   };
 
-  if (loading) return <div className={styles.loading}>📖 Đang tải dữ liệu...</div>;
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await apiClient.get("/statistics/leaderboard?limit=10");
+      setLeaderboard(res.data.data);
+    } catch (err) {
+      console.error("Lỗi tải bảng xếp hạng:", err);
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  };
+
+  if (loading)
+    return <div className={styles.loading}>📖 Đang tải dữ liệu...</div>;
 
   return (
     <div className={styles.container}>
@@ -48,7 +67,9 @@ const Dashboard = () => {
 
       <div className={styles.welcome}>
         <h1>👋 Chào mừng, {user?.full_name || "bạn"}!</h1>
-        <p>Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.</p>
+        <p>
+          Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.
+        </p>
       </div>
 
       <div className={styles.stats}>
@@ -90,6 +111,39 @@ const Dashboard = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Bảng xếp hạng */}
+      <div className={styles.leaderboardSection}>
+        <h3>🏆 Bảng xếp hạng tổng điểm test</h3>
+        {loadingLeaderboard ? (
+          <p>Đang tải...</p>
+        ) : leaderboard.length === 0 ? (
+          <p>Chưa có dữ liệu xếp hạng.</p>
+        ) : (
+          <table className={styles.leaderboardTable}>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Người dùng</th>
+                <th>Tổng điểm</th>
+                <th>Số bài test</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboard.map((user, idx) => (
+                <tr key={user.id}>
+                  <td>{idx + 1}</td>
+                  <td>{user.email}</td>
+                  <td>{user.full_name}</td>
+                  <td>{Math.round(user.total_score)}</td>
+                  <td>{user.total_tests}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

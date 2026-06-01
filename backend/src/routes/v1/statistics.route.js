@@ -5,5 +5,6 @@ const statisticsController = require('../../controllers/statistics.controller');
 
 router.get('/dashboard', protect, statisticsController.getPremiumDashboard);
 router.get('/overview', protect, statisticsController.getHomeOverview);
+router.get('/leaderboard', statisticsController.getLeaderboard);
 
 module.exports = router;

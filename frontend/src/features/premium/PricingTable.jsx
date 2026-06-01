@@ -28,14 +28,34 @@ const PricingTable = () => {
 
   return (
     <div className={styles.container}>
+      {/* Các lớp hiệu ứng nền */}
+      <div className={`${styles.cloud} ${styles.cloud1}`}></div>
+      <div className={`${styles.cloud} ${styles.cloud2}`}></div>
+      <div className={`${styles.cloud} ${styles.cloud3}`}></div>
+      <div className={styles.grass}></div>
+      <div className={styles.trees}></div>
+      <div className={`${styles.leaf} ${styles.leaf1}`}></div>
+      <div className={`${styles.leaf} ${styles.leaf2}`}></div>
+      <div className={`${styles.leaf} ${styles.leaf3}`}></div>
+      <div className={`${styles.leaf} ${styles.leaf4}`}></div>
+      <div className={`${styles.leaf} ${styles.leaf5}`}></div>
+
       <div className={styles.card}>
-        <h3>Gói Premium 1 tháng</h3>
-        <div className={styles.price}>49,000đ</div>
+        <div className={styles.badge}>🔥 ƯU ĐÃI</div>
+        <div className={styles.packageIcon}>💎</div>
+        <h3>Gói Premium</h3>
+        <div className={styles.duration}>1 tháng</div>
+        <div className={styles.price}>
+          49.000<span>đ</span>
+          <small>/tháng</small>
+        </div>
+        <div className={styles.originalPrice}>Gốc 99.000đ</div>
         <ul className={styles.features}>
-          <li>✨ 200 lượt câu hỏi AI / ngày</li>
-          <li>📊 Xem thống kê chi tiết</li>
-          <li>📄 Upload PDF nhiều hơn</li>
-          <li>🎯 Ưu tiên hỗ trợ</li>
+          <li><span>✨</span> 200 lượt câu hỏi AI / ngày</li>
+          <li><span>📊</span> Xem thống kê chi tiết</li>
+          <li><span>📄</span> Upload PDF không giới hạn</li>
+          <li><span>🎯</span> Ưu tiên hỗ trợ</li>
+          <li><span>🚀</span> Không quảng cáo</li>
         </ul>
         {error && <div className={styles.error}>{error}</div>}
         <button
@@ -43,8 +63,13 @@ const PricingTable = () => {
           disabled={loading}
           className={styles.button}
         >
-          {loading ? "Đang xử lý..." : "Nâng cấp ngay"}
+          {loading ? (
+            <span className={styles.loadingSpinner}></span>
+          ) : (
+            <>Nâng cấp ngay →</>
+          )}
         </button>
+        <div className={styles.footerNote}>Thanh toán an toàn qua MoMo</div>
       </div>
     </div>
   );
