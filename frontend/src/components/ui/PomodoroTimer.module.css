@@ -1,7 +1,7 @@
 /* Giữ nguyên các style cũ (tôi sẽ viết lại toàn bộ để tránh thiếu) */
 .container {
   position: fixed;
-  background: rgba(26, 1, 23, 0.85);
+  background: rgba(66, 24, 112, 0.777);
   backdrop-filter: blur(8px);
   border-radius: 20px;
   padding: 10px 12px;
@@ -168,5 +168,5 @@
   justify-content: center;
 }
 .collapseBtn:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(242, 3, 3, 0.2);
 }
