@@ -25,7 +25,7 @@ const GlobalChat = () => {
 
   const fetchMessages = async () => {
     try {
-      const res = await apiClient.get('/chat/messages?limit=50');
+      const res = await apiClient.get('/chat/messages?limit=100');
       setMessages(res.data.data);
     } catch (err) {
       console.error('Lỗi tải tin nhắn:', err);

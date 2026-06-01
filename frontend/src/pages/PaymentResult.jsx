@@ -13,7 +13,6 @@ const PaymentResult = () => {
     const messageParam = searchParams.get("message");
 
     const isSuccess = statusParam === "success" || resultCode === "0";
-
     const isFailed =
       statusParam === "failed" ||
       statusParam === "cancelled" ||
@@ -52,12 +51,15 @@ const PaymentResult = () => {
         {paymentStatus === "success" && (
           <>
             <div className={styles.success}>✅ {message}</div>
-
+            {/* Thêm thông báo đỏ */}
+            <div className={styles.warning}>
+              ⚠️ <strong>Lưu ý:</strong> Để cập nhật giao diện Premium, vui lòng{" "}
+              <strong>đăng xuất rồi đăng nhập lại</strong>.
+            </div>
             <div className={styles.actions}>
               <Link to="/premium-dashboard" className={styles.btn}>
                 Xem thống kê Premium
               </Link>
-
               <Link to="/dashboard" className={styles.btnSecondary}>
                 Về Dashboard
               </Link>
@@ -68,12 +70,10 @@ const PaymentResult = () => {
         {paymentStatus === "error" && (
           <>
             <div className={styles.error}>❌ {message}</div>
-
             <div className={styles.actions}>
               <Link to="/upgrade" className={styles.btn}>
                 Thử lại
               </Link>
-
               <Link to="/dashboard" className={styles.btnSecondary}>
                 Về Dashboard
               </Link>
