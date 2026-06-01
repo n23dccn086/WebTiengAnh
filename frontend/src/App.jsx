@@ -63,7 +63,7 @@ function Navbar() {
 
   return (
     <nav className={`navbar ${user?.role === 'PREMIUM' ? 'navbarPremium' : ''}`}>
-      <div className="logo">📘 EngVocab</div>
+      <div className="logo">🌟 EngVocab .🐵.</div>
       <div className="navLinks">
         <Link to="/" className="link">
           Trang chủ
