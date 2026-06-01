@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import styles from './PomodoroTimer.module.css';
 
 const PomodoroTimer = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const [workMinutes, setWorkMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [minutes, setMinutes] = useState(25);
@@ -17,24 +16,26 @@ const PomodoroTimer = () => {
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef({ startX: 0, startY: 0 });
 
-  // Load saved state: collapsed & position
-  useEffect(() => {
-    const savedCollapsed = localStorage.getItem('pomodoroCollapsed');
-    if (savedCollapsed !== null) setCollapsed(savedCollapsed === 'true');
-    const savedPos = localStorage.getItem('pomodoroPosition');
-    if (savedPos) setPosition(JSON.parse(savedPos));
-  }, []);
+  // Load saved position
+ useEffect(() => {
+  const saved = localStorage.getItem('pomodoroPosition');
+  if (saved) {
+    const pos = JSON.parse(saved);
+    // Đảm bảo tọa độ nằm trong màn hình
+    const maxX = window.innerWidth - 200;
+    const maxY = window.innerHeight - 200;
+    if (pos.x > 0 && pos.x < maxX && pos.y > 0 && pos.y < maxY) {
+      setPosition(pos);
+    } else {
+      setPosition({ x: 20, y: 20 });
+      localStorage.setItem('pomodoroPosition', JSON.stringify({ x: 20, y: 20 }));
+    }
+  }
+}, []);
 
-  const toggleCollapse = () => {
-    const newState = !collapsed;
-    setCollapsed(newState);
-    localStorage.setItem('pomodoroCollapsed', newState);
-  };
-
-  // Drag only when expanded
+  // Drag handlers
   const handleMouseDown = (e) => {
-    if (collapsed) return;
-    if (e.target.closest(`.${styles.controls}`) || e.target.closest(`.${styles.settings}`) || e.target.closest(`.${styles.collapseBtn}`)) return;
+    if (e.target.closest(`.${styles.controls}`) || e.target.closest(`.${styles.settings}`) || e.target.closest(`.${styles.alertBox}`)) return;
     setIsDragging(true);
     dragRef.current = { startX: e.clientX - position.x, startY: e.clientY - position.y };
   };
@@ -61,7 +62,7 @@ const PomodoroTimer = () => {
     };
   }, [isDragging, position]);
 
-  // Play alarm sound using Web Audio API
+  // Phát tiếng chuông (báo thức) bằng Web Audio
   const playAlarm = () => {
     try {
       if (!audioContextRef.current) {
@@ -80,6 +81,7 @@ const PomodoroTimer = () => {
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
       osc.start();
       osc.stop(now + 0.8);
+      // Lặp lại lần 2 sau 0.6 giây
       setTimeout(() => {
         const osc2 = ctx.createOscillator();
         const gain2 = ctx.createGain();
@@ -100,6 +102,7 @@ const PomodoroTimer = () => {
     setAlertMessage(message);
     setShowAlert(true);
     playAlarm();
+    // Tự động đóng sau 6 giây
     setTimeout(() => setShowAlert(false), 6000);
   };
 
@@ -158,58 +161,36 @@ const PomodoroTimer = () => {
     setSeconds(0);
   };
 
-  useEffect(() => {
-    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-      Notification.requestPermission();
-    }
-  }, []);
-
-  // Collapsed view
-  if (collapsed) {
-    return (
+  return (
+    <>
       <div
-        className={`${styles.container} ${styles.collapsed}`}
+        className={styles.container}
         style={{ left: position.x, top: position.y }}
         onMouseDown={handleMouseDown}
       >
-        <button className={styles.expandBtn} onClick={toggleCollapse} title="Mở rộng">
-          🍅
-        </button>
+        <div className={styles.header}>🍅 Pomodoro</div>
+        <div className={styles.settings}>
+          <label>Làm:
+            <input type="number" value={workMinutes} onChange={handleWorkChange} min={1} max={60} step={1} />
+          </label>
+          <label>Nghỉ:
+            <input type="number" value={breakMinutes} onChange={handleBreakChange} min={1} max={30} step={1} />
+          </label>
+        </div>
+        <div className={styles.timer}>
+          {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+        </div>
+        <div className={styles.controls}>
+          {!isRunning ? (
+            <button onClick={() => setIsRunning(true)} className={styles.btn}>▶️</button>
+          ) : (
+            <button onClick={() => setIsRunning(false)} className={styles.btn}>⏸️</button>
+          )}
+          <button onClick={reset} className={styles.btn}>🔄</button>
+        </div>
+        <div className={styles.mode}>{mode === 'work' ? '📚 Làm việc' : '☕ Nghỉ ngơi'}</div>
       </div>
-    );
-  }
 
-  // Expanded view
-  return (
-    <div
-      className={styles.container}
-      style={{ left: position.x, top: position.y }}
-      onMouseDown={handleMouseDown}
-    >
-      <div className={styles.header}>
-        <span>🍅 Pomodoro</span>
-        <button className={styles.collapseBtn} onClick={toggleCollapse} title="Thu gọn">−</button>
-      </div>
-      <div className={styles.settings}>
-        <label>Làm:
-          <input type="number" value={workMinutes} onChange={handleWorkChange} min={1} max={60} step={1} />
-        </label>
-        <label>Nghỉ:
-          <input type="number" value={breakMinutes} onChange={handleBreakChange} min={1} max={30} step={1} />
-        </label>
-      </div>
-      <div className={styles.timer}>
-        {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-      </div>
-      <div className={styles.controls}>
-        {!isRunning ? (
-          <button onClick={() => setIsRunning(true)} className={styles.btn}>▶️</button>
-        ) : (
-          <button onClick={() => setIsRunning(false)} className={styles.btn}>⏸️</button>
-        )}
-        <button onClick={reset} className={styles.btn}>🔄</button>
-      </div>
-      <div className={styles.mode}>{mode === 'work' ? '📚 Làm việc' : '☕ Nghỉ ngơi'}</div>
       {showAlert && (
         <div className={styles.alertOverlay}>
           <div className={styles.alertBox}>
@@ -219,7 +200,7 @@ const PomodoroTimer = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
