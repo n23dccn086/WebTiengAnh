@@ -55,7 +55,7 @@ const PricingTable = () => {
           <li><span>📊</span> Xem thống kê chi tiết</li>
           <li><span>📄</span> Upload PDF không giới hạn</li>
           <li><span>🎯</span> Ưu tiên hỗ trợ</li>
-          <li><span>🚀</span> Không quảng cáo</li>
+          <li><span>🚀</span> Giao diện mới</li>
         </ul>
         {error && <div className={styles.error}>{error}</div>}
         <button
