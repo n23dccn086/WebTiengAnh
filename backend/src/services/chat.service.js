@@ -1,9 +1,27 @@
 const fs = require('fs').promises;
 const path = require('path');
-const CHAT_FILE = path.join(__dirname, '../../data/chat_messages.json');
+
+// Xác định đường dẫn file dựa trên môi trường
+let CHAT_FILE;
+if (process.env.NODE_ENV === 'production') {
+  CHAT_FILE = '/tmp/chat_messages.json';
+} else {
+  // Môi trường development (local)
+  const dataDir = path.join(__dirname, '../../data');
+  CHAT_FILE = path.join(dataDir, 'chat_messages.json');
+  // Tạo thư mục data nếu chưa có (chỉ trên local)
+  const fsSync = require('fs');
+  if (!fsSync.existsSync(dataDir)) {
+    fsSync.mkdirSync(dataDir, { recursive: true });
+  }
+}
 
 async function ensureFile() {
-  try { await fs.access(CHAT_FILE); } catch { await fs.writeFile(CHAT_FILE, '[]'); }
+  try {
+    await fs.access(CHAT_FILE);
+  } catch {
+    await fs.writeFile(CHAT_FILE, '[]');
+  }
 }
 
 const sendMessage = async (userId, userName, userRole, message) => {
