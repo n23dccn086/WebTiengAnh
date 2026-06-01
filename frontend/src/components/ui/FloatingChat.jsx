@@ -11,6 +11,48 @@ const FloatingChat = () => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef(null);
+  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({ startX: 0, startY: 0 });
+
+  // Load saved position
+  useEffect(() => {
+    const saved = localStorage.getItem('floatingChatPosition');
+    if (saved) setPosition(JSON.parse(saved));
+  }, []);
+
+  // Drag handlers (only when chat is open)
+  const handleMouseDown = (e) => {
+    if (!isOpen) return;
+    // Only drag from the header
+    if (e.target.closest(`.${styles.chatHeader}`)) {
+      setIsDragging(true);
+      dragRef.current = { startX: e.clientX - position.x, startY: e.clientY - position.y };
+      e.preventDefault();
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      setPosition({
+        x: e.clientX - dragRef.current.startX,
+        y: e.clientY - dragRef.current.startY,
+      });
+    };
+    const handleMouseUp = () => {
+      if (isDragging) {
+        localStorage.setItem('floatingChatPosition', JSON.stringify(position));
+        setIsDragging(false);
+      }
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, position]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,7 +88,11 @@ const FloatingChat = () => {
     <>
       <button className={styles.chatButton} onClick={() => setIsOpen(!isOpen)}>💬</button>
       {isOpen && (
-        <div className={styles.chatWindow}>
+        <div
+          className={styles.chatWindow}
+          style={{ left: position.x, top: position.y, bottom: 'auto', right: 'auto' }}
+          onMouseDown={handleMouseDown}
+        >
           <div className={styles.chatHeader}>
             <span>🤖 Trợ lý tiếng Anh</span>
             <button onClick={() => setIsOpen(false)}>✖</button>

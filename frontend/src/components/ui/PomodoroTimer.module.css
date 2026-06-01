@@ -134,3 +134,39 @@
   80% { transform: scale(1.05); }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* Thêm vào cuối file */
+.collapsed {
+  padding: 6px;
+  min-width: auto;
+  cursor: pointer;
+}
+.expandBtn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: white;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.collapseBtn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.collapseBtn:hover {
+  background: rgba(255,255,255,0.2);
+}

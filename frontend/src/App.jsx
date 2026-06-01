@@ -27,7 +27,7 @@ import FloatingChat from "./components/ui/FloatingChat";
 import BackgroundMusic from "./components/ui/BackgroundMusic";
 import FontSizeControl from "./components/ui/FontSizeControl";
 import PomodoroTimer from "./components/ui/PomodoroTimer";
-import { useEffect } from 'react';
+import { useEffect } from "react";
 // Cụm 2: Premium & Thanh toán
 import PremiumDashboard from "./pages/PremiumDashboard";
 import PricingTable from "./features/premium/PricingTable";
@@ -83,11 +83,12 @@ function Navbar() {
             <Link to="/srs/daily" className="link">
               📅 Ôn tập SRS
             </Link>
-            {user?.role === "PREMIUM" ? (
+            {user?.role === "PREMIUM" && (
               <Link to="/premium-dashboard" className="link">
                 📊 Premium
               </Link>
-            ) : (
+            )}
+            {user?.role === "USER" && (
               <Link to="/upgrade" className="link">
                 💎 Nâng cấp
               </Link>

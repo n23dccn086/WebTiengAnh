@@ -24,8 +24,7 @@
 
 .chatWindow {
   position: fixed;
-  bottom: 90px;
-  right: 20px;
+  /* Không dùng bottom, right cứng – sẽ được set bằng inline style */
   width: 380px;
   height: 500px;
   background: white;
@@ -47,6 +46,11 @@
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   font-weight: bold;
+  cursor: grab;           /* Thêm để kéo thả */
+  user-select: none;      /* Tránh bôi đen chữ khi kéo */
+}
+.chatHeader:active {
+  cursor: grabbing;
 }
 .chatHeader button {
   background: none;
