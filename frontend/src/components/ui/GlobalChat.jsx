@@ -14,11 +14,13 @@ const GlobalChat = () => {
   const dragRef = useRef({ startX: 0, startY: 0 });
   const chatContainerRef = useRef(null);
   const [userScrolledUp, setUserScrolledUp] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const lastSeenMessageIdRef = useRef(null);
 
-  // Đảo ngược mảng để tin mới nhất ở dưới cùng
+  // Đảo ngược để tin mới nhất ở dưới cùng
   const messages = [...rawMessages].reverse();
 
-  // Kiểm tra vị trí cuộn (cách đáy bao xa)
+  // Kiểm tra vị trí cuộn
   const checkScrollPosition = () => {
     const container = chatContainerRef.current;
     if (!container) return;
@@ -26,45 +28,69 @@ const GlobalChat = () => {
     setUserScrolledUp(distanceFromBottom > 50);
   };
 
-  // Lắng nghe sự kiện cuộn của người dùng
+  // Lắng nghe sự kiện cuộn
   useEffect(() => {
     const container = chatContainerRef.current;
     if (!container) return;
     container.addEventListener('scroll', checkScrollPosition);
     return () => container.removeEventListener('scroll', checkScrollPosition);
-  }, [isOpen]); // đảm bảo container đã có
+  }, [isOpen]);
 
-  // Tự động cuộn xuống cuối (tin mới nhất) nếu user đang ở gần cuối
+  // Auto-scroll khi có tin nhắn mới (nếu không kéo lên)
   useEffect(() => {
     if (!userScrolledUp && chatContainerRef.current && messages.length > 0) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages, userScrolledUp]);
 
-  // Fetch tin nhắn
+  // Fetch tin nhắn và tính unread
   const fetchMessages = async () => {
     try {
       const res = await apiClient.get('/chat/messages?limit=100');
-      setRawMessages(res.data.data);
+      const newMessages = res.data.data;
+      if (isOpen) {
+        // Đang mở chat: cập nhật và reset unread
+        setRawMessages(newMessages);
+        if (newMessages.length > 0) {
+          lastSeenMessageIdRef.current = newMessages[0].id;
+        }
+        setUnreadCount(0);
+      } else {
+        // Chat đóng: tính tin nhắn mới
+        const oldIds = new Set(rawMessages.map(m => m.id));
+        const newMsgCount = newMessages.filter(m => !oldIds.has(m.id)).length;
+        if (newMsgCount > 0) {
+          setUnreadCount(prev => prev + newMsgCount);
+        }
+        setRawMessages(newMessages);
+      }
     } catch (err) {
       console.error('Lỗi tải tin nhắn:', err);
     }
   };
 
+  // Polling 5 giây
   useEffect(() => {
     if (!isAuthenticated) return;
-    const saved = localStorage.getItem('globalChatPosition');
-    if (saved) setPosition(JSON.parse(saved));
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isOpen, rawMessages]); // rawMessages để so sánh khi đóng
 
-  // Khi mở chat, cuộn xuống tin mới nhất (cuối)
+  // Lưu vị trí kéo thả
   useEffect(() => {
-    if (isOpen && chatContainerRef.current && messages.length > 0) {
-      // Tạm thời bỏ qua check userScrolledUp để mở đúng vị trí
+    const saved = localStorage.getItem('globalChatPosition');
+    if (saved) setPosition(JSON.parse(saved));
+  }, []);
+
+  // Khi mở chat: cuộn xuống cuối, reset unread
+  useEffect(() => {
+    if (isOpen && chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      setUnreadCount(0);
+      if (rawMessages.length > 0) {
+        lastSeenMessageIdRef.current = rawMessages[0].id;
+      }
     }
   }, [isOpen]);
 
@@ -82,6 +108,7 @@ const GlobalChat = () => {
     }
   };
 
+  // Kéo thả chat window
   const handleMouseDown = (e) => {
     if (!isOpen) return;
     if (e.target.closest(`.${styles.chatHeader}`)) {
@@ -89,7 +116,6 @@ const GlobalChat = () => {
       dragRef.current = { startX: e.clientX - position.x, startY: e.clientY - position.y };
     }
   };
-
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging) return;
@@ -118,6 +144,7 @@ const GlobalChat = () => {
     <>
       <button className={styles.chatIcon} onClick={() => setIsOpen(!isOpen)}>
         💬
+        {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
       </button>
       {isOpen && (
         <div
