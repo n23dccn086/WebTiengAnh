@@ -53,9 +53,9 @@ const PricingTable = () => {
         <ul className={styles.features}>
           <li><span>✨</span> 200 lượt câu hỏi AI / ngày</li>
           <li><span>📊</span> Xem thống kê chi tiết</li>
-          <li><span>📄</span> Upload PDF không giới hạn</li>
+          <li><span>📄</span> Upload PDF với số lượt lớn</li>
           <li><span>🎯</span> Ưu tiên hỗ trợ</li>
-          <li><span>🚀</span> Giao diện mới</li>
+          <li><span>🌸</span> Giao diện mới</li>
         </ul>
         {error && <div className={styles.error}>{error}</div>}
         <button
