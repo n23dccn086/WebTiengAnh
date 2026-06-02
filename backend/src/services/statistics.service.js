@@ -94,7 +94,7 @@ const getLeaderboard = async (limit = 10) => {
       AND u.role_id IN (SELECT id FROM roles WHERE name IN ('USER', 'PREMIUM'))
     GROUP BY u.id, u.email, u.full_name
     HAVING total_tests > 0
-    ORDER BY total_score DESC
+    ORDER BY total_score DESC, total_tests ASC
     LIMIT ?
   `;
   const [rows] = await db.query(query, [safeLimit]);
