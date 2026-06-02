@@ -114,16 +114,61 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   position: relative;
 }
-.myMessage .bubble {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border-bottom-right-radius: 6px;
-}
+
+/* Tin nhắn của người khác – giữ nguyên màu trắng */
 .otherMessage .bubble {
   background: white;
   color: #1f2937;
   border-bottom-left-radius: 6px;
   backdrop-filter: blur(4px);
+}
+
+/* ===== TIN NHẮN CỦA MÌNH – MÀU HỒNG CAM, HIỆU ỨNG ĐỘNG ===== */
+.myMessage .bubble {
+  background: linear-gradient(135deg, #ec489a, #f97316);
+  color: white;
+  border-bottom-right-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: gentlePulse 0.3s ease-out;
+}
+
+/* Hiệu ứng hover cho tin nhắn của mình */
+.myMessage .bubble:hover {
+  transform: scale(1.02) translateX(-2px);
+  box-shadow: 0 8px 20px rgba(236, 72, 153, 0.4);
+}
+
+/* Hiệu ứng ánh sáng lướt qua khi hover */
+.myMessage .bubble::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+.myMessage .bubble:hover::before {
+  left: 100%;
+}
+
+/* Keyframes cho hiệu ứng xuất hiện (pulse nhẹ) */
+@keyframes gentlePulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Tên người gửi */

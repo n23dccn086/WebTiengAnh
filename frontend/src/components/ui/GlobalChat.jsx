@@ -5,14 +5,51 @@ import styles from './GlobalChat.module.css';
 
 const GlobalChat = () => {
   const { user, isAuthenticated } = useAuthStore();
-  const [messages, setMessages] = useState([]);
+  const [rawMessages, setRawMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const messagesEndRef = useRef(null);
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef({ startX: 0, startY: 0 });
+  const chatContainerRef = useRef(null);
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
+
+  // Đảo ngược mảng để tin mới nhất ở dưới cùng
+  const messages = [...rawMessages].reverse();
+
+  // Kiểm tra vị trí cuộn (cách đáy bao xa)
+  const checkScrollPosition = () => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    setUserScrolledUp(distanceFromBottom > 50);
+  };
+
+  // Lắng nghe sự kiện cuộn của người dùng
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    container.addEventListener('scroll', checkScrollPosition);
+    return () => container.removeEventListener('scroll', checkScrollPosition);
+  }, [isOpen]); // đảm bảo container đã có
+
+  // Tự động cuộn xuống cuối (tin mới nhất) nếu user đang ở gần cuối
+  useEffect(() => {
+    if (!userScrolledUp && chatContainerRef.current && messages.length > 0) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages, userScrolledUp]);
+
+  // Fetch tin nhắn
+  const fetchMessages = async () => {
+    try {
+      const res = await apiClient.get('/chat/messages?limit=100');
+      setRawMessages(res.data.data);
+    } catch (err) {
+      console.error('Lỗi tải tin nhắn:', err);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -23,14 +60,13 @@ const GlobalChat = () => {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  const fetchMessages = async () => {
-    try {
-      const res = await apiClient.get('/chat/messages?limit=100');
-      setMessages(res.data.data);
-    } catch (err) {
-      console.error('Lỗi tải tin nhắn:', err);
+  // Khi mở chat, cuộn xuống tin mới nhất (cuối)
+  useEffect(() => {
+    if (isOpen && chatContainerRef.current && messages.length > 0) {
+      // Tạm thời bỏ qua check userScrolledUp để mở đúng vị trí
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  };
+  }, [isOpen]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -76,10 +112,6 @@ const GlobalChat = () => {
     };
   }, [isDragging, position]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   if (!isAuthenticated) return null;
 
   return (
@@ -97,7 +129,7 @@ const GlobalChat = () => {
             <span>🌍 Trò chuyện chung</span>
             <button onClick={() => setIsOpen(false)}>✖</button>
           </div>
-          <div className={styles.messages}>
+          <div className={styles.messages} ref={chatContainerRef}>
             {messages.map((msg) => (
               <div key={msg.id} className={`${styles.message} ${msg.user_id === user?.id ? styles.myMessage : styles.otherMessage}`}>
                 <div className={styles.bubble}>
@@ -107,7 +139,6 @@ const GlobalChat = () => {
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
           </div>
           <div className={styles.inputArea}>
             <input
