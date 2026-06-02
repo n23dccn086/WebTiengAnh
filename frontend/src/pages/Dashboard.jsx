@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 
+  const isPremium = user?.role === "PREMIUM";
+
   useEffect(() => {
     if (!user?.id) fetchProfile();
     loadServices();
@@ -60,30 +62,53 @@ const Dashboard = () => {
     return <div className={styles.loading}>📖 Đang tải dữ liệu...</div>;
 
   return (
-    <div className={styles.container}>
+    <div
+      className={`${styles.container} ${isPremium ? styles.premiumContainer : ""}`}
+    >
+      {/* Các hiệu ứng nền thiên nhiên (mây, cỏ, lá, cây) */}
+      {isPremium && (
+        <>
+          <div className={styles.grass}></div>
+          <div className={`${styles.leaf} ${styles.leaf1}`}></div>
+          <div className={`${styles.leaf} ${styles.leaf2}`}></div>
+          <div className={`${styles.leaf} ${styles.leaf3}`}></div>
+          <div className={`${styles.leaf} ${styles.leaf4}`}></div>
+          <div className={`${styles.leaf} ${styles.leaf5}`}></div>
+          <div className={styles.trees}></div>
+        </>
+      )}
       <div className={styles.topBar}>
         <LogoutButton onClick={logout} />
       </div>
 
       <div className={styles.welcome}>
-        <h1>👋 Chào mừng, {user?.full_name || "bạn"}!</h1>
+        <h1>
+          👋 Chào mừng, {user?.full_name || "bạn"}!
+          {isPremium && <span className={styles.premiumBadge}>⭐ PREMIUM</span>}
+        </h1>
         <p>
           Hãy tiếp tục hành trình <strong>chinh phục tiếng Anh</strong> của bạn.
         </p>
       </div>
 
       <div className={styles.stats}>
-        <div className={styles.statCard}>
+        <div
+          className={`${styles.statCard} ${isPremium ? styles.premiumStatCard : ""}`}
+        >
           <div className={styles.statIcon}>📚</div>
           <h3>Từ vựng đã học</h3>
           <p>{stats.totalLearned}</p>
         </div>
-        <div className={styles.statCard}>
+        <div
+          className={`${styles.statCard} ${isPremium ? styles.premiumStatCard : ""}`}
+        >
           <div className={styles.statIcon}>📝</div>
           <h3>Quiz đã làm</h3>
           <p>{stats.totalQuizzes}</p>
         </div>
-        <div className={styles.statCard}>
+        <div
+          className={`${styles.statCard} ${isPremium ? styles.premiumStatCard : ""}`}
+        >
           <div className={styles.statIcon}>⭐</div>
           <h3>Điểm trung bình</h3>
           <p>{stats.averageScore}%</p>
@@ -91,9 +116,14 @@ const Dashboard = () => {
       </div>
 
       <h2 className={styles.sectionTitle}>✨ Dịch vụ học tập</h2>
-      <div className={styles.servicesGrid}>
+      <div
+        className={`${styles.servicesGrid} ${isPremium ? styles.premiumServicesGrid : ""}`}
+      >
         {services.map((svc) => (
-          <div key={svc.id} className={styles.serviceCard}>
+          <div
+            key={svc.id}
+            className={`${styles.serviceCard} ${isPremium ? styles.premiumServiceCard : ""}`}
+          >
             <div className={styles.serviceIcon}>
               {svc.id === 1 && "🔤"}
               {svc.id === 2 && "🎧"}
@@ -114,7 +144,9 @@ const Dashboard = () => {
       </div>
 
       {/* Bảng xếp hạng */}
-      <div className={styles.leaderboardSection}>
+      <div
+        className={`${styles.leaderboardSection} ${isPremium ? styles.premiumLeaderboard : ""}`}
+      >
         <h3>🏆 Bảng xếp hạng tổng điểm test</h3>
         {loadingLeaderboard ? (
           <p>Đang tải...</p>
@@ -132,13 +164,13 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {leaderboard.map((user, idx) => (
-                <tr key={user.id}>
+              {leaderboard.map((leader, idx) => (
+                <tr key={leader.id}>
                   <td>{idx + 1}</td>
-                  <td>{user.email}</td>
-                  <td>{user.full_name}</td>
-                  <td>{Math.round(user.total_score)}</td>
-                  <td>{user.total_tests}</td>
+                  <td>{leader.email}</td>
+                  <td>{leader.full_name}</td>
+                  <td>{Math.round(leader.total_score)}</td>
+                  <td>{leader.total_tests}</td>
                 </tr>
               ))}
             </tbody>
