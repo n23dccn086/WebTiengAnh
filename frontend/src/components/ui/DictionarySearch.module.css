@@ -1,6 +1,9 @@
 .container {
   position: relative;
   display: inline-block;
+  /* Tạo stacking context độc lập, tránh bị ảnh hưởng bởi các thành phần khác */
+  isolation: isolate;
+  z-index: 10000; /* Đảm bảo container nằm trên các phần tử khác */
 }
 
 .form {
@@ -40,19 +43,19 @@
 }
 
 .resultDropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 8px;
+  position: fixed; /* thay absolute bằng fixed */
+  /* Không dùng top/left theo relative nữa, cần tính toán bằng JS */
   background: white;
   color: #1f2937;
   border-radius: 16px;
   padding: 12px;
   width: 320px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  z-index: 1000;
+  z-index: 999999 !important;
   font-size: 0.9rem;
+  pointer-events: auto;
 }
+
 .wordHeader {
   display: flex;
   flex-wrap: wrap;
