@@ -5,6 +5,11 @@ import { getServicesApi } from "../services/serviceApi";
 import apiClient from "../services/apiClient";
 import LogoutButton from "../components/ui/LogoutButton";
 import styles from "./Dashboard.module.css";
+import QuoteOfTheDay from "../components/ui/QuoteOfTheDay";
+import ShootingStars from "../components/ui/ShootingStars";
+import Rain from "../components/ui/Rain";
+import Snow from "../components/ui/Snow";
+import EffectToggles from "../components/ui/EffectToggles";
 
 const Dashboard = () => {
   const { user, fetchProfile, logout } = useAuthStore();
@@ -19,6 +24,14 @@ const Dashboard = () => {
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 
   const isPremium = user?.role === "PREMIUM";
+  const [effectStates, setEffectStates] = useState({
+    shootingStars: false,
+    rain: false,
+    snow: false,
+    leaves: false,
+  });
+
+  const handleEffectToggle = (newStates) => setEffectStates(newStates);
 
   useEffect(() => {
     if (!user?.id) fetchProfile();
@@ -65,22 +78,34 @@ const Dashboard = () => {
     <div
       className={`${styles.container} ${isPremium ? styles.premiumContainer : ""}`}
     >
-      {/* Các hiệu ứng nền thiên nhiên (mây, cỏ, lá, cây) */}
+      {/* Các hiệu ứng nền thiên nhiên (mây, cỏ, lá, cây) - chỉ Premium */}
       {isPremium && (
         <>
           <div className={styles.grass}></div>
+          <div className={styles.trees}></div>
+        </>
+      )}
+
+      {/* Lá rơi có thể bật/tắt */}
+      {isPremium && effectStates.leaves && (
+        <>
           <div className={`${styles.leaf} ${styles.leaf1}`}></div>
           <div className={`${styles.leaf} ${styles.leaf2}`}></div>
           <div className={`${styles.leaf} ${styles.leaf3}`}></div>
           <div className={`${styles.leaf} ${styles.leaf4}`}></div>
           <div className={`${styles.leaf} ${styles.leaf5}`}></div>
-          <div className={styles.trees}></div>
         </>
       )}
+
+      {/* Hiệu ứng có thể bật/tắt (sao băng, mưa, tuyết) - chỉ Premium */}
+      {isPremium && effectStates.shootingStars && <ShootingStars />}
+      {isPremium && effectStates.rain && <Rain />}
+      {isPremium && effectStates.snow && <Snow />}
+
       <div className={styles.topBar}>
         <LogoutButton onClick={logout} />
       </div>
-
+      {isPremium && <QuoteOfTheDay />}
       <div className={styles.welcome}>
         <h1>
           👋 Chào mừng, {user?.full_name || "bạn"}!
@@ -91,6 +116,7 @@ const Dashboard = () => {
         </p>
       </div>
 
+      <EffectToggles isPremium={isPremium} onToggle={handleEffectToggle} />
       <div className={styles.stats}>
         <div
           className={`${styles.statCard} ${isPremium ? styles.premiumStatCard : ""}`}
