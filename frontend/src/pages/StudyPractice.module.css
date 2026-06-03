@@ -122,3 +122,21 @@
 .errorBackBtn:hover {
   background: rgba(255,255,255,0.4);
 }
+
+.explanationDetail {
+  margin: 12px 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: left;
+}
+.upgradeHint {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #ffc107;
+}
+.upgradeHint a {
+  color: #ffc107;
+  text-decoration: underline;
+}

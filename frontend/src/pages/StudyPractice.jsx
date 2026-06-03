@@ -2,16 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { generatePractice } from '../services/studyApi';
 import { playCorrect, playWrong } from '../utils/sound';
+import useAuthStore from '../store/authStore';
 import styles from './StudyPractice.module.css';
 
 const StudyPractice = () => {
   const { id } = useParams();
+  const { user } = useAuthStore();
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const isPremium = user?.role === 'PREMIUM';
 
   useEffect(() => {
     const load = async () => {
@@ -49,7 +53,6 @@ const StudyPractice = () => {
 
   const currentQ = questions[currentIndex];
 
-  // Phím tắt
   useEffect(() => {
     const handleKey = (e) => {
       if (selected !== null) {
@@ -107,7 +110,18 @@ const StudyPractice = () => {
         </div>
         {result && (
           <div className={result.isCorrect ? styles.correctMsg : styles.wrongMsg}>
-            {result.isCorrect ? '✅ Đúng!' : `❌ Sai. ${result.explanation || 'Đáp án đúng đã được tô xanh.'}`}
+            <div>{result.isCorrect ? '✅ Đúng!' : '❌ Sai!'}</div>
+            {/* Chỉ hiển thị giải thích nếu (Premium) hoặc (không Premium và câu sai) */}
+            {(isPremium || !result.isCorrect) && result.explanation && (
+              <div className={styles.explanationDetail}>
+                <strong>💡 Giải thích:</strong> {result.explanation}
+              </div>
+            )}
+            {!isPremium && result.isCorrect && (
+              <div className={styles.upgradeHint}>
+                🌟 <a href="/upgrade">Nâng cấp Premium</a> để xem giải thích chi tiết cho câu đúng!
+              </div>
+            )}
             <button onClick={nextQuestion} className={styles.nextBtn}>Tiếp theo</button>
           </div>
         )}
