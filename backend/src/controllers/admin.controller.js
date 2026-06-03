@@ -136,25 +136,42 @@ const resetStaffPassword = catchAsync(async (req, res) => {
 // ==========================================
 const getSystemSets = catchAsync(async (req, res) => {
   const { page = 1, limit = 20 } = req.query;
-  const offset = (page - 1) * limit;
   const safeLimit = parseInt(limit, 10);
-  const safeOffset = parseInt(offset, 10);
+  const safePage = parseInt(page, 10);
+  const safeOffset = (safePage - 1) * safeLimit;
+
+  // ✅ Lấy danh sách bộ thẻ hệ thống kèm tên danh mục (service_title)
   const [rows] = await db.query(
-    `SELECT id, title, description, service_id, created_at
-     FROM flashcard_sets
-     WHERE is_system = TRUE
-     ORDER BY created_at DESC
+    `SELECT fs.id, fs.title, fs.description, fs.service_id, s.title AS service_title, fs.created_at
+     FROM flashcard_sets fs
+     LEFT JOIN services s ON fs.service_id = s.id
+     WHERE fs.is_system = TRUE
+     ORDER BY fs.created_at DESC
      LIMIT ? OFFSET ?`,
     [safeLimit, safeOffset]
   );
-  const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM flashcard_sets WHERE is_system = TRUE`);
+
+  const [[{ total }]] = await db.query(
+    `SELECT COUNT(*) as total FROM flashcard_sets WHERE is_system = TRUE`
+  );
+
+  // Đếm số flashcards cho mỗi bộ
   const sets = await Promise.all(rows.map(async (set) => {
-    const [[{ count }]] = await db.query(`SELECT COUNT(*) as count FROM flashcards WHERE set_id = ?`, [set.id]);
+    const [[{ count }]] = await db.query(
+      `SELECT COUNT(*) as count FROM flashcards WHERE set_id = ?`,
+      [set.id]
+    );
     return { ...set, total_cards: count };
   }));
+
   return successResponse(res, 'Lấy danh sách bộ thẻ hệ thống thành công', {
     sets,
-    pagination: { page: parseInt(page), limit: parseInt(limit), totalItems: total, totalPages: Math.ceil(total / limit) }
+    pagination: {
+      page: safePage,
+      limit: safeLimit,
+      totalItems: total,
+      totalPages: Math.ceil(total / safeLimit)
+    }
   });
 });
 
