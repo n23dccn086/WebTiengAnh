@@ -4,6 +4,7 @@ import {
   getSetDetail,
   toggleSrs,
   deleteSet,
+  updateSet,          // ✅ THÊM IMPORT
 } from "../services/flashcardSetApi";
 import { deleteFlashcard } from "../services/flashcardApi";
 import AddFlashcardForm from "../features/flashcards/AddFlashcardForm";
@@ -20,6 +21,12 @@ const SetDetail = () => {
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // ✅ THÊM MỚI: state cho modal sửa
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     loadSet();
@@ -49,6 +56,34 @@ const SetDetail = () => {
     }
   };
 
+  // ✅ THÊM MỚI: mở modal, copy dữ liệu hiện tại
+  const openEditModal = () => {
+    setEditTitle(set.title);
+    setEditDescription(set.description || "");
+    setShowEditModal(true);
+  };
+
+  // ✅ THÊM MỚI: gọi API cập nhật
+  const handleUpdateSet = async () => {
+    if (!editTitle.trim()) {
+      alert("Tên bộ thẻ không được để trống");
+      return;
+    }
+    setUpdating(true);
+    try {
+      await updateSet(id, {
+        title: editTitle.trim(),
+        description: editDescription.trim() || null,
+      });
+      setShowEditModal(false);
+      setRefresh((prev) => !prev); // reload lại trang
+    } catch (err) {
+      alert(err.response?.data?.message || "Cập nhật thất bại");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const handleDeleteFlashcard = async (flashcardId) => {
     if (!window.confirm("Xóa từ vựng này khỏi bộ thẻ?")) return;
     try {
@@ -66,14 +101,14 @@ const SetDetail = () => {
         `/flashcard-sets/${id}/export?format=${format}`,
         {
           responseType: "blob",
-        },
+        }
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute(
         "download",
-        `flashcard_set_${id}.${format === "xlsx" ? "xlsx" : "csv"}`,
+        `flashcard_set_${id}.${format === "xlsx" ? "xlsx" : "csv"}`
       );
       document.body.appendChild(link);
       link.click();
@@ -91,7 +126,7 @@ const SetDetail = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedCards = flashcards.slice(
     startIndex,
-    startIndex + ITEMS_PER_PAGE,
+    startIndex + ITEMS_PER_PAGE
   );
 
   const goToPage = (page) => {
@@ -114,9 +149,14 @@ const SetDetail = () => {
         <p>{set.description}</p>
         <div className={styles.meta}>📦 {set.total_cards} từ vựng</div>
         {!set.is_system && (
-          <button onClick={handleDeleteSet} className={styles.deleteSetBtn}>
-            🗑️ Xóa bộ thẻ
-          </button>
+          <>
+            <button onClick={openEditModal} className={styles.editSetBtn}>
+              ✏️ Sửa thông tin
+            </button>
+            <button onClick={handleDeleteSet} className={styles.deleteSetBtn}>
+              🗑️ Xóa bộ thẻ
+            </button>
+          </>
         )}
       </div>
       <div className={styles.actions}>
@@ -222,6 +262,37 @@ const SetDetail = () => {
       )}
 
       <TestHistory setId={id} />
+
+      {/* ✅ THÊM MỚI: Modal sửa thông tin bộ thẻ */}
+      {showEditModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h3>Sửa bộ thẻ</h3>
+            <input
+              type="text"
+              placeholder="Tên bộ thẻ"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className={styles.modalInput}
+            />
+            <textarea
+              placeholder="Mô tả (không bắt buộc)"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              rows="3"
+              className={styles.modalTextarea}
+            />
+            <div className={styles.modalActions}>
+              <button onClick={() => setShowEditModal(false)} disabled={updating}>
+                Hủy
+              </button>
+              <button onClick={handleUpdateSet} disabled={updating}>
+                {updating ? "Đang lưu..." : "Lưu thay đổi"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
