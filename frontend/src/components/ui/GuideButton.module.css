@@ -1,0 +1,137 @@
+/* GuideButton.module.css - sửa lỗi bị khuất */
+.guideIcon {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: 1rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  color: white;
+  transition: transform 0.2s, filter 0.2s;
+  filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
+}
+.guideIcon:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.8));
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+   z-index: 100000 !important; 
+  backdrop-filter: blur(4px);
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung quá cao */
+}
+
+.modalContent {
+  background: white;
+  border-radius: 32px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+  color: #1f2937;
+  animation: fadeInUp 0.2s ease-out;
+  position: relative;
+  margin: 20px auto; /* Khoảng cách an toàn với lề trên/dưới */
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-radius: 32px 32px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.closeBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: white;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalBody h4 {
+  margin: 1rem 0 0.5rem;
+  color: #1e3a8a;
+}
+
+.modalBody ul {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.5rem;
+}
+
+.modalBody li {
+  margin: 0.3rem 0;
+  line-height: 1.4;
+}
+
+.modalBody p {
+  margin-top: 1rem;
+  font-style: italic;
+  color: #4b5563;
+}
+
+/* Thanh cuộn đẹp */
+.modalContent::-webkit-scrollbar {
+  width: 6px;
+}
+.modalContent::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+.modalContent::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+.modalContent::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

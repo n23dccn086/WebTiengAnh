@@ -29,6 +29,7 @@ import FontSizeControl from "./components/ui/FontSizeControl";
 import PomodoroTimer from "./components/ui/PomodoroTimer";
 import { useEffect } from "react";
 import GlobalChat from "./components/ui/GlobalChat";
+import GuideButton from "./components/ui/GuideButton";
 
 // Cụm 2: Premium & Thanh toán
 import PremiumDashboard from "./pages/PremiumDashboard";
@@ -69,6 +70,7 @@ function Navbar() {
     >
       <div className="logo">🌟 EngVocab .🐵.</div>
       <GlobalChat />
+       <GuideButton />
       <div className="navLinks">
         <Link to="/" className="link">
           Trang chủ
