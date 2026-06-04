@@ -5,6 +5,7 @@ const AppError = require("../utils/appError");
 const StatisticsService = require("../services/statistics.service");
 
 exports.getPremiumDashboard = catchAsync(async (req, res) => {
+  
   const userId = req.user.id;
 
   if (req.user.role !== "PREMIUM" && req.user.role !== "SUPER_ADMIN") {
@@ -31,9 +32,14 @@ exports.getPremiumDashboard = catchAsync(async (req, res) => {
 
   // 3. Thẻ đến hạn hôm nay – dùng UTC_TIMESTAMP() để tránh lệch múi giờ
   const [dueTodayRows] = await db.execute(
-    `SELECT COUNT(*) as due_today FROM user_flashcards WHERE user_id = ? AND next_review_date <= UTC_TIMESTAMP()`,
-    [userId],
-  );
+  `SELECT COUNT(DISTINCT uf.id) as due_today
+   FROM user_flashcards uf
+   JOIN flashcards f ON uf.flashcard_id = f.id
+   JOIN flashcard_sets fs ON f.set_id = fs.id
+   JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = uf.user_id
+   WHERE uf.user_id = ? AND uf.next_review_date <= UTC_TIMESTAMP() AND uss.is_srs_enabled = TRUE`,
+  [userId]
+);
   const due_today = dueTodayRows[0]?.due_today || 0;
 
   // 4. Lấy dữ liệu review (last_reviewed_at) trong 7 ngày gần nhất theo giờ VN

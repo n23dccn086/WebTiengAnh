@@ -17,8 +17,12 @@ const getPremiumStats = async (userId) => {
 
   // 3. Số thẻ đến hạn hôm nay
   const [dueTodayRow] = await db.execute(
-    `SELECT COUNT(*) as due FROM user_flashcards 
-     WHERE user_id = ? AND next_review_date <= NOW()`,
+    `SELECT COUNT(DISTINCT uf.id) as due
+     FROM user_flashcards uf
+     JOIN flashcards f ON uf.flashcard_id = f.id
+     JOIN flashcard_sets fs ON f.set_id = fs.id
+     JOIN user_saved_sets uss ON fs.id = uss.set_id AND uss.user_id = uf.user_id
+     WHERE uf.user_id = ? AND uf.next_review_date <= NOW() AND uss.is_srs_enabled = TRUE`,
     [userId]
   );
   const due_today = dueTodayRow[0]?.due || 0;
