@@ -27,3 +27,7 @@ select option {
   color: black;
   background: white;
 }
+
+body {
+  overflow-x: hidden;
+}

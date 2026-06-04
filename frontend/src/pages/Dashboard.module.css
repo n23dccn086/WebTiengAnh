@@ -7,7 +7,7 @@
   background-attachment: fixed;
   color: white;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Top bar */
@@ -241,26 +241,40 @@
   z-index: 0;
   pointer-events: none;
 }
+
+/* Mây trái sang phải */
 .premiumContainer::before {
   width: 200px;
   height: 80px;
   top: 5%;
-  left: -100px;
-  animation: cloudFloat 25s linear infinite;
+  left: -200px;
+  animation: cloudLeftToRight 25s linear infinite;
 }
+
+/* Mây phải sang trái */
 .premiumContainer::after {
   width: 280px;
   height: 100px;
   top: 15%;
-  right: -120px;
-  animation: cloudFloat 35s linear infinite reverse;
+  right: -280px;
+  animation: cloudRightToLeft 35s linear infinite;
 }
-@keyframes cloudFloat {
+
+@keyframes cloudLeftToRight {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(calc(100vw + 200px));
+    transform: translateX(calc(100vw + 400px));
+  }
+}
+
+@keyframes cloudRightToLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-100vw - 400px));
   }
 }
 
