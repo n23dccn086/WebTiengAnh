@@ -343,3 +343,24 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.dictationBtn {
+  background: linear-gradient(135deg, #f55d0b, #e79d48);
+  border: none;
+  box-shadow: 0 4px 15px rgba(245, 159, 11, 0.877);
+  padding: 10px 24px; 
+  font-size: 1rem;  
+  border-radius: 40px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: 0.2s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dictationBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+}

@@ -4,7 +4,7 @@ import {
   getSetDetail,
   toggleSrs,
   deleteSet,
-  updateSet,          // ✅ THÊM IMPORT
+  updateSet, // ✅ THÊM IMPORT
 } from "../services/flashcardSetApi";
 import { deleteFlashcard } from "../services/flashcardApi";
 import AddFlashcardForm from "../features/flashcards/AddFlashcardForm";
@@ -12,6 +12,7 @@ import SRSConfig from "../features/srs/SRSConfig";
 import TestHistory from "../components/TestHistory";
 import styles from "./SetDetail.module.css";
 import apiClient from "../services/apiClient";
+import DictationPractice from "../components/ui/DictationPractice";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -27,6 +28,7 @@ const SetDetail = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [updating, setUpdating] = useState(false);
+  const [showDictation, setShowDictation] = useState(false);
 
   useEffect(() => {
     loadSet();
@@ -101,14 +103,14 @@ const SetDetail = () => {
         `/flashcard-sets/${id}/export?format=${format}`,
         {
           responseType: "blob",
-        }
+        },
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute(
         "download",
-        `flashcard_set_${id}.${format === "xlsx" ? "xlsx" : "csv"}`
+        `flashcard_set_${id}.${format === "xlsx" ? "xlsx" : "csv"}`,
       );
       document.body.appendChild(link);
       link.click();
@@ -126,7 +128,7 @@ const SetDetail = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedCards = flashcards.slice(
     startIndex,
-    startIndex + ITEMS_PER_PAGE
+    startIndex + ITEMS_PER_PAGE,
   );
 
   const goToPage = (page) => {
@@ -160,6 +162,12 @@ const SetDetail = () => {
         )}
       </div>
       <div className={styles.actions}>
+        <button
+          onClick={() => setShowDictation(true)}
+          className={`${styles.btn} ${styles.dictationBtn}`}
+        >
+          🎧 Nghe & viết
+        </button>
         <Link
           to={`/sets/${id}/flashcard-basic`}
           className={`${styles.btn} ${styles.btnFlashcard}`}
@@ -265,8 +273,14 @@ const SetDetail = () => {
 
       {/* ✅ THÊM MỚI: Modal sửa thông tin bộ thẻ */}
       {showEditModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowEditModal(false)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3>Sửa bộ thẻ</h3>
             <input
               type="text"
@@ -283,7 +297,10 @@ const SetDetail = () => {
               className={styles.modalTextarea}
             />
             <div className={styles.modalActions}>
-              <button onClick={() => setShowEditModal(false)} disabled={updating}>
+              <button
+                onClick={() => setShowEditModal(false)}
+                disabled={updating}
+              >
                 Hủy
               </button>
               <button onClick={handleUpdateSet} disabled={updating}>
@@ -292,6 +309,12 @@ const SetDetail = () => {
             </div>
           </div>
         </div>
+      )}
+      {showDictation && (
+        <DictationPractice
+          flashcards={set.flashcards}
+          onClose={() => setShowDictation(false)}
+        />
       )}
     </div>
   );
