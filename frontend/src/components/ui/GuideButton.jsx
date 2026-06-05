@@ -39,6 +39,9 @@ const GuideButton = () => {
                     (chuyển thẻ), Space (lật thẻ)
                   </li>
                   <li>
+                    <strong>Đánh giá phát âm (Flashcard):</strong> Phím P/p để bắt đầu nghe và đánh giá phát âm của bạn
+                  </li>
+                  <li>
                     <strong>Luyện tập (Practice):</strong> Phím số 1-4 (chọn đáp
                     án), Enter hoặc N/n (câu tiếp theo)
                   </li>

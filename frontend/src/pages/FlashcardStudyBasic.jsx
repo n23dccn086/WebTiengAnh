@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import useSpeech from '../hooks/useSpeech';
 import { getFlashcardsBySetApi } from '../services/flashcardApi';
@@ -15,6 +15,10 @@ const FlashcardStudyBasic = () => {
   const [flipped, setFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showCompletion, setShowCompletion] = useState(false);
+  // State cho đánh giá phát âm
+  const [isListening, setIsListening] = useState(false);
+  const [pronunciationResult, setPronunciationResult] = useState(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => { loadCards(); }, [id]);
 
@@ -32,6 +36,7 @@ const FlashcardStudyBasic = () => {
     if (currentIndex + 1 < cards.length) {
       setCurrentIndex(currentIndex + 1);
       setFlipped(false);
+      setPronunciationResult(null);
     } else {
       setShowCompletion(true);
       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
@@ -43,6 +48,7 @@ const FlashcardStudyBasic = () => {
     if (currentIndex - 1 >= 0) {
       setCurrentIndex(currentIndex - 1);
       setFlipped(false);
+      setPronunciationResult(null);
     }
   }, [currentIndex]);
 
@@ -51,7 +57,56 @@ const FlashcardStudyBasic = () => {
     playFlip();
   };
 
-  // Phím tắt: mũi tên trái/phải, Space (lật thẻ)
+  // Khởi tạo Web Speech Recognition
+  const initRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
+      return null;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    return recognition;
+  };
+
+  const handlePronunciationCheck = () => {
+    if (isListening) return;
+    const recognition = initRecognition();
+    if (!recognition) return;
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setPronunciationResult(null);
+    };
+
+    recognition.onresult = (event) => {
+      const spokenText = event.results[0][0].transcript.trim().toLowerCase();
+      const correctWord = cards[currentIndex]?.word.toLowerCase();
+      const isMatch = spokenText === correctWord;
+      setPronunciationResult({
+        isCorrect: isMatch,
+        message: isMatch ? '✅ Phát âm chính xác!' : `❌ Sai. Bạn nói: "${spokenText}". Đáp án: "${correctWord}".`,
+      });
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Lỗi nhận diện:", event.error);
+      setPronunciationResult({ isCorrect: false, message: '⚠️ Không nhận diện được giọng nói. Vui lòng thử lại.' });
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
+  // Phím tắt
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === 'ArrowRight') nextCard();
@@ -59,6 +114,10 @@ const FlashcardStudyBasic = () => {
       if (e.key === ' ' || e.key === 'Space') {
         e.preventDefault();
         handleFlip();
+      }
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        handlePronunciationCheck();
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -98,13 +157,23 @@ const FlashcardStudyBasic = () => {
         <div className={`${styles.card} ${flipped ? styles.flipped : ''}`}>
           <div className={styles.front}>
             <div className={styles.word}>{current.word}</div>
-            <button
-              className={styles.speakBtn}
-              onClick={(e) => { e.stopPropagation(); playPronunciation(); }}
-              title="Phát âm"
-            >
-              🔊
-            </button>
+            <div className={styles.buttonGroup}>
+              <button
+                className={styles.speakBtn}
+                onClick={(e) => { e.stopPropagation(); playPronunciation(); }}
+                title="Phát âm"
+              >
+                🔊
+              </button>
+              <button
+                className={styles.pronounceBtn}
+                onClick={(e) => { e.stopPropagation(); handlePronunciationCheck(); }}
+                disabled={isListening}
+                title="Đánh giá phát âm (Phím P)"
+              >
+                {isListening ? '⏳ Đang nghe...' : '🎤'}
+              </button>
+            </div>
           </div>
           <div className={styles.back}>
             <div className={styles.meaning}>{current.meaning}</div>
@@ -113,6 +182,11 @@ const FlashcardStudyBasic = () => {
           </div>
         </div>
       </div>
+      {pronunciationResult && (
+        <div className={`${styles.resultBox} ${pronunciationResult.isCorrect ? styles.correctResult : styles.wrongResult}`}>
+          {pronunciationResult.message}
+        </div>
+      )}
       <div className={styles.navButtons}>
         <button onClick={prevCard} disabled={currentIndex === 0} className={styles.navBtn}>◀ Trước</button>
         <button onClick={nextCard} className={styles.navBtn}>
