@@ -97,12 +97,6 @@ const Home = () => {
       name: "Đinh Việt Hoàng",
       role: "Backend Developer",
     },
-    {
-      id: "nguyen-le-huy-thai",
-      name: "Nguyễn Lê Huy Thái",
-      role: "Frontend Developer",
-    },
-    { id: "tran-minh-duc", name: "Trần Minh Đức", role: "Backend Developer" },
   ];
 
   if (loading) return <div className={styles.loading}>📖 Đang tải...</div>;
